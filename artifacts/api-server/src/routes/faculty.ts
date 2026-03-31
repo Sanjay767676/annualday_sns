@@ -12,7 +12,7 @@ const FACULTY_SECTION_MAP: Record<string, string> = {
   phd: "phdAwardees",
 };
 
-router.post("/faculty", async (req, res): Promise<void> => {
+router.post("/faculty", async (req: any, res: any): Promise<void> => {
   const parsed = SubmitFacultyFormBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -30,7 +30,7 @@ router.post("/faculty", async (req, res): Promise<void> => {
   });
 });
 
-router.get("/admin/faculty", async (req: Request, res: Response): Promise<void> => {
+router.get("/admin/faculty", async (req: any, res: any): Promise<void> => {
   const token = req.headers["x-admin-token"];
   const adminPassword = process.env.ADMIN_PASSWORD ?? "admin123";
 
