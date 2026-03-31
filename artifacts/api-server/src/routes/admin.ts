@@ -1,4 +1,4 @@
-import { Router, type IRouter } from "express";
+import { Router } from "express";
 import { db } from "@workspace/db";
 import { facultySubmissionsTable, studentSubmissionsTable } from "@workspace/db";
 import {
@@ -8,7 +8,7 @@ import {
 } from "@workspace/api-zod";
 import { gte, sql } from "drizzle-orm";
 
-const router: IRouter = Router();
+const router = Router();
 
 router.post("/admin/login", async (req, res): Promise<void> => {
   const parsed = AdminLoginBody.safeParse(req.body);

@@ -1,9 +1,9 @@
-import { Router, type IRouter } from "express";
+import { Router } from "express";
 import { sql } from "drizzle-orm";
 import { db, studentSubmissionsTable } from "@workspace/db";
 import { SubmitStudentFormBody } from "@workspace/api-zod";
 
-const router: IRouter = Router();
+const router = Router();
 
 const STUDENT_SECTION_MAP: Record<string, string> = {
   firstRank: "firstRankHolders",

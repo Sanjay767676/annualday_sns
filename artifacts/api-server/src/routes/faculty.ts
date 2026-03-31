@@ -1,9 +1,9 @@
-import { Router, type IRouter } from "express";
+import { Router } from "express";
 import { sql } from "drizzle-orm";
 import { db, facultySubmissionsTable } from "@workspace/db";
 import { SubmitFacultyFormBody } from "@workspace/api-zod";
 
-const router: IRouter = Router();
+const router = Router();
 
 const FACULTY_SECTION_MAP: Record<string, string> = {
   paper: "papersPublished",
