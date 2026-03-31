@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { desc, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { db, facultySubmissionsTable } from "@workspace/db";
 import { SubmitFacultyFormBody } from "@workspace/api-zod";
 
@@ -39,36 +39,54 @@ router.get("/admin/faculty", async (req, res): Promise<void> => {
     return;
   }
 
-  const type = (req.query.type as string) || "paper";
+  const typeRaw = (req.query.type as string) || "paper";
+  const section = FACULTY_SECTION_MAP[typeRaw] ?? "papersPublished";
   const search = ((req.query.search as string) || "").trim();
   const page = Math.max(1, parseInt(req.query.page as string) || 1);
   const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 10));
-  const section = FACULTY_SECTION_MAP[type] || "papersPublished";
-
-  const submissions = search
-    ? await db
-        .select()
-        .from(facultySubmissionsTable)
-        .where(sql`cast(${facultySubmissionsTable.data} as text) ILIKE ${"%" + search + "%"}`)
-        .orderBy(desc(facultySubmissionsTable.createdAt))
-    : await db
-        .select()
-        .from(facultySubmissionsTable)
-        .orderBy(desc(facultySubmissionsTable.createdAt));
-
-  const allRows: Record<string, unknown>[] = submissions.flatMap((s) => {
-    const d = s.data as Record<string, unknown>;
-    const items = (d[section] as Record<string, unknown>[]) ?? [];
-    return items.map((item) => ({
-      ...item,
-      _submissionId: s.id,
-      _submittedAt: s.createdAt,
-    }));
-  });
-
-  const total = allRows.length;
   const offset = (page - 1) * limit;
-  const data = allRows.slice(offset, offset + limit);
+
+  type RowResult = { elem: Record<string, unknown>; submission_id: number; submitted_at: Date };
+  type CountResult = { count: string };
+
+  const sectionSql = sql.raw(`'${section}'`);
+
+  const rowsQuery = search
+    ? sql`SELECT elem, fs.id AS submission_id, fs.created_at AS submitted_at
+          FROM faculty_submissions fs,
+               jsonb_array_elements(fs.data->${sectionSql}) AS elem
+          WHERE cast(elem AS text) ILIKE ${"%" + search + "%"}
+          ORDER BY fs.created_at DESC
+          LIMIT ${limit} OFFSET ${offset}`
+    : sql`SELECT elem, fs.id AS submission_id, fs.created_at AS submitted_at
+          FROM faculty_submissions fs,
+               jsonb_array_elements(fs.data->${sectionSql}) AS elem
+          ORDER BY fs.created_at DESC
+          LIMIT ${limit} OFFSET ${offset}`;
+
+  const countQuery = search
+    ? sql`SELECT count(*) AS count
+          FROM faculty_submissions fs,
+               jsonb_array_elements(fs.data->${sectionSql}) AS elem
+          WHERE cast(elem AS text) ILIKE ${"%" + search + "%"}`
+    : sql`SELECT count(*) AS count
+          FROM faculty_submissions fs,
+               jsonb_array_elements(fs.data->${sectionSql}) AS elem`;
+
+  const [rowsResult, countQueryResult] = await Promise.all([
+    db.execute(rowsQuery),
+    db.execute(countQuery),
+  ]);
+
+  const rows = (rowsResult as unknown as { rows: RowResult[] }).rows ?? (rowsResult as unknown as RowResult[]);
+  const countRows = (countQueryResult as unknown as { rows: CountResult[] }).rows ?? (countQueryResult as unknown as CountResult[]);
+
+  const total = parseInt(countRows[0]?.count ?? "0", 10);
+  const data = rows.map((r) => ({
+    ...(r.elem as Record<string, unknown>),
+    _submissionId: r.submission_id,
+    _submittedAt: r.submitted_at,
+  }));
 
   res.json({ data, total, page, limit });
 });
