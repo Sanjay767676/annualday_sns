@@ -1,12 +1,10 @@
 import { Router, type Request, type Response } from "express";
-import { db } from "@workspace/db";
-import { facultySubmissionsTable, studentSubmissionsTable } from "@workspace/db";
+import { db, facultySubmissionsTable, studentSubmissionsTable, sql, gte } from "@workspace/db";
 import {
   AdminLoginBody,
   AdminLoginResponse,
   GetAdminStatsResponse,
 } from "@workspace/api-zod";
-import { gte, sql } from "drizzle-orm";
 
 const router = Router();
 

@@ -1,6 +1,5 @@
 import { Router, type Request, type Response } from "express";
-import { sql } from "drizzle-orm";
-import { db, facultySubmissionsTable } from "@workspace/db";
+import { db, facultySubmissionsTable, sql } from "@workspace/db";
 import { SubmitFacultyFormBody } from "@workspace/api-zod";
 
 const router = Router();
