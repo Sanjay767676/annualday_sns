@@ -136,7 +136,7 @@ function DynamicTable({
                 <div>{row._submittedAt
                   ? new Date(row._submittedAt as string).toLocaleDateString()
                   : "—"}</div>
-                {row._submissionId && (
+                {Boolean(row._submissionId) && (
                   <div className="text-slate-400 font-mono text-[10px] mt-0.5 truncate max-w-[120px]" title={String(row._submissionId)}>
                     {String(row._submissionId).slice(0, 8)}…
                   </div>
@@ -332,17 +332,13 @@ export default function AdminDashboard() {
     }
   }, [setLocation]);
 
-  const fetchOpts = token
-    ? { request: { headers: { "x-admin-token": token } } }
-    : { query: { enabled: false } };
-
   const { data: stats, isLoading: statsLoading } = useGetAdminStats({
+    request: token ? { headers: { "x-admin-token": token } } : undefined,
     query: {
       enabled: !!token,
       queryKey: getGetAdminStatsQueryKey(),
-      refetchInterval: POLL_INTERVAL,
+      refetchInterval: token ? POLL_INTERVAL : false,
     },
-    ...fetchOpts,
   });
 
   const handleLogout = () => {

@@ -5,4 +5,5 @@ export declare const db: import("drizzle-orm/node-postgres").NodePgDatabase<type
 };
 export * from "./schema";
 export { sql, gte } from "drizzle-orm";
+export { prisma } from "./prisma-client.js";
 //# sourceMappingURL=index.d.ts.map
