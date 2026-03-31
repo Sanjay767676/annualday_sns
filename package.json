@@ -8,11 +8,12 @@
   ],
   "scripts": {
     "postinstall": "npm --prefix backend/db run prisma:generate",
+    "dev": "npm run db:push && concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:frontend": "npm --prefix frontend/forms-app run dev",
     "dev:backend": "npm --prefix backend/api-server run dev",
-    "db:push": "npm --prefix backend/db run prisma:push",
-    "db:generate": "npm --prefix backend/db run prisma:generate",
-    "db:migrate": "npm --prefix backend/db run prisma:migrate",
+    "db:push": "dotenv -e .env -- npm --prefix backend/db run prisma:push",
+    "db:generate": "dotenv -e .env -- npm --prefix backend/db run prisma:generate",
+    "db:migrate": "dotenv -e .env -- npm --prefix backend/db run prisma:migrate",
     "build": "npm run typecheck && npm --prefix backend/api-server run build && npm --prefix frontend/forms-app run build",
     "typecheck:libs": "tsc --build",
     "typecheck": "npm run typecheck:libs && npm --prefix frontend/forms-app run typecheck && npm --prefix backend/api-server run typecheck"
@@ -20,6 +21,8 @@
   "private": true,
   "packageManager": "npm@10.8.2",
   "devDependencies": {
+    "concurrently": "^9.2.1",
+    "dotenv-cli": "^8.0.0",
     "effect": "3.18.4",
     "fast-check": "^3.23.2",
     "typescript": "~5.9.2",

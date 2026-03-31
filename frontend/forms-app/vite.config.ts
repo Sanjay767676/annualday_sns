@@ -48,6 +48,12 @@ export default defineConfig({
   server: {
     port,
     host: "0.0.0.0",
+    proxy: {
+      "/api": {
+        target: "http://localhost:4000",
+        changeOrigin: true,
+      },
+    },
     allowedHosts: true,
     fs: {
       strict: true,
