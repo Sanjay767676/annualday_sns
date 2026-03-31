@@ -9,7 +9,7 @@ import {
 
 const router = Router();
 
-router.post("/admin/login", async (req: any, res: any): Promise<void> => {
+router.post("/admin/login", async (req: Request, res: Response): Promise<void> => {
   const parsed = AdminLoginBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid request" });
@@ -31,7 +31,7 @@ router.post("/admin/login", async (req: any, res: any): Promise<void> => {
   );
 });
 
-router.get("/admin/stats", async (req: any, res: any): Promise<void> => {
+router.get("/admin/stats", async (req: Request, res: Response): Promise<void> => {
   const token = req.headers["x-admin-token"];
   const adminPassword = process.env.ADMIN_PASSWORD ?? "admin123";
 

@@ -15,3 +15,6 @@ export const db = drizzle(pool, { schema });
 
 export * from "./schema";
 export { sql, gte } from "drizzle-orm";
+
+// Export Prisma client for modern ORM usage
+export { prisma } from "./prisma-client.js";
