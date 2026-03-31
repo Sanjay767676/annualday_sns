@@ -23,9 +23,9 @@
     "customConditions": ["workspace"],
     "baseUrl": ".",
     "paths": {
-      "@workspace/api-zod": ["lib/api-zod/src/index.ts"],
-      "@workspace/db": ["lib/db/src/index.ts"],
-      "@workspace/db/schema": ["lib/db/src/schema/index.ts"]
+      "@workspace/api-zod": ["backend/api-zod/src/index.ts"],
+      "@workspace/db": ["backend/db/src/index.ts"],
+      "@workspace/db/schema": ["backend/db/src/schema/index.ts"]
     }
   }
 }

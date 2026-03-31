@@ -3,15 +3,19 @@
   "version": "0.0.0",
   "license": "MIT",
   "workspaces": [
-    "lib/*",
-    "artifacts/*",
-    "scripts"
+    "frontend/*",
+    "backend/*"
   ],
   "scripts": {
-    "postinstall": "npm run -w @workspace/db prisma:generate",
-    "build": "npm run typecheck && npm run -w @workspace/api-server build && npm run -w @workspace/forms-app build",
+    "postinstall": "npm --prefix backend/db run prisma:generate",
+    "dev:frontend": "npm --prefix frontend/forms-app run dev",
+    "dev:backend": "npm --prefix backend/api-server run dev",
+    "db:push": "npm --prefix backend/db run prisma:push",
+    "db:generate": "npm --prefix backend/db run prisma:generate",
+    "db:migrate": "npm --prefix backend/db run prisma:migrate",
+    "build": "npm run typecheck && npm --prefix backend/api-server run build && npm --prefix frontend/forms-app run build",
     "typecheck:libs": "tsc --build",
-    "typecheck": "npm run typecheck:libs && npm run -w @workspace/forms-app typecheck && npm run -w @workspace/api-server typecheck"
+    "typecheck": "npm run typecheck:libs && npm --prefix frontend/forms-app run typecheck && npm --prefix backend/api-server run typecheck"
   },
   "private": true,
   "packageManager": "npm@10.8.2",

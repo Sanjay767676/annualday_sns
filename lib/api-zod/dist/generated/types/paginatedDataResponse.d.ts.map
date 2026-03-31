@@ -1,1 +1,0 @@
-{"version":3,"file":"paginatedDataResponse.d.ts","sourceRoot":"","sources":["../../../src/generated/types/paginatedDataResponse.ts"],"names":[],"mappings":"AAAA;;;;;;GAMG;AACH,OAAO,KAAK,EAAE,6BAA6B,EAAE,MAAM,oCAAoC,CAAC;AAExF,MAAM,WAAW,qBAAqB;IACpC,IAAI,EAAE,6BAA6B,EAAE,CAAC;IACtC,KAAK,EAAE,MAAM,CAAC;IACd,IAAI,EAAE,MAAM,CAAC;IACb,KAAK,EAAE,MAAM,CAAC;CACf"}
