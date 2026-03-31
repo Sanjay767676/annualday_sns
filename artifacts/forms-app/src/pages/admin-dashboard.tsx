@@ -133,9 +133,14 @@ function DynamicTable({
                 </td>
               ))}
               <td className="px-4 py-3 text-slate-500 text-xs whitespace-nowrap">
-                {row._submittedAt
+                <div>{row._submittedAt
                   ? new Date(row._submittedAt as string).toLocaleDateString()
-                  : "—"}
+                  : "—"}</div>
+                {row._submissionId && (
+                  <div className="text-slate-400 font-mono text-[10px] mt-0.5 truncate max-w-[120px]" title={String(row._submissionId)}>
+                    {String(row._submissionId).slice(0, 8)}…
+                  </div>
+                )}
               </td>
             </tr>
           ))}

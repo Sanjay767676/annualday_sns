@@ -49,7 +49,7 @@ router.get("/admin/student", async (req, res): Promise<void> => {
   const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 10));
   const offset = (page - 1) * limit;
 
-  type RowResult = { elem: Record<string, unknown>; submission_id: number; submitted_at: Date };
+  type RowResult = { elem: Record<string, unknown>; submission_id: string; submitted_at: Date };
   type CountResult = { count: string };
 
   const sectionSql = sql.raw(`'${section}'`);
