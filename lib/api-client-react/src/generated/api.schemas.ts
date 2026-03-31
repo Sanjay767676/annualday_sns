@@ -94,8 +94,6 @@ export interface FacultyFormData {
   papersPublished: PaperPublished[];
   booksChapters: BookChapter[];
   patentsGranted: PatentGranted[];
-  semesterToppers: SemesterTopper[];
-  remarkableAchievements: RemarkableAchievement[];
   phdAwardees: PhDAwardee[];
 }
 
@@ -105,6 +103,8 @@ export interface StudentFormData {
   email: string;
   /** @minLength 1 */
   customField: string;
+  semesterToppers: SemesterTopper[];
+  remarkableAchievements: RemarkableAchievement[];
 }
 
 export interface FacultySubmission {
@@ -118,5 +118,7 @@ export interface StudentSubmission {
   name: string;
   email: string;
   customField: string;
+  semesterToppers: SemesterTopper[];
+  remarkableAchievements: RemarkableAchievement[];
   createdAt: string;
 }

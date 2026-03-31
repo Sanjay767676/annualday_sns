@@ -9,14 +9,10 @@ import type { BookChapter } from "./bookChapter";
 import type { PaperPublished } from "./paperPublished";
 import type { PatentGranted } from "./patentGranted";
 import type { PhDAwardee } from "./phDAwardee";
-import type { RemarkableAchievement } from "./remarkableAchievement";
-import type { SemesterTopper } from "./semesterTopper";
 
 export interface FacultyFormData {
   papersPublished: PaperPublished[];
   booksChapters: BookChapter[];
   patentsGranted: PatentGranted[];
-  semesterToppers: SemesterTopper[];
-  remarkableAchievements: RemarkableAchievement[];
   phdAwardees: PhDAwardee[];
 }

@@ -373,14 +373,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/PatentGranted"
-        semesterToppers:
-          type: array
-          items:
-            $ref: "#/components/schemas/SemesterTopper"
-        remarkableAchievements:
-          type: array
-          items:
-            $ref: "#/components/schemas/RemarkableAchievement"
         phdAwardees:
           type: array
           items:
@@ -389,8 +381,6 @@ components:
         - papersPublished
         - booksChapters
         - patentsGranted
-        - semesterToppers
-        - remarkableAchievements
         - phdAwardees
 
     StudentFormData:
@@ -405,10 +395,20 @@ components:
         customField:
           type: string
           minLength: 1
+        semesterToppers:
+          type: array
+          items:
+            $ref: "#/components/schemas/SemesterTopper"
+        remarkableAchievements:
+          type: array
+          items:
+            $ref: "#/components/schemas/RemarkableAchievement"
       required:
         - name
         - email
         - customField
+        - semesterToppers
+        - remarkableAchievements
 
     FacultySubmission:
       type: object
@@ -436,6 +436,14 @@ components:
           type: string
         customField:
           type: string
+        semesterToppers:
+          type: array
+          items:
+            $ref: "#/components/schemas/SemesterTopper"
+        remarkableAchievements:
+          type: array
+          items:
+            $ref: "#/components/schemas/RemarkableAchievement"
         createdAt:
           type: string
           format: date-time
@@ -444,4 +452,6 @@ components:
         - name
         - email
         - customField
+        - semesterToppers
+        - remarkableAchievements
         - createdAt

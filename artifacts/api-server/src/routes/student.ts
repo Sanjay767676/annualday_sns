@@ -15,12 +15,15 @@ router.post("/student", async (req, res): Promise<void> => {
     return;
   }
 
+  const { name, email, customField, semesterToppers, remarkableAchievements } = parsed.data;
+
   const [submission] = await db
     .insert(studentSubmissionsTable)
     .values({
-      name: parsed.data.name,
-      email: parsed.data.email,
-      customField: parsed.data.customField,
+      name,
+      email,
+      customField,
+      data: { semesterToppers, remarkableAchievements },
     })
     .returning();
 
@@ -44,17 +47,20 @@ router.get("/admin/student", async (req, res): Promise<void> => {
     .from(studentSubmissionsTable)
     .orderBy(desc(studentSubmissionsTable.createdAt));
 
-  res.json(
-    GetAllStudentSubmissionsResponse.parse(
-      submissions.map((s) => ({
-        id: s.id,
-        name: s.name,
-        email: s.email,
-        customField: s.customField,
-        createdAt: s.createdAt,
-      }))
-    )
-  );
+  const data = submissions.map((s) => {
+    const d = (s.data as any) ?? {};
+    return {
+      id: s.id,
+      name: s.name,
+      email: s.email,
+      customField: s.customField,
+      semesterToppers: d.semesterToppers ?? [],
+      remarkableAchievements: d.remarkableAchievements ?? [],
+      createdAt: s.createdAt,
+    };
+  });
+
+  res.json(GetAllStudentSubmissionsResponse.parse(data));
 });
 
 export default router;

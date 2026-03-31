@@ -5,6 +5,8 @@
  * Dynamic Form System API
  * OpenAPI spec version: 0.1.0
  */
+import type { RemarkableAchievement } from "./remarkableAchievement";
+import type { SemesterTopper } from "./semesterTopper";
 
 export interface StudentFormData {
   /** @minLength 2 */
@@ -12,4 +14,6 @@ export interface StudentFormData {
   email: string;
   /** @minLength 1 */
   customField: string;
+  semesterToppers: SemesterTopper[];
+  remarkableAchievements: RemarkableAchievement[];
 }

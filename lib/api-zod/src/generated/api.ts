@@ -46,21 +46,6 @@ export const SubmitFacultyFormBody = zod.object({
       monthYear: zod.string(),
     }),
   ),
-  semesterToppers: zod.array(
-    zod.object({
-      classBranch: zod.string(),
-      registerNumber: zod.string(),
-      studentName: zod.string(),
-      percentage: zod.string(),
-    }),
-  ),
-  remarkableAchievements: zod.array(
-    zod.object({
-      studentName: zod.string(),
-      classBranch: zod.string(),
-      achievementDetails: zod.string(),
-    }),
-  ),
   phdAwardees: zod.array(
     zod.object({
       name: zod.string(),
@@ -82,6 +67,21 @@ export const SubmitStudentFormBody = zod.object({
   name: zod.string().min(submitStudentFormBodyNameMin),
   email: zod.string().email(),
   customField: zod.string().min(1),
+  semesterToppers: zod.array(
+    zod.object({
+      classBranch: zod.string(),
+      registerNumber: zod.string(),
+      studentName: zod.string(),
+      percentage: zod.string(),
+    }),
+  ),
+  remarkableAchievements: zod.array(
+    zod.object({
+      studentName: zod.string(),
+      classBranch: zod.string(),
+      achievementDetails: zod.string(),
+    }),
+  ),
 });
 
 /**
@@ -117,21 +117,6 @@ export const GetAllFacultySubmissionsResponseItem = zod.object({
         monthYear: zod.string(),
       }),
     ),
-    semesterToppers: zod.array(
-      zod.object({
-        classBranch: zod.string(),
-        registerNumber: zod.string(),
-        studentName: zod.string(),
-        percentage: zod.string(),
-      }),
-    ),
-    remarkableAchievements: zod.array(
-      zod.object({
-        studentName: zod.string(),
-        classBranch: zod.string(),
-        achievementDetails: zod.string(),
-      }),
-    ),
     phdAwardees: zod.array(
       zod.object({
         name: zod.string(),
@@ -157,6 +142,21 @@ export const GetAllStudentSubmissionsResponseItem = zod.object({
   name: zod.string(),
   email: zod.string(),
   customField: zod.string(),
+  semesterToppers: zod.array(
+    zod.object({
+      classBranch: zod.string(),
+      registerNumber: zod.string(),
+      studentName: zod.string(),
+      percentage: zod.string(),
+    }),
+  ),
+  remarkableAchievements: zod.array(
+    zod.object({
+      studentName: zod.string(),
+      classBranch: zod.string(),
+      achievementDetails: zod.string(),
+    }),
+  ),
   createdAt: zod.coerce.date(),
 });
 export const GetAllStudentSubmissionsResponse = zod.array(

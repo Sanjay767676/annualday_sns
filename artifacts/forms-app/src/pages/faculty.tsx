@@ -1,7 +1,7 @@
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Link, useLocation } from "wouter";
+import { useLocation } from "wouter";
 import { Building2, Plus, Trash2, ArrowLeft } from "lucide-react";
 
 import { useSubmitFacultyForm } from "@workspace/api-client-react";
@@ -9,9 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 
@@ -37,17 +36,6 @@ const facultyFormSchema = z.object({
     designProduct: z.string().min(1, "Required"),
     monthYear: z.string().min(1, "Required"),
   })),
-  semesterToppers: z.array(z.object({
-    classBranch: z.string().min(1, "Required"),
-    registerNumber: z.string().min(1, "Required"),
-    studentName: z.string().min(1, "Required"),
-    percentage: z.string().min(1, "Required"),
-  })),
-  remarkableAchievements: z.array(z.object({
-    studentName: z.string().min(1, "Required"),
-    classBranch: z.string().min(1, "Required"),
-    achievementDetails: z.string().min(1, "Required"),
-  })),
   phdAwardees: z.array(z.object({
     name: z.string().min(1, "Required"),
     designation: z.string().min(1, "Required"),
@@ -70,8 +58,6 @@ export default function FacultyFormPage() {
       papersPublished: [{ facultyName: "", designation: "", titleOfPaper: "", journalType: "Scopus", monthYear: "" }],
       booksChapters: [{ name: "", designation: "", titleOfBook: "", publisherIsbn: "", monthYear: "" }],
       patentsGranted: [{ name: "", designation: "", titleOfPatent: "", designProduct: "", monthYear: "" }],
-      semesterToppers: [{ classBranch: "", registerNumber: "", studentName: "", percentage: "" }],
-      remarkableAchievements: [{ studentName: "", classBranch: "", achievementDetails: "" }],
       phdAwardees: [{ name: "", designation: "", branch: "", university: "", year: "", title: "" }],
     }
   });
@@ -97,10 +83,9 @@ export default function FacultyFormPage() {
     });
   }
 
-  // Helper component for generic section rendering
   const renderSection = (
-    title: string, 
-    name: "papersPublished" | "booksChapters" | "patentsGranted" | "semesterToppers" | "remarkableAchievements" | "phdAwardees", 
+    title: string,
+    name: "papersPublished" | "booksChapters" | "patentsGranted" | "phdAwardees",
     fieldsConfig: { name: string, label: string, type?: "textarea" | "select", options?: string[] }[]
   ) => {
     const { fields, append, remove } = useFieldArray({ control: form.control, name });
@@ -114,10 +99,10 @@ export default function FacultyFormPage() {
           {fields.map((field, index) => (
             <div key={field.id} className="relative p-5 bg-white border border-slate-200 rounded-lg shadow-sm">
               {fields.length > 1 && (
-                <Button 
-                  type="button" 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
                   className="absolute top-2 right-2 text-destructive hover:bg-destructive/10"
                   onClick={() => remove(index)}
                 >
@@ -133,11 +118,7 @@ export default function FacultyFormPage() {
                     render={({ field: formField }) => (
                       <FormItem className={config.type === "textarea" ? "md:col-span-2" : ""}>
                         <FormLabel>{config.label}</FormLabel>
-                        {config.type === "textarea" ? (
-                          <FormControl>
-                            <Textarea {...formField} className="min-h-[100px]" />
-                          </FormControl>
-                        ) : config.type === "select" ? (
+                        {config.type === "select" ? (
                           <Select onValueChange={formField.onChange} defaultValue={formField.value}>
                             <FormControl>
                               <SelectTrigger>
@@ -163,9 +144,9 @@ export default function FacultyFormPage() {
               </div>
             </div>
           ))}
-          <Button 
-            type="button" 
-            variant="outline" 
+          <Button
+            type="button"
+            variant="outline"
             onClick={() => {
               const emptyObj = fieldsConfig.reduce((acc, curr) => ({ ...acc, [curr.name]: curr.type === "select" ? curr.options?.[0] : "" }), {});
               append(emptyObj as any);
@@ -228,20 +209,7 @@ export default function FacultyFormPage() {
               { name: "monthYear", label: "Month & Year" },
             ])}
 
-            {renderSection("4. Semester Toppers", "semesterToppers", [
-              { name: "classBranch", label: "Class & Branch" },
-              { name: "registerNumber", label: "Register Number" },
-              { name: "studentName", label: "Student Name" },
-              { name: "percentage", label: "Percentage / CGPA" },
-            ])}
-
-            {renderSection("5. Remarkable Achievements", "remarkableAchievements", [
-              { name: "studentName", label: "Student Name" },
-              { name: "classBranch", label: "Class & Branch" },
-              { name: "achievementDetails", label: "Achievement Details", type: "textarea" },
-            ])}
-
-            {renderSection("6. PhD Awardees", "phdAwardees", [
+            {renderSection("4. PhD Awardees", "phdAwardees", [
               { name: "name", label: "Name" },
               { name: "designation", label: "Designation" },
               { name: "branch", label: "Branch" },
@@ -251,7 +219,7 @@ export default function FacultyFormPage() {
             ])}
 
             <Separator className="my-8" />
-            
+
             <div className="flex justify-end">
               <Button type="submit" size="lg" disabled={submitMutation.isPending} className="w-full md:w-auto min-w-[200px] text-lg font-semibold h-14">
                 {submitMutation.isPending ? "Submitting..." : "Submit Faculty Form"}
