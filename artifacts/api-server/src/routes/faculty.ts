@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
 import { sql } from "drizzle-orm";
 import { db, facultySubmissionsTable } from "@workspace/db";
 import { SubmitFacultyFormBody } from "@workspace/api-zod";
@@ -30,7 +30,7 @@ router.post("/faculty", async (req, res): Promise<void> => {
   });
 });
 
-router.get("/admin/faculty", async (req, res): Promise<void> => {
+router.get("/admin/faculty", async (req: Request, res: Response): Promise<void> => {
   const token = req.headers["x-admin-token"];
   const adminPassword = process.env.ADMIN_PASSWORD ?? "admin123";
 

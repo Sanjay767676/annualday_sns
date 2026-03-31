@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
 import { sql } from "drizzle-orm";
 import { db, studentSubmissionsTable } from "@workspace/db";
 import { SubmitStudentFormBody } from "@workspace/api-zod";
@@ -11,7 +11,7 @@ const STUDENT_SECTION_MAP: Record<string, string> = {
   achievement: "remarkableAchievements",
 };
 
-router.post("/student", async (req, res): Promise<void> => {
+router.post("/student", async (req: Request, res: Response): Promise<void> => {
   const parsed = SubmitStudentFormBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -33,7 +33,7 @@ router.post("/student", async (req, res): Promise<void> => {
   });
 });
 
-router.get("/admin/student", async (req, res): Promise<void> => {
+router.get("/admin/student", async (req: Request, res: Response): Promise<void> => {
   const token = req.headers["x-admin-token"];
   const adminPassword = process.env.ADMIN_PASSWORD ?? "admin123";
 
