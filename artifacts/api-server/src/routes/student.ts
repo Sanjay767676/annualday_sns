@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from "express";
 import { db, sql } from "../../../../lib/db/src/index.js";
-import { studentSubmissionsTable } from "../../../../lib/db/src/schema/index.js";
+import { studentSubmissionsTable } from "../../../../lib/db/src/schema/student_submissions.js";
 import { SubmitStudentFormBody } from "../../../../lib/api-zod/src/generated/api.js";
 
 const router = Router();

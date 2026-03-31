@@ -1,6 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { db, sql, gte } from "../../../../lib/db/src/index.js";
-import { facultySubmissionsTable, studentSubmissionsTable } from "../../../../lib/db/src/schema/index.js";
+import { facultySubmissionsTable } from "../../../../lib/db/src/schema/faculty_submissions.js";
+import { studentSubmissionsTable } from "../../../../lib/db/src/schema/student_submissions.js";
 import {
   AdminLoginBody,
   AdminLoginResponse,
