@@ -1,76 +1,87 @@
 import { useLocation } from "wouter";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, GraduationCap, ArrowRight, ShieldCheck } from "lucide-react";
+import { GraduationCap, BookOpen, ShieldCheck, ArrowRight } from "lucide-react";
 
 export default function Home() {
   const [, setLocation] = useLocation();
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      <header className="border-b bg-white border-slate-200">
-        <div className="container mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-primary font-bold text-lg">
-            <Building2 className="w-5 h-5" />
-            <span>Academic Portal</span>
+    <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%)" }}>
+
+      {/* Header */}
+      <header className="px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-2 text-white font-bold text-base tracking-wide">
+          <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+            <BookOpen className="w-4 h-4 text-white" />
           </div>
-          <Button variant="outline" className="gap-2" onClick={() => setLocation('/admin/login')}>
-            <ShieldCheck className="w-4 h-4" />
-            Admin Login
-          </Button>
+          Academic Portal
         </div>
+        <button
+          onClick={() => setLocation('/admin/login')}
+          className="flex items-center gap-1.5 text-xs font-medium text-white/60 hover:text-white transition-colors px-3 py-1.5 rounded-full border border-white/10 hover:border-white/30"
+        >
+          <ShieldCheck className="w-3.5 h-3.5" />
+          Admin
+        </button>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center p-6">
-        <div className="max-w-2xl w-full text-center space-y-8">
-          <div className="space-y-4">
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900">
-              Department Data Collection
-            </h1>
-            <p className="text-lg text-slate-600 max-w-xl mx-auto">
-              Securely submit academic records, remarkable achievements, and administrative reporting for the current academic period.
-            </p>
-          </div>
+      {/* Hero */}
+      <main className="flex-1 flex flex-col items-center justify-center px-6 pb-12">
+        <div className="text-center mb-14">
+          <p className="text-white/40 text-xs font-semibold uppercase tracking-widest mb-3">May 2025 – March 2026</p>
+          <h1 className="text-4xl md:text-5xl font-black text-white leading-tight">
+            Department Data
+            <br />
+            <span className="text-transparent bg-clip-text" style={{ backgroundImage: "linear-gradient(90deg, #60a5fa, #a78bfa)" }}>
+              Collection
+            </span>
+          </h1>
+        </div>
 
-          <div className="grid md:grid-cols-2 gap-6 mt-12">
-            <Card className="hover:shadow-lg transition-all duration-300 border-slate-200">
-              <CardHeader>
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 text-primary">
-                  <GraduationCap className="w-6 h-6" />
-                </div>
-                <CardTitle className="text-2xl">Student Portal</CardTitle>
-                <CardDescription className="text-slate-600">
-                  Submit student academic records, general information, and specialized departmental data.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button className="w-full gap-2" size="lg" onClick={() => setLocation('/student')}>
-                  Access Student Form
-                  <ArrowRight className="w-4 h-4" />
-                </Button>
-              </CardContent>
-            </Card>
+        {/* Cards */}
+        <div className="grid sm:grid-cols-2 gap-5 w-full max-w-lg">
 
-            <Card className="hover:shadow-lg transition-all duration-300 border-slate-200">
-              <CardHeader>
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 text-primary">
-                  <Building2 className="w-6 h-6" />
-                </div>
-                <CardTitle className="text-2xl">Faculty Portal</CardTitle>
-                <CardDescription className="text-slate-600">
-                  Submit publications, granted patents, book chapters, and scholarly achievements.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button className="w-full gap-2" size="lg" onClick={() => setLocation('/faculty')}>
-                  Access Faculty Form
-                  <ArrowRight className="w-4 h-4" />
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+          {/* Student Card */}
+          <button
+            onClick={() => setLocation('/student')}
+            className="group relative overflow-hidden rounded-2xl p-6 text-left transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl focus:outline-none"
+            style={{ background: "linear-gradient(135deg, #2563eb, #7c3aed)" }}
+          >
+            <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-20" style={{ background: "radial-gradient(circle, white, transparent)" }} />
+            <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center mb-5">
+              <GraduationCap className="w-6 h-6 text-white" />
+            </div>
+            <h2 className="text-white font-bold text-xl mb-1">Student</h2>
+            <p className="text-white/60 text-sm mb-5">Rank holders & achievements</p>
+            <div className="flex items-center gap-1 text-white/80 text-xs font-semibold group-hover:gap-2 transition-all">
+              Fill form <ArrowRight className="w-3.5 h-3.5" />
+            </div>
+          </button>
+
+          {/* Faculty Card */}
+          <button
+            onClick={() => setLocation('/faculty')}
+            className="group relative overflow-hidden rounded-2xl p-6 text-left transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl focus:outline-none"
+            style={{ background: "linear-gradient(135deg, #059669, #0891b2)" }}
+          >
+            <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-20" style={{ background: "radial-gradient(circle, white, transparent)" }} />
+            <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center mb-5">
+              <BookOpen className="w-6 h-6 text-white" />
+            </div>
+            <h2 className="text-white font-bold text-xl mb-1">Faculty</h2>
+            <p className="text-white/60 text-sm mb-5">Publications, patents & PhD</p>
+            <div className="flex items-center gap-1 text-white/80 text-xs font-semibold group-hover:gap-2 transition-all">
+              Fill form <ArrowRight className="w-3.5 h-3.5" />
+            </div>
+          </button>
+
         </div>
       </main>
+
+      {/* Footer */}
+      <footer className="text-center pb-6 text-white/20 text-xs">
+        Academic Data Portal &copy; {new Date().getFullYear()}
+      </footer>
+
     </div>
   );
 }
