@@ -5,7 +5,7 @@
  * Dynamic Form System API
  * OpenAPI spec version: 0.1.0
  */
-import type { PaperPublishedJournalType } from "./paperPublishedJournalType";
+import type { PaperPublishedJournalType } from "./paperPublishedJournalType.js";
 
 export interface PaperPublished {
   facultyName: string;

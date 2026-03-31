@@ -5,7 +5,7 @@
  * Dynamic Form System API
  * OpenAPI spec version: 0.1.0
  */
-import type { FirstRankHolderUgPg } from "./firstRankHolderUgPg";
+import type { FirstRankHolderUgPg } from "./firstRankHolderUgPg.js";
 
 export interface FirstRankHolder {
   studentName: string;

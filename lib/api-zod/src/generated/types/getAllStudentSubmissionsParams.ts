@@ -5,7 +5,7 @@
  * Dynamic Form System API
  * OpenAPI spec version: 0.1.0
  */
-import type { GetAllStudentSubmissionsType } from "./getAllStudentSubmissionsType";
+import type { GetAllStudentSubmissionsType } from "./getAllStudentSubmissionsType.js";
 
 export type GetAllStudentSubmissionsParams = {
   type?: GetAllStudentSubmissionsType;

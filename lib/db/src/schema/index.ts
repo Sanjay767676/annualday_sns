@@ -1,2 +1,2 @@
-export * from "./faculty_submissions";
-export * from "./student_submissions";
+export * from "./faculty_submissions.js";
+export * from "./student_submissions.js";

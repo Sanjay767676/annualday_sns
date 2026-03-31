@@ -28,10 +28,10 @@ import type {
   PaginatedDataResponse,
   StudentFormData,
   SubmissionResponse,
-} from "./api.schemas";
+} from "./api.schemas.js";
 
-import { customFetch } from "../custom-fetch";
-import type { ErrorType, BodyType } from "../custom-fetch";
+import { customFetch } from "../custom-fetch.js";
+import type { ErrorType, BodyType } from "../custom-fetch.js";
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 

@@ -5,7 +5,7 @@
  * Dynamic Form System API
  * OpenAPI spec version: 0.1.0
  */
-import type { StudentFormData } from "./studentFormData";
+import type { StudentFormData } from "./studentFormData.js";
 
 export interface StudentSubmission {
   id: string;

@@ -5,7 +5,7 @@
  * Dynamic Form System API
  * OpenAPI spec version: 0.1.0
  */
-import type { PaginatedDataResponseDataItem } from "./paginatedDataResponseDataItem";
+import type { PaginatedDataResponseDataItem } from "./paginatedDataResponseDataItem.js";
 export interface PaginatedDataResponse {
     data: PaginatedDataResponseDataItem[];
     total: number;

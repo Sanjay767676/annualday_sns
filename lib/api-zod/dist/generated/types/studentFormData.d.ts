@@ -5,9 +5,9 @@
  * Dynamic Form System API
  * OpenAPI spec version: 0.1.0
  */
-import type { FirstRankHolder } from "./firstRankHolder";
-import type { SemesterWiseRanker } from "./semesterWiseRanker";
-import type { StudentAchievement } from "./studentAchievement";
+import type { FirstRankHolder } from "./firstRankHolder.js";
+import type { SemesterWiseRanker } from "./semesterWiseRanker.js";
+import type { StudentAchievement } from "./studentAchievement.js";
 export interface StudentFormData {
     firstRankHolders: FirstRankHolder[];
     semesterWiseRankers: SemesterWiseRanker[];

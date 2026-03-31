@@ -5,7 +5,7 @@
  * Dynamic Form System API
  * OpenAPI spec version: 0.1.0
  */
-import type { SemesterWiseRankerUgPg } from "./semesterWiseRankerUgPg";
+import type { SemesterWiseRankerUgPg } from "./semesterWiseRankerUgPg.js";
 
 export interface SemesterWiseRanker {
   studentName: string;

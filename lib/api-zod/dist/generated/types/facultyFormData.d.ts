@@ -5,10 +5,10 @@
  * Dynamic Form System API
  * OpenAPI spec version: 0.1.0
  */
-import type { BookChapter } from "./bookChapter";
-import type { PaperPublished } from "./paperPublished";
-import type { PatentGranted } from "./patentGranted";
-import type { PhDAwardee } from "./phDAwardee";
+import type { BookChapter } from "./bookChapter.js";
+import type { PaperPublished } from "./paperPublished.js";
+import type { PatentGranted } from "./patentGranted.js";
+import type { PhDAwardee } from "./phDAwardee.js";
 export interface FacultyFormData {
     papersPublished: PaperPublished[];
     booksChapters: BookChapter[];
