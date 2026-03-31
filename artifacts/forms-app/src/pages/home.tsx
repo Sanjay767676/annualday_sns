@@ -1,23 +1,34 @@
 import { useLocation } from "wouter";
-import { GraduationCap, BookOpen, ShieldCheck, ArrowRight } from "lucide-react";
+import { GraduationCap, BookOpen, ArrowRight, ShieldCheck, Award, MapPin, Sparkles } from "lucide-react";
 
 export default function Home() {
   const [, setLocation] = useLocation();
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%)" }}>
+    <div
+      className="min-h-screen flex flex-col"
+      style={{ background: "linear-gradient(160deg, #050d1a 0%, #0c1f3d 45%, #0f1535 100%)" }}
+    >
+      {/* Gold top bar */}
+      <div className="h-1 w-full flex-shrink-0" style={{ background: "linear-gradient(90deg, #b45309, #f59e0b, #fbbf24, #f59e0b, #b45309)" }} />
 
       {/* Header */}
-      <header className="px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-2 text-white font-bold text-base tracking-wide">
-          <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-            <BookOpen className="w-4 h-4 text-white" />
+      <header className="px-5 py-4 flex items-center justify-between flex-shrink-0">
+        <div className="flex items-center gap-3">
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-xs tracking-tight shadow-lg"
+            style={{ background: "linear-gradient(135deg, #1d4ed8, #3b82f6)" }}
+          >
+            SNS
           </div>
-          Academic Portal
+          <div>
+            <p className="text-white font-bold text-sm leading-tight">SNS College of Technology</p>
+            <p className="text-white/35 text-xs">Coimbatore – 641 107</p>
+          </div>
         </div>
         <button
-          onClick={() => setLocation('/admin/login')}
-          className="flex items-center gap-1.5 text-xs font-medium text-white/60 hover:text-white transition-colors px-3 py-1.5 rounded-full border border-white/10 hover:border-white/30"
+          onClick={() => setLocation("/admin/login")}
+          className="flex items-center gap-1.5 text-xs font-medium text-white/45 hover:text-white/75 transition-colors px-3 py-1.5 rounded-full border border-white/10 hover:border-white/20"
         >
           <ShieldCheck className="w-3.5 h-3.5" />
           Admin
@@ -25,63 +36,90 @@ export default function Home() {
       </header>
 
       {/* Hero */}
-      <main className="flex-1 flex flex-col items-center justify-center px-6 pb-12">
-        <div className="text-center mb-14">
-          <p className="text-white/40 text-xs font-semibold uppercase tracking-widest mb-3">May 2025 – March 2026</p>
-          <h1 className="text-4xl md:text-5xl font-black text-white leading-tight">
-            Department Data
-            <br />
-            <span className="text-transparent bg-clip-text" style={{ backgroundImage: "linear-gradient(90deg, #60a5fa, #a78bfa)" }}>
-              Collection
-            </span>
-          </h1>
+      <main className="flex-1 flex flex-col items-center justify-center px-5 py-8 text-center">
+
+        {/* Annual day badge */}
+        <div
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-7 text-xs font-bold uppercase tracking-widest"
+          style={{ background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.3)", color: "#fbbf24" }}
+        >
+          <Sparkles className="w-3 h-3" />
+          Annual Day 2026
+          <Sparkles className="w-3 h-3" />
         </div>
 
-        {/* Cards */}
-        <div className="grid sm:grid-cols-2 gap-5 w-full max-w-lg">
+        {/* Main title */}
+        <h1 className="text-white font-black leading-tight mb-2" style={{ fontSize: "clamp(2rem, 6vw, 3.75rem)" }}>
+          Data Collection
+        </h1>
+        <h2
+          className="font-black leading-tight mb-4"
+          style={{
+            fontSize: "clamp(1.75rem, 5vw, 3.25rem)",
+            background: "linear-gradient(90deg, #f59e0b, #fbbf24, #f59e0b)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+          }}
+        >
+          Portal
+        </h2>
 
-          {/* Student Card */}
+        <p className="text-white/35 text-sm mb-10">
+          Academic Year &nbsp;·&nbsp; May 2025 – March 2026
+        </p>
+
+        {/* Cards */}
+        <div className="grid sm:grid-cols-2 gap-4 w-full max-w-md">
+
+          {/* Student */}
           <button
-            onClick={() => setLocation('/student')}
-            className="group relative overflow-hidden rounded-2xl p-6 text-left transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl focus:outline-none"
-            style={{ background: "linear-gradient(135deg, #2563eb, #7c3aed)" }}
+            onClick={() => setLocation("/student")}
+            className="group relative overflow-hidden rounded-2xl p-6 text-left transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60"
+            style={{ background: "linear-gradient(140deg, #1e40af 0%, #4338ca 55%, #7c3aed 100%)" }}
           >
-            <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-20" style={{ background: "radial-gradient(circle, white, transparent)" }} />
-            <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center mb-5">
+            <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full" style={{ background: "radial-gradient(circle, rgba(255,255,255,0.12), transparent)" }} />
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4 bg-white/15">
               <GraduationCap className="w-6 h-6 text-white" />
             </div>
-            <h2 className="text-white font-bold text-xl mb-1">Student</h2>
-            <p className="text-white/60 text-sm mb-5">Rank holders & achievements</p>
-            <div className="flex items-center gap-1 text-white/80 text-xs font-semibold group-hover:gap-2 transition-all">
+            <h3 className="text-white font-extrabold text-xl mb-1.5">Student</h3>
+            <p className="text-white/60 text-xs mb-5 leading-relaxed">
+              First rank holders, semester rankers & remarkable achievements
+            </p>
+            <span className="inline-flex items-center gap-1.5 text-white/75 text-xs font-semibold group-hover:gap-2.5 transition-all">
               Fill form <ArrowRight className="w-3.5 h-3.5" />
-            </div>
+            </span>
           </button>
 
-          {/* Faculty Card */}
+          {/* Faculty */}
           <button
-            onClick={() => setLocation('/faculty')}
-            className="group relative overflow-hidden rounded-2xl p-6 text-left transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl focus:outline-none"
-            style={{ background: "linear-gradient(135deg, #059669, #0891b2)" }}
+            onClick={() => setLocation("/faculty")}
+            className="group relative overflow-hidden rounded-2xl p-6 text-left transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60"
+            style={{ background: "linear-gradient(140deg, #065f46 0%, #0d9488 50%, #0891b2 100%)" }}
           >
-            <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-20" style={{ background: "radial-gradient(circle, white, transparent)" }} />
-            <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center mb-5">
+            <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full" style={{ background: "radial-gradient(circle, rgba(255,255,255,0.12), transparent)" }} />
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4 bg-white/15">
               <BookOpen className="w-6 h-6 text-white" />
             </div>
-            <h2 className="text-white font-bold text-xl mb-1">Faculty</h2>
-            <p className="text-white/60 text-sm mb-5">Publications, patents & PhD</p>
-            <div className="flex items-center gap-1 text-white/80 text-xs font-semibold group-hover:gap-2 transition-all">
+            <h3 className="text-white font-extrabold text-xl mb-1.5">Faculty</h3>
+            <p className="text-white/60 text-xs mb-5 leading-relaxed">
+              Papers published, books, patents granted & PhD awardees
+            </p>
+            <span className="inline-flex items-center gap-1.5 text-white/75 text-xs font-semibold group-hover:gap-2.5 transition-all">
               Fill form <ArrowRight className="w-3.5 h-3.5" />
-            </div>
+            </span>
           </button>
 
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="text-center pb-6 text-white/20 text-xs">
-        Academic Data Portal &copy; {new Date().getFullYear()}
+      <footer className="py-4 px-5 border-t border-white/5 flex-shrink-0">
+        <p className="flex items-center justify-center gap-1.5 text-white/25 text-xs text-center">
+          <MapPin className="w-3 h-3 flex-shrink-0" />
+          SNS College of Technology, Coimbatore – 641 107 &nbsp;·&nbsp; Annual Day 2026
+        </p>
       </footer>
-
     </div>
   );
 }
