@@ -1,0 +1,145 @@
+Enhance the existing full-stack app with the following advanced requirements:
+
+Tech Stack:
+- Frontend: React
+- Backend: Node.js (Express)
+- Database: Supabase (PostgreSQL JSONB)
+
+--------------------------------------------------
+
+1. NO MOCK DATA:
+
+- Do NOT use any dummy or mock data
+- Always fetch real-time data from Supabase
+- On page load → fetch data from backend API
+
+--------------------------------------------------
+
+2. REAL-TIME DATA FETCHING:
+
+- Use API polling OR Supabase real-time subscriptions
+- Automatically update admin dashboard when new data is inserted
+- No manual refresh required
+
+--------------------------------------------------
+
+3. HIGH PERFORMANCE BACKEND:
+
+Optimize backend for 8000+ concurrent users:
+
+- Use pagination (limit + offset)
+- Do NOT send full data at once
+- Use indexed queries
+- Use async/await properly
+- Avoid blocking operations
+- Use lightweight responses
+
+--------------------------------------------------
+
+4. API DESIGN:
+
+Create optimized endpoints:
+
+GET /faculty?type=paper&search=query&page=1&limit=10  
+GET /student?search=query&page=1&limit=10  
+
+- Filter at backend level (not frontend)
+- Return only required data
+
+--------------------------------------------------
+
+5. DYNAMIC DATA RENDERING:
+
+- Data is stored as JSON in Supabase
+- Admin dashboard must NOT depend on fixed columns
+
+Frontend should:
+- Read keys dynamically from JSON
+- Render UI dynamically
+- Automatically adapt if new fields are added
+
+--------------------------------------------------
+
+6. DYNAMIC TABLE GENERATION:
+
+- When filter is selected (paper/book/patent/etc):
+  - Extract only that section from JSON
+  - Generate table columns dynamically based on keys
+
+Example:
+If JSON contains:
+{
+  "name": "...",
+  "designation": "...",
+  "title": "..."
+}
+
+→ Table headers auto-generate:
+Name | Designation | Title
+
+--------------------------------------------------
+
+7. SEARCH SYSTEM:
+
+- Real-time search (debounced)
+- Case-insensitive
+- Works across all JSON fields
+- Backend filtering (not frontend)
+
+--------------------------------------------------
+
+8. FILTER SYSTEM:
+
+- Faculty filters:
+  - paper
+  - book
+  - patent
+  - phd
+  - topper
+  - achievement
+
+- Only selected section should be sent from backend
+
+--------------------------------------------------
+
+9. EXCEL DOWNLOAD:
+
+- Export ONLY current filtered data
+- Generate Excel dynamically
+- Column headers must match current UI table
+- Use xlsx library
+
+--------------------------------------------------
+
+10. FRONTEND OPTIMIZATION:
+
+- Use React hooks properly
+- Use memoization (useMemo, useCallback)
+- Avoid unnecessary re-renders
+- Show loading state
+- Show empty state (no data)
+
+--------------------------------------------------
+
+11. UI REQUIREMENTS:
+
+- Clean dashboard layout
+- Tabs: Student / Faculty
+- Highlight active filter
+- Responsive design
+- Fast rendering
+
+--------------------------------------------------
+
+12. IMPORTANT:
+
+- Entire system must be dynamic
+- No hardcoded fields in UI or backend
+- Any new field added in form should automatically reflect in admin dashboard
+
+--------------------------------------------------
+
+Goal:
+
+Build a scalable, dynamic, real-time admin dashboard system 
+that adapts automatically to changing form data and handles high user load efficiently.
