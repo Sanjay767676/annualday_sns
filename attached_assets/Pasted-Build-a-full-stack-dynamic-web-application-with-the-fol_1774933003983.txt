@@ -1,0 +1,163 @@
+Build a full-stack dynamic web application with the following requirements:
+
+Tech Stack:
+- Frontend: React (with React Router)
+- Backend: Node.js with Express
+- Database: Supabase (PostgreSQL with JSONB)
+
+----------------------------------------
+
+1. Home Page:
+- Display two main buttons centered:
+  - "Student"
+  - "Faculty"
+- Top-right corner: "Admin Login" button
+
+----------------------------------------
+
+2. Faculty Form Page:
+
+Display heading:
+"Data Collection Period: May 2025 – March 2026"
+
+Create a fully dynamic multi-section form.
+
+Sections:
+
+1. Paper Published
+Fields:
+- Name of Faculty
+- Designation
+- Title of Paper
+- Journal Type (Dropdown: Scopus, SCI, WOS, Annexure-1)
+- Month & Year
+
+2. Book / Book Chapter
+Fields:
+- Name
+- Designation
+- Title of Book/Chapter
+- Publisher & ISBN
+- Month & Year
+
+3. Patent Granted
+Fields:
+- Name
+- Designation
+- Title of Patent
+- Design/Product
+- Month & Year
+
+4. Semester Topper
+Fields:
+- Class/Branch
+- Register Number
+- Student Name
+- Percentage
+
+5. Remarkable Achievements
+Fields:
+- Student Name
+- Class/Branch
+- Achievement Details (textarea)
+
+6. PhD Awardees
+Fields:
+- Name
+- Designation
+- Branch
+- University
+- Year
+- Title
+
+----------------------------------------
+
+3. Dynamic Form Behavior:
+- Each section should allow adding multiple entries dynamically (Add More button)
+- Form structure should be generated from a JSON schema
+- All data should be collected into a single JSON object
+
+----------------------------------------
+
+4. Student Form Page:
+- Create a simple form with 3 fields:
+  - Name
+  - Email
+  - One custom field
+- Validation required
+
+----------------------------------------
+
+5. Backend (Express API):
+
+Create endpoints:
+- POST /faculty → save faculty form JSON
+- POST /student → save student form data
+
+----------------------------------------
+
+6. Database (Supabase):
+
+Create two tables:
+
+1. faculty_submissions
+- id (uuid)
+- data (jsonb)
+- created_at (timestamp)
+
+2. student_submissions
+- id
+- name
+- email
+- field1
+- created_at
+
+----------------------------------------
+
+7. Admin Login:
+- Simple login page
+- Use hardcoded password
+- If correct → navigate to /admin
+
+----------------------------------------
+
+8. Admin Dashboard:
+
+- Fetch and display:
+  - All faculty submissions
+  - All student submissions
+
+Faculty:
+- Render JSON dynamically by section
+- Expandable UI for each submission
+
+Student:
+- Display in table format
+
+----------------------------------------
+
+9. Important Rules:
+- Do NOT use file upload
+- Do NOT use approval or pending status
+- Keep everything simple and fast
+- Use modular code structure
+- Use environment variables for Supabase keys
+
+----------------------------------------
+
+10. UI Requirements:
+- Clean modern UI
+- Proper spacing and section separation
+- Responsive design
+
+----------------------------------------
+
+11. Output:
+- Provide complete working frontend and backend code
+- Include folder structure
+- Include setup instructions
+
+----------------------------------------
+
+Goal:
+Create a scalable dynamic form system similar to Google Forms but with custom structured data storage and admin dashboard viewing.

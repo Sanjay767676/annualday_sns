@@ -1,15 +1,20 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Dynamic Form System API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: faculty
+    description: Faculty form submissions
+  - name: student
+    description: Student form submissions
+  - name: admin
+    description: Admin operations
 paths:
   /healthz:
     get:
@@ -24,7 +29,156 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /faculty:
+    post:
+      operationId: submitFacultyForm
+      tags: [faculty]
+      summary: Submit faculty form
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FacultyFormData"
+      responses:
+        "201":
+          description: Faculty form submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /student:
+    post:
+      operationId: submitStudentForm
+      tags: [student]
+      summary: Submit student form
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudentFormData"
+      responses:
+        "201":
+          description: Student form submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/faculty:
+    get:
+      operationId: getAllFacultySubmissions
+      tags: [admin]
+      summary: Get all faculty submissions
+      security:
+        - AdminToken: []
+      responses:
+        "200":
+          description: List of faculty submissions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FacultySubmission"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/student:
+    get:
+      operationId: getAllStudentSubmissions
+      tags: [admin]
+      summary: Get all student submissions
+      security:
+        - AdminToken: []
+      responses:
+        "200":
+          description: List of student submissions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StudentSubmission"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/stats:
+    get:
+      operationId: getAdminStats
+      tags: [admin]
+      summary: Get submission statistics
+      security:
+        - AdminToken: []
+      responses:
+        "200":
+          description: Stats summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStats"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/login:
+    post:
+      operationId: adminLogin
+      tags: [admin]
+      summary: Admin login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminLoginRequest"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminLoginResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
+  securitySchemes:
+    AdminToken:
+      type: apiKey
+      in: header
+      name: x-admin-token
+
   schemas:
     HealthStatus:
       type: object
@@ -34,3 +188,260 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    SubmissionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        message:
+          type: string
+      required:
+        - id
+        - message
+
+    AdminLoginRequest:
+      type: object
+      properties:
+        password:
+          type: string
+      required:
+        - password
+
+    AdminLoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        message:
+          type: string
+      required:
+        - token
+        - message
+
+    AdminStats:
+      type: object
+      properties:
+        totalFacultySubmissions:
+          type: number
+        totalStudentSubmissions:
+          type: number
+        recentFacultySubmissions:
+          type: number
+        recentStudentSubmissions:
+          type: number
+      required:
+        - totalFacultySubmissions
+        - totalStudentSubmissions
+        - recentFacultySubmissions
+        - recentStudentSubmissions
+
+    PaperPublished:
+      type: object
+      properties:
+        facultyName:
+          type: string
+        designation:
+          type: string
+        titleOfPaper:
+          type: string
+        journalType:
+          type: string
+          enum: [Scopus, SCI, WOS, Annexure-1]
+        monthYear:
+          type: string
+      required:
+        - facultyName
+        - designation
+        - titleOfPaper
+        - journalType
+        - monthYear
+
+    BookChapter:
+      type: object
+      properties:
+        name:
+          type: string
+        designation:
+          type: string
+        titleOfBook:
+          type: string
+        publisherIsbn:
+          type: string
+        monthYear:
+          type: string
+      required:
+        - name
+        - designation
+        - titleOfBook
+        - publisherIsbn
+        - monthYear
+
+    PatentGranted:
+      type: object
+      properties:
+        name:
+          type: string
+        designation:
+          type: string
+        titleOfPatent:
+          type: string
+        designProduct:
+          type: string
+        monthYear:
+          type: string
+      required:
+        - name
+        - designation
+        - titleOfPatent
+        - designProduct
+        - monthYear
+
+    SemesterTopper:
+      type: object
+      properties:
+        classBranch:
+          type: string
+        registerNumber:
+          type: string
+        studentName:
+          type: string
+        percentage:
+          type: string
+      required:
+        - classBranch
+        - registerNumber
+        - studentName
+        - percentage
+
+    RemarkableAchievement:
+      type: object
+      properties:
+        studentName:
+          type: string
+        classBranch:
+          type: string
+        achievementDetails:
+          type: string
+      required:
+        - studentName
+        - classBranch
+        - achievementDetails
+
+    PhDAwardee:
+      type: object
+      properties:
+        name:
+          type: string
+        designation:
+          type: string
+        branch:
+          type: string
+        university:
+          type: string
+        year:
+          type: string
+        title:
+          type: string
+      required:
+        - name
+        - designation
+        - branch
+        - university
+        - year
+        - title
+
+    FacultyFormData:
+      type: object
+      properties:
+        papersPublished:
+          type: array
+          items:
+            $ref: "#/components/schemas/PaperPublished"
+        booksChapters:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookChapter"
+        patentsGranted:
+          type: array
+          items:
+            $ref: "#/components/schemas/PatentGranted"
+        semesterToppers:
+          type: array
+          items:
+            $ref: "#/components/schemas/SemesterTopper"
+        remarkableAchievements:
+          type: array
+          items:
+            $ref: "#/components/schemas/RemarkableAchievement"
+        phdAwardees:
+          type: array
+          items:
+            $ref: "#/components/schemas/PhDAwardee"
+      required:
+        - papersPublished
+        - booksChapters
+        - patentsGranted
+        - semesterToppers
+        - remarkableAchievements
+        - phdAwardees
+
+    StudentFormData:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+        email:
+          type: string
+          format: email
+        customField:
+          type: string
+          minLength: 1
+      required:
+        - name
+        - email
+        - customField
+
+    FacultySubmission:
+      type: object
+      properties:
+        id:
+          type: string
+        data:
+          $ref: "#/components/schemas/FacultyFormData"
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - data
+        - createdAt
+
+    StudentSubmission:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        customField:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - email
+        - customField
+        - createdAt
