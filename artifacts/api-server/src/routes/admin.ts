@@ -1,11 +1,11 @@
 import { Router, type Request, type Response } from "express";
-import { db, sql, gte } from "@workspace/db";
-import { facultySubmissionsTable, studentSubmissionsTable } from "@workspace/db/schema";
+import { db, sql, gte } from "../../../../lib/db/src/index.js";
+import { facultySubmissionsTable, studentSubmissionsTable } from "../../../../lib/db/src/schema/index.js";
 import {
   AdminLoginBody,
   AdminLoginResponse,
   GetAdminStatsResponse,
-} from "@workspace/api-zod";
+} from "../../../../lib/api-zod/src/generated/api.js";
 
 const router = Router();
 
