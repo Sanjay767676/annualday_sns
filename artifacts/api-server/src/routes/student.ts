@@ -1,5 +1,6 @@
 import { Router, type Request, type Response } from "express";
-import { db, studentSubmissionsTable, sql } from "@workspace/db";
+import { db, sql } from "@workspace/db";
+import { studentSubmissionsTable } from "@workspace/db/schema";
 import { SubmitStudentFormBody } from "@workspace/api-zod";
 
 const router = Router();

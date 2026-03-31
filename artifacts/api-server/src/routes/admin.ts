@@ -1,5 +1,6 @@
 import { Router, type Request, type Response } from "express";
-import { db, facultySubmissionsTable, studentSubmissionsTable, sql, gte } from "@workspace/db";
+import { db, sql, gte } from "@workspace/db";
+import { facultySubmissionsTable, studentSubmissionsTable } from "@workspace/db/schema";
 import {
   AdminLoginBody,
   AdminLoginResponse,
