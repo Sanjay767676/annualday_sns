@@ -10,23 +10,33 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 
+const ugPgOptions = ["UG", "PG"] as const;
+
 const studentFormSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Please enter a valid email address"),
-  customField: z.string().min(1, "Please provide additional information"),
-  semesterToppers: z.array(z.object({
-    classBranch: z.string().min(1, "Required"),
-    registerNumber: z.string().min(1, "Required"),
+  firstRankHolders: z.array(z.object({
     studentName: z.string().min(1, "Required"),
-    percentage: z.string().min(1, "Required"),
+    yearOfStudy: z.string().min(1, "Required"),
+    ugPg: z.enum(["UG", "PG"]),
+    department: z.string().min(1, "Required"),
+    regNumber: z.string().min(1, "Required"),
+    percentageSecured: z.string().min(1, "Required"),
+  })),
+  semesterWiseRankers: z.array(z.object({
+    studentName: z.string().min(1, "Required"),
+    department: z.string().min(1, "Required"),
+    yearOfStudy: z.string().min(1, "Required"),
+    ugPg: z.enum(["UG", "PG"]),
+    percentageSecured: z.string().min(1, "Required"),
   })),
   remarkableAchievements: z.array(z.object({
     studentName: z.string().min(1, "Required"),
-    classBranch: z.string().min(1, "Required"),
+    department: z.string().min(1, "Required"),
+    yearOfStudy: z.string().min(1, "Required"),
     achievementDetails: z.string().min(1, "Required"),
   })),
 });
@@ -40,16 +50,15 @@ export default function StudentFormPage() {
   const form = useForm<StudentFormValues>({
     resolver: zodResolver(studentFormSchema),
     defaultValues: {
-      name: "",
-      email: "",
-      customField: "",
-      semesterToppers: [{ classBranch: "", registerNumber: "", studentName: "", percentage: "" }],
-      remarkableAchievements: [{ studentName: "", classBranch: "", achievementDetails: "" }],
+      firstRankHolders: [{ studentName: "", yearOfStudy: "", ugPg: "UG", department: "", regNumber: "", percentageSecured: "" }],
+      semesterWiseRankers: [{ studentName: "", department: "", yearOfStudy: "", ugPg: "UG", percentageSecured: "" }],
+      remarkableAchievements: [{ studentName: "", department: "", yearOfStudy: "", achievementDetails: "" }],
     }
   });
 
-  const semesterToppersField = useFieldArray({ control: form.control, name: "semesterToppers" });
-  const remarkableAchievementsField = useFieldArray({ control: form.control, name: "remarkableAchievements" });
+  const firstRankField = useFieldArray({ control: form.control, name: "firstRankHolders" });
+  const semesterWiseField = useFieldArray({ control: form.control, name: "semesterWiseRankers" });
+  const achievementsField = useFieldArray({ control: form.control, name: "remarkableAchievements" });
 
   const submitMutation = useSubmitStudentForm();
 
@@ -100,70 +109,21 @@ export default function StudentFormPage() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
 
-            {/* Basic Details */}
+            {/* Section 1: First Rank Holders */}
             <Card className="shadow-sm">
               <CardHeader className="bg-slate-50 border-b border-slate-100 rounded-t-xl">
-                <CardTitle className="text-xl font-bold text-slate-800">Basic Details</CardTitle>
-                <CardDescription>All fields are required</CardDescription>
-              </CardHeader>
-              <CardContent className="p-6 space-y-5">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Full Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter your full name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email Address</FormLabel>
-                      <FormControl>
-                        <Input type="email" placeholder="student@university.edu" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="customField"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Additional Information</FormLabel>
-                      <FormControl>
-                        <Textarea placeholder="Provide any relevant additional details..." className="min-h-[100px]" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-            </Card>
-
-            {/* Semester Toppers */}
-            <Card className="shadow-sm">
-              <CardHeader className="bg-slate-50 border-b border-slate-100 rounded-t-xl">
-                <CardTitle className="text-xl font-bold text-slate-800">1. Semester Topper</CardTitle>
+                <CardTitle className="text-xl font-bold text-slate-800">1. First rank holder upto Nov/Dec 2025</CardTitle>
               </CardHeader>
               <CardContent className="p-6 space-y-6">
-                {semesterToppersField.fields.map((field, index) => (
+                {firstRankField.fields.map((field, index) => (
                   <div key={field.id} className="relative p-5 bg-white border border-slate-200 rounded-lg shadow-sm">
-                    {semesterToppersField.fields.length > 1 && (
+                    {firstRankField.fields.length > 1 && (
                       <Button
                         type="button"
                         variant="ghost"
                         size="icon"
                         className="absolute top-2 right-2 text-destructive hover:bg-destructive/10"
-                        onClick={() => semesterToppersField.remove(index)}
+                        onClick={() => firstRankField.remove(index)}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -171,10 +131,10 @@ export default function StudentFormPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                       <FormField
                         control={form.control}
-                        name={`semesterToppers.${index}.classBranch`}
+                        name={`firstRankHolders.${index}.studentName`}
                         render={({ field: f }) => (
                           <FormItem>
-                            <FormLabel>Class / Branch</FormLabel>
+                            <FormLabel>Name of the student</FormLabel>
                             <FormControl><Input {...f} /></FormControl>
                             <FormMessage />
                           </FormItem>
@@ -182,10 +142,43 @@ export default function StudentFormPage() {
                       />
                       <FormField
                         control={form.control}
-                        name={`semesterToppers.${index}.registerNumber`}
+                        name={`firstRankHolders.${index}.yearOfStudy`}
                         render={({ field: f }) => (
                           <FormItem>
-                            <FormLabel>Register Number</FormLabel>
+                            <FormLabel>Year of study</FormLabel>
+                            <FormControl><Input placeholder="e.g. II Year" {...f} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`firstRankHolders.${index}.ugPg`}
+                        render={({ field: f }) => (
+                          <FormItem>
+                            <FormLabel>UG / PG</FormLabel>
+                            <Select onValueChange={f.onChange} defaultValue={f.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {ugPgOptions.map(opt => (
+                                  <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`firstRankHolders.${index}.department`}
+                        render={({ field: f }) => (
+                          <FormItem>
+                            <FormLabel>Department</FormLabel>
                             <FormControl><Input {...f} /></FormControl>
                             <FormMessage />
                           </FormItem>
@@ -193,10 +186,10 @@ export default function StudentFormPage() {
                       />
                       <FormField
                         control={form.control}
-                        name={`semesterToppers.${index}.studentName`}
+                        name={`firstRankHolders.${index}.regNumber`}
                         render={({ field: f }) => (
                           <FormItem>
-                            <FormLabel>Student Name</FormLabel>
+                            <FormLabel>Reg number</FormLabel>
                             <FormControl><Input {...f} /></FormControl>
                             <FormMessage />
                           </FormItem>
@@ -204,11 +197,11 @@ export default function StudentFormPage() {
                       />
                       <FormField
                         control={form.control}
-                        name={`semesterToppers.${index}.percentage`}
+                        name={`firstRankHolders.${index}.percentageSecured`}
                         render={({ field: f }) => (
                           <FormItem>
-                            <FormLabel>Percentage / CGPA</FormLabel>
-                            <FormControl><Input {...f} /></FormControl>
+                            <FormLabel>Percentage secured (cumulative from I sem with arrear)</FormLabel>
+                            <FormControl><Input placeholder="e.g. 92.5%" {...f} /></FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -219,30 +212,131 @@ export default function StudentFormPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => semesterToppersField.append({ classBranch: "", registerNumber: "", studentName: "", percentage: "" })}
+                  onClick={() => firstRankField.append({ studentName: "", yearOfStudy: "", ugPg: "UG", department: "", regNumber: "", percentageSecured: "" })}
                   className="w-full border-dashed border-2 hover:bg-slate-50 text-slate-600"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Add More Semester Topper
+                  Add More
                 </Button>
               </CardContent>
             </Card>
 
-            {/* Remarkable Achievements */}
+            {/* Section 2: Semester Wise First Rank Class Wise */}
             <Card className="shadow-sm">
               <CardHeader className="bg-slate-50 border-b border-slate-100 rounded-t-xl">
-                <CardTitle className="text-xl font-bold text-slate-800">2. Remarkable Achievements</CardTitle>
+                <CardTitle className="text-xl font-bold text-slate-800">2. Semester wise first rank class wise</CardTitle>
               </CardHeader>
               <CardContent className="p-6 space-y-6">
-                {remarkableAchievementsField.fields.map((field, index) => (
+                {semesterWiseField.fields.map((field, index) => (
                   <div key={field.id} className="relative p-5 bg-white border border-slate-200 rounded-lg shadow-sm">
-                    {remarkableAchievementsField.fields.length > 1 && (
+                    {semesterWiseField.fields.length > 1 && (
                       <Button
                         type="button"
                         variant="ghost"
                         size="icon"
                         className="absolute top-2 right-2 text-destructive hover:bg-destructive/10"
-                        onClick={() => remarkableAchievementsField.remove(index)}
+                        onClick={() => semesterWiseField.remove(index)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                      <FormField
+                        control={form.control}
+                        name={`semesterWiseRankers.${index}.studentName`}
+                        render={({ field: f }) => (
+                          <FormItem>
+                            <FormLabel>Name of the student</FormLabel>
+                            <FormControl><Input {...f} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`semesterWiseRankers.${index}.department`}
+                        render={({ field: f }) => (
+                          <FormItem>
+                            <FormLabel>Department</FormLabel>
+                            <FormControl><Input {...f} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`semesterWiseRankers.${index}.yearOfStudy`}
+                        render={({ field: f }) => (
+                          <FormItem>
+                            <FormLabel>Year of study</FormLabel>
+                            <FormControl><Input placeholder="e.g. III Year" {...f} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`semesterWiseRankers.${index}.ugPg`}
+                        render={({ field: f }) => (
+                          <FormItem>
+                            <FormLabel>UG / PG</FormLabel>
+                            <Select onValueChange={f.onChange} defaultValue={f.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {ugPgOptions.map(opt => (
+                                  <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`semesterWiseRankers.${index}.percentageSecured`}
+                        render={({ field: f }) => (
+                          <FormItem>
+                            <FormLabel>Percentage secured</FormLabel>
+                            <FormControl><Input placeholder="e.g. 88.3%" {...f} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => semesterWiseField.append({ studentName: "", department: "", yearOfStudy: "", ugPg: "UG", percentageSecured: "" })}
+                  className="w-full border-dashed border-2 hover:bg-slate-50 text-slate-600"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add More
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Section 3: Remarkable Achievements */}
+            <Card className="shadow-sm">
+              <CardHeader className="bg-slate-50 border-b border-slate-100 rounded-t-xl">
+                <CardTitle className="text-xl font-bold text-slate-800">3. Remarkable achievement by student</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 space-y-6">
+                {achievementsField.fields.map((field, index) => (
+                  <div key={field.id} className="relative p-5 bg-white border border-slate-200 rounded-lg shadow-sm">
+                    {achievementsField.fields.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute top-2 right-2 text-destructive hover:bg-destructive/10"
+                        onClick={() => achievementsField.remove(index)}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -253,7 +347,7 @@ export default function StudentFormPage() {
                         name={`remarkableAchievements.${index}.studentName`}
                         render={({ field: f }) => (
                           <FormItem>
-                            <FormLabel>Student Name</FormLabel>
+                            <FormLabel>Name of the student</FormLabel>
                             <FormControl><Input {...f} /></FormControl>
                             <FormMessage />
                           </FormItem>
@@ -261,11 +355,22 @@ export default function StudentFormPage() {
                       />
                       <FormField
                         control={form.control}
-                        name={`remarkableAchievements.${index}.classBranch`}
+                        name={`remarkableAchievements.${index}.department`}
                         render={({ field: f }) => (
                           <FormItem>
-                            <FormLabel>Class / Branch</FormLabel>
+                            <FormLabel>Department</FormLabel>
                             <FormControl><Input {...f} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`remarkableAchievements.${index}.yearOfStudy`}
+                        render={({ field: f }) => (
+                          <FormItem>
+                            <FormLabel>Year of study</FormLabel>
+                            <FormControl><Input placeholder="e.g. IV Year" {...f} /></FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -275,9 +380,9 @@ export default function StudentFormPage() {
                         name={`remarkableAchievements.${index}.achievementDetails`}
                         render={({ field: f }) => (
                           <FormItem className="md:col-span-2">
-                            <FormLabel>Achievement Details</FormLabel>
+                            <FormLabel>List of achievement in detailed</FormLabel>
                             <FormControl>
-                              <Textarea className="min-h-[100px]" {...f} />
+                              <Textarea className="min-h-[120px]" placeholder="Describe the achievement in detail..." {...f} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -289,11 +394,11 @@ export default function StudentFormPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => remarkableAchievementsField.append({ studentName: "", classBranch: "", achievementDetails: "" })}
+                  onClick={() => achievementsField.append({ studentName: "", department: "", yearOfStudy: "", achievementDetails: "" })}
                   className="w-full border-dashed border-2 hover:bg-slate-50 text-slate-600"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Add More Achievement
+                  Add More
                 </Button>
               </CardContent>
             </Card>

@@ -226,43 +226,92 @@ export default function AdminDashboard() {
             <Card className="border-slate-200 shadow-sm">
               <CardHeader className="bg-white border-b border-slate-100">
                 <CardTitle>Student Submissions</CardTitle>
-                <CardDescription>General information records submitted by students.</CardDescription>
+                <CardDescription>Academic achievement records submitted by departments.</CardDescription>
               </CardHeader>
-              <CardContent className="p-0 overflow-x-auto">
-                <Table>
-                  <TableHeader className="bg-slate-50">
-                    <TableRow>
-                      <TableHead className="w-[200px] font-semibold">Student Name</TableHead>
-                      <TableHead className="font-semibold">Email Address</TableHead>
-                      <TableHead className="font-semibold">Additional Info</TableHead>
-                      <TableHead className="text-right font-semibold">Date Submitted</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {studentLoading ? (
-                      <TableRow>
-                        <TableCell colSpan={4} className="text-center py-8 text-slate-500">Loading records...</TableCell>
-                      </TableRow>
-                    ) : studentData?.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={4} className="text-center py-8 text-slate-500">No student submissions yet.</TableCell>
-                      </TableRow>
-                    ) : (
-                      studentData?.map((sub) => (
-                        <TableRow key={sub.id} className="hover:bg-slate-50/50">
-                          <TableCell className="font-medium text-slate-900">{sub.name}</TableCell>
-                          <TableCell className="text-slate-600">{sub.email}</TableCell>
-                          <TableCell className="text-slate-600 max-w-xs truncate" title={sub.customField}>
-                            {sub.customField}
-                          </TableCell>
-                          <TableCell className="text-right text-slate-500">
-                            {new Date(sub.createdAt).toLocaleDateString()}
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
+              <CardContent className="p-0">
+                {studentLoading ? (
+                  <div className="p-8 text-center text-slate-500">Loading records...</div>
+                ) : studentData?.length === 0 ? (
+                  <div className="p-8 text-center text-slate-500">No student submissions yet.</div>
+                ) : (
+                  <Accordion type="multiple" className="w-full">
+                    {studentData?.map((sub, i) => (
+                      <AccordionItem value={`student-${sub.id}`} key={sub.id} className="border-b border-slate-100 last:border-0 px-6">
+                        <AccordionTrigger className="hover:no-underline py-4">
+                          <div className="flex flex-col sm:flex-row sm:items-center w-full text-left gap-2 sm:gap-6 pr-4">
+                            <span className="font-semibold text-slate-900">Submission #{i+1}</span>
+                            <Badge variant="secondary" className="w-fit text-xs bg-slate-100 text-slate-600">
+                              {new Date(sub.createdAt).toLocaleDateString()}
+                            </Badge>
+                            <span className="text-sm text-slate-500 sm:ml-auto">
+                              ID: {sub.id.slice(0,8)}...
+                            </span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="pb-6">
+                          <div className="bg-slate-50 rounded-lg p-5 space-y-8 border border-slate-200/60">
+
+                            {sub.data.firstRankHolders?.length > 0 && (
+                              <div>
+                                <h4 className="font-bold text-slate-800 mb-3 border-b pb-2">First rank holder upto Nov/Dec 2025</h4>
+                                <ul className="space-y-3">
+                                  {sub.data.firstRankHolders.map((r, idx) => (
+                                    <li key={idx} className="bg-white p-3 rounded border border-slate-100 shadow-sm text-sm">
+                                      <div className="font-medium text-slate-900">{r.studentName}</div>
+                                      <div className="text-slate-600 mt-1 grid grid-cols-2 gap-1">
+                                        <span>Dept: {r.department}</span>
+                                        <span>Year: {r.yearOfStudy} ({r.ugPg})</span>
+                                        <span>Reg No: {r.regNumber}</span>
+                                        <span>Percentage: {r.percentageSecured}</span>
+                                      </div>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {sub.data.semesterWiseRankers?.length > 0 && (
+                              <div>
+                                <h4 className="font-bold text-slate-800 mb-3 border-b pb-2">Semester wise first rank class wise</h4>
+                                <ul className="space-y-3">
+                                  {sub.data.semesterWiseRankers.map((r, idx) => (
+                                    <li key={idx} className="bg-white p-3 rounded border border-slate-100 shadow-sm text-sm">
+                                      <div className="font-medium text-slate-900">{r.studentName}</div>
+                                      <div className="text-slate-600 mt-1 grid grid-cols-2 gap-1">
+                                        <span>Dept: {r.department}</span>
+                                        <span>Year: {r.yearOfStudy} ({r.ugPg})</span>
+                                        <span>Percentage: {r.percentageSecured}</span>
+                                      </div>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {sub.data.remarkableAchievements?.length > 0 && (
+                              <div>
+                                <h4 className="font-bold text-slate-800 mb-3 border-b pb-2">Remarkable achievement by student</h4>
+                                <ul className="space-y-3">
+                                  {sub.data.remarkableAchievements.map((a, idx) => (
+                                    <li key={idx} className="bg-white p-3 rounded border border-slate-100 shadow-sm text-sm">
+                                      <div className="font-medium text-slate-900">{a.studentName}</div>
+                                      <div className="text-slate-600 mt-1 grid grid-cols-2 gap-1">
+                                        <span>Dept: {a.department}</span>
+                                        <span>Year: {a.yearOfStudy}</span>
+                                      </div>
+                                      <div className="mt-2 text-slate-700">{a.achievementDetails}</div>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

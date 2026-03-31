@@ -6,9 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface SemesterTopper {
-  classBranch: string;
-  registerNumber: string;
+export interface StudentAchievement {
   studentName: string;
-  percentage: string;
+  department: string;
+  yearOfStudy: string;
+  achievementDetails: string;
 }

@@ -15,15 +15,12 @@ router.post("/student", async (req, res): Promise<void> => {
     return;
   }
 
-  const { name, email, customField, semesterToppers, remarkableAchievements } = parsed.data;
+  const { firstRankHolders, semesterWiseRankers, remarkableAchievements } = parsed.data;
 
   const [submission] = await db
     .insert(studentSubmissionsTable)
     .values({
-      name,
-      email,
-      customField,
-      data: { semesterToppers, remarkableAchievements },
+      data: { firstRankHolders, semesterWiseRankers, remarkableAchievements },
     })
     .returning();
 
@@ -51,11 +48,11 @@ router.get("/admin/student", async (req, res): Promise<void> => {
     const d = (s.data as any) ?? {};
     return {
       id: s.id,
-      name: s.name,
-      email: s.email,
-      customField: s.customField,
-      semesterToppers: d.semesterToppers ?? [],
-      remarkableAchievements: d.remarkableAchievements ?? [],
+      data: {
+        firstRankHolders: d.firstRankHolders ?? [],
+        semesterWiseRankers: d.semesterWiseRankers ?? [],
+        remarkableAchievements: d.remarkableAchievements ?? [],
+      },
       createdAt: s.createdAt,
     };
   });

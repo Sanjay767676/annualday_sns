@@ -68,16 +68,43 @@ export interface PatentGranted {
   monthYear: string;
 }
 
-export interface SemesterTopper {
-  classBranch: string;
-  registerNumber: string;
+export type FirstRankHolderUgPg =
+  (typeof FirstRankHolderUgPg)[keyof typeof FirstRankHolderUgPg];
+
+export const FirstRankHolderUgPg = {
+  UG: "UG",
+  PG: "PG",
+} as const;
+
+export interface FirstRankHolder {
   studentName: string;
-  percentage: string;
+  yearOfStudy: string;
+  ugPg: FirstRankHolderUgPg;
+  department: string;
+  regNumber: string;
+  percentageSecured: string;
 }
 
-export interface RemarkableAchievement {
+export type SemesterWiseRankerUgPg =
+  (typeof SemesterWiseRankerUgPg)[keyof typeof SemesterWiseRankerUgPg];
+
+export const SemesterWiseRankerUgPg = {
+  UG: "UG",
+  PG: "PG",
+} as const;
+
+export interface SemesterWiseRanker {
   studentName: string;
-  classBranch: string;
+  department: string;
+  yearOfStudy: string;
+  ugPg: SemesterWiseRankerUgPg;
+  percentageSecured: string;
+}
+
+export interface StudentAchievement {
+  studentName: string;
+  department: string;
+  yearOfStudy: string;
   achievementDetails: string;
 }
 
@@ -98,13 +125,9 @@ export interface FacultyFormData {
 }
 
 export interface StudentFormData {
-  /** @minLength 2 */
-  name: string;
-  email: string;
-  /** @minLength 1 */
-  customField: string;
-  semesterToppers: SemesterTopper[];
-  remarkableAchievements: RemarkableAchievement[];
+  firstRankHolders: FirstRankHolder[];
+  semesterWiseRankers: SemesterWiseRanker[];
+  remarkableAchievements: StudentAchievement[];
 }
 
 export interface FacultySubmission {
@@ -115,10 +138,6 @@ export interface FacultySubmission {
 
 export interface StudentSubmission {
   id: string;
-  name: string;
-  email: string;
-  customField: string;
-  semesterToppers: SemesterTopper[];
-  remarkableAchievements: RemarkableAchievement[];
+  data: StudentFormData;
   createdAt: string;
 }

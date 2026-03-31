@@ -304,35 +304,66 @@ components:
         - designProduct
         - monthYear
 
-    SemesterTopper:
+    FirstRankHolder:
       type: object
       properties:
-        classBranch:
-          type: string
-        registerNumber:
-          type: string
         studentName:
           type: string
-        percentage:
+        yearOfStudy:
+          type: string
+        ugPg:
+          type: string
+          enum: [UG, PG]
+        department:
+          type: string
+        regNumber:
+          type: string
+        percentageSecured:
           type: string
       required:
-        - classBranch
-        - registerNumber
         - studentName
-        - percentage
+        - yearOfStudy
+        - ugPg
+        - department
+        - regNumber
+        - percentageSecured
 
-    RemarkableAchievement:
+    SemesterWiseRanker:
       type: object
       properties:
         studentName:
           type: string
-        classBranch:
+        department:
+          type: string
+        yearOfStudy:
+          type: string
+        ugPg:
+          type: string
+          enum: [UG, PG]
+        percentageSecured:
+          type: string
+      required:
+        - studentName
+        - department
+        - yearOfStudy
+        - ugPg
+        - percentageSecured
+
+    StudentAchievement:
+      type: object
+      properties:
+        studentName:
+          type: string
+        department:
+          type: string
+        yearOfStudy:
           type: string
         achievementDetails:
           type: string
       required:
         - studentName
-        - classBranch
+        - department
+        - yearOfStudy
         - achievementDetails
 
     PhDAwardee:
@@ -386,28 +417,21 @@ components:
     StudentFormData:
       type: object
       properties:
-        name:
-          type: string
-          minLength: 2
-        email:
-          type: string
-          format: email
-        customField:
-          type: string
-          minLength: 1
-        semesterToppers:
+        firstRankHolders:
           type: array
           items:
-            $ref: "#/components/schemas/SemesterTopper"
+            $ref: "#/components/schemas/FirstRankHolder"
+        semesterWiseRankers:
+          type: array
+          items:
+            $ref: "#/components/schemas/SemesterWiseRanker"
         remarkableAchievements:
           type: array
           items:
-            $ref: "#/components/schemas/RemarkableAchievement"
+            $ref: "#/components/schemas/StudentAchievement"
       required:
-        - name
-        - email
-        - customField
-        - semesterToppers
+        - firstRankHolders
+        - semesterWiseRankers
         - remarkableAchievements
 
     FacultySubmission:
@@ -430,28 +454,12 @@ components:
       properties:
         id:
           type: string
-        name:
-          type: string
-        email:
-          type: string
-        customField:
-          type: string
-        semesterToppers:
-          type: array
-          items:
-            $ref: "#/components/schemas/SemesterTopper"
-        remarkableAchievements:
-          type: array
-          items:
-            $ref: "#/components/schemas/RemarkableAchievement"
+        data:
+          $ref: "#/components/schemas/StudentFormData"
         createdAt:
           type: string
           format: date-time
       required:
         - id
-        - name
-        - email
-        - customField
-        - semesterToppers
-        - remarkableAchievements
+        - data
         - createdAt
