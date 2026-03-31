@@ -27,6 +27,15 @@ export interface AdminLoginResponse {
   message: string;
 }
 
+export type PaginatedDataResponseDataItem = { [key: string]: unknown };
+
+export interface PaginatedDataResponse {
+  data: PaginatedDataResponseDataItem[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 export interface AdminStats {
   totalFacultySubmissions: number;
   totalStudentSubmissions: number;
@@ -141,3 +150,36 @@ export interface StudentSubmission {
   data: StudentFormData;
   createdAt: string;
 }
+
+export type GetAllFacultySubmissionsParams = {
+  type?: GetAllFacultySubmissionsType;
+  search?: string;
+  page?: number;
+  limit?: number;
+};
+
+export type GetAllFacultySubmissionsType =
+  (typeof GetAllFacultySubmissionsType)[keyof typeof GetAllFacultySubmissionsType];
+
+export const GetAllFacultySubmissionsType = {
+  paper: "paper",
+  book: "book",
+  patent: "patent",
+  phd: "phd",
+} as const;
+
+export type GetAllStudentSubmissionsParams = {
+  type?: GetAllStudentSubmissionsType;
+  search?: string;
+  page?: number;
+  limit?: number;
+};
+
+export type GetAllStudentSubmissionsType =
+  (typeof GetAllStudentSubmissionsType)[keyof typeof GetAllStudentSubmissionsType];
+
+export const GetAllStudentSubmissionsType = {
+  firstRank: "firstRank",
+  semesterWise: "semesterWise",
+  achievement: "achievement",
+} as const;

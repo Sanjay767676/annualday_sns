@@ -1,12 +1,16 @@
 import { Router, type IRouter } from "express";
-import { desc } from "drizzle-orm";
+import { desc, sql } from "drizzle-orm";
 import { db, facultySubmissionsTable } from "@workspace/db";
-import {
-  SubmitFacultyFormBody,
-  GetAllFacultySubmissionsResponse,
-} from "@workspace/api-zod";
+import { SubmitFacultyFormBody } from "@workspace/api-zod";
 
 const router: IRouter = Router();
+
+const FACULTY_SECTION_MAP: Record<string, string> = {
+  paper: "papersPublished",
+  book: "booksChapters",
+  patent: "patentsGranted",
+  phd: "phdAwardees",
+};
 
 router.post("/faculty", async (req, res): Promise<void> => {
   const parsed = SubmitFacultyFormBody.safeParse(req.body);
@@ -35,20 +39,38 @@ router.get("/admin/faculty", async (req, res): Promise<void> => {
     return;
   }
 
-  const submissions = await db
-    .select()
-    .from(facultySubmissionsTable)
-    .orderBy(desc(facultySubmissionsTable.createdAt));
+  const type = (req.query.type as string) || "paper";
+  const search = ((req.query.search as string) || "").trim();
+  const page = Math.max(1, parseInt(req.query.page as string) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 10));
+  const section = FACULTY_SECTION_MAP[type] || "papersPublished";
 
-  res.json(
-    GetAllFacultySubmissionsResponse.parse(
-      submissions.map((s) => ({
-        id: s.id,
-        data: s.data,
-        createdAt: s.createdAt,
-      }))
-    )
-  );
+  const submissions = search
+    ? await db
+        .select()
+        .from(facultySubmissionsTable)
+        .where(sql`cast(${facultySubmissionsTable.data} as text) ILIKE ${"%" + search + "%"}`)
+        .orderBy(desc(facultySubmissionsTable.createdAt))
+    : await db
+        .select()
+        .from(facultySubmissionsTable)
+        .orderBy(desc(facultySubmissionsTable.createdAt));
+
+  const allRows: Record<string, unknown>[] = submissions.flatMap((s) => {
+    const d = s.data as Record<string, unknown>;
+    const items = (d[section] as Record<string, unknown>[]) ?? [];
+    return items.map((item) => ({
+      ...item,
+      _submissionId: s.id,
+      _submittedAt: s.createdAt,
+    }));
+  });
+
+  const total = allRows.length;
+  const offset = (page - 1) * limit;
+  const data = allRows.slice(offset, offset + limit);
+
+  res.json({ data, total, page, limit });
 });
 
 export default router;

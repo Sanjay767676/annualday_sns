@@ -92,94 +92,50 @@ export const SubmitStudentFormBody = zod.object({
 });
 
 /**
- * @summary Get all faculty submissions
+ * @summary Get paginated filtered faculty data
  */
-export const GetAllFacultySubmissionsResponseItem = zod.object({
-  id: zod.string(),
-  data: zod.object({
-    papersPublished: zod.array(
-      zod.object({
-        facultyName: zod.string(),
-        designation: zod.string(),
-        titleOfPaper: zod.string(),
-        journalType: zod.enum(["Scopus", "SCI", "WOS", "Annexure-1"]),
-        monthYear: zod.string(),
-      }),
-    ),
-    booksChapters: zod.array(
-      zod.object({
-        name: zod.string(),
-        designation: zod.string(),
-        titleOfBook: zod.string(),
-        publisherIsbn: zod.string(),
-        monthYear: zod.string(),
-      }),
-    ),
-    patentsGranted: zod.array(
-      zod.object({
-        name: zod.string(),
-        designation: zod.string(),
-        titleOfPatent: zod.string(),
-        designProduct: zod.string(),
-        monthYear: zod.string(),
-      }),
-    ),
-    phdAwardees: zod.array(
-      zod.object({
-        name: zod.string(),
-        designation: zod.string(),
-        branch: zod.string(),
-        university: zod.string(),
-        year: zod.string(),
-        title: zod.string(),
-      }),
-    ),
-  }),
-  createdAt: zod.coerce.date(),
+export const getAllFacultySubmissionsQueryTypeDefault = `paper`;
+export const getAllFacultySubmissionsQueryPageDefault = 1;
+export const getAllFacultySubmissionsQueryLimitDefault = 10;
+
+export const GetAllFacultySubmissionsQueryParams = zod.object({
+  type: zod
+    .enum(["paper", "book", "patent", "phd"])
+    .default(getAllFacultySubmissionsQueryTypeDefault),
+  search: zod.coerce.string().optional(),
+  page: zod.coerce.number().default(getAllFacultySubmissionsQueryPageDefault),
+  limit: zod.coerce.number().default(getAllFacultySubmissionsQueryLimitDefault),
 });
-export const GetAllFacultySubmissionsResponse = zod.array(
-  GetAllFacultySubmissionsResponseItem,
-);
+
+export const GetAllFacultySubmissionsResponse = zod.object({
+  data: zod.array(zod.record(zod.string(), zod.unknown())),
+  total: zod.number(),
+  page: zod.number(),
+  limit: zod.number(),
+});
 
 /**
- * @summary Get all student submissions
+ * @summary Get paginated filtered student data
  */
-export const GetAllStudentSubmissionsResponseItem = zod.object({
-  id: zod.string(),
-  data: zod.object({
-    firstRankHolders: zod.array(
-      zod.object({
-        studentName: zod.string(),
-        yearOfStudy: zod.string(),
-        ugPg: zod.enum(["UG", "PG"]),
-        department: zod.string(),
-        regNumber: zod.string(),
-        percentageSecured: zod.string(),
-      }),
-    ),
-    semesterWiseRankers: zod.array(
-      zod.object({
-        studentName: zod.string(),
-        department: zod.string(),
-        yearOfStudy: zod.string(),
-        ugPg: zod.enum(["UG", "PG"]),
-        percentageSecured: zod.string(),
-      }),
-    ),
-    remarkableAchievements: zod.array(
-      zod.object({
-        studentName: zod.string(),
-        department: zod.string(),
-        yearOfStudy: zod.string(),
-        achievementDetails: zod.string(),
-      }),
-    ),
-  }),
-  createdAt: zod.coerce.date(),
+export const getAllStudentSubmissionsQueryTypeDefault = `firstRank`;
+export const getAllStudentSubmissionsQueryPageDefault = 1;
+export const getAllStudentSubmissionsQueryLimitDefault = 10;
+
+export const GetAllStudentSubmissionsQueryParams = zod.object({
+  type: zod
+    .enum(["firstRank", "semesterWise", "achievement"])
+    .default(getAllStudentSubmissionsQueryTypeDefault),
+  search: zod.coerce.string().optional(),
+  page: zod.coerce.number().default(getAllStudentSubmissionsQueryPageDefault),
+  limit: zod.coerce.number().default(getAllStudentSubmissionsQueryLimitDefault),
 });
-export const GetAllStudentSubmissionsResponse = zod.array(
-  GetAllStudentSubmissionsResponseItem,
-);
+
+export const GetAllStudentSubmissionsResponse = zod.object({
+  data: zod.array(zod.record(zod.string(), zod.unknown())),
+  total: zod.number(),
+  page: zod.number(),
+  limit: zod.number(),
+});
 
 /**
  * @summary Get submission statistics

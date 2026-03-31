@@ -1,25 +1,318 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useLocation } from "wouter";
-import { 
-  Building2, LogOut, Users, FileText, Activity, ShieldAlert,
-  ChevronDown
+import { useQuery } from "@tanstack/react-query";
+import * as XLSX from "xlsx";
+import {
+  Building2, LogOut, Users, FileText, Activity,
+  Search, Download, ChevronLeft, ChevronRight, RefreshCw,
 } from "lucide-react";
 
-import { 
-  useGetAdminStats, 
-  useGetAllFacultySubmissions, 
-  useGetAllStudentSubmissions,
-  getGetAdminStatsQueryKey,
-  getGetAllFacultySubmissionsQueryKey,
-  getGetAllStudentSubmissionsQueryKey
-} from "@workspace/api-client-react";
-
+import { useGetAdminStats, getGetAdminStatsQueryKey } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
+
+const PAGE_SIZE = 10;
+const POLL_INTERVAL = 30_000;
+
+type PaginatedResponse = {
+  data: Record<string, unknown>[];
+  total: number;
+  page: number;
+  limit: number;
+};
+
+const FACULTY_FILTERS = [
+  { key: "paper", label: "Papers Published" },
+  { key: "book", label: "Book / Chapter" },
+  { key: "patent", label: "Patent Granted" },
+  { key: "phd", label: "PhD Awardees" },
+] as const;
+
+const STUDENT_FILTERS = [
+  { key: "firstRank", label: "First Rank Holder" },
+  { key: "semesterWise", label: "Semester Wise Rank" },
+  { key: "achievement", label: "Remarkable Achievements" },
+] as const;
+
+const HIDDEN_COLS = new Set(["_submissionId", "_submittedAt"]);
+
+function humanize(key: string): string {
+  return key
+    .replace(/([A-Z])/g, " $1")
+    .replace(/^./, (c) => c.toUpperCase())
+    .trim();
+}
+
+async function fetchData(
+  tab: "faculty" | "student",
+  type: string,
+  search: string,
+  page: number,
+  token: string,
+): Promise<PaginatedResponse> {
+  const url = new URL(`/api/admin/${tab}`, window.location.origin);
+  url.searchParams.set("type", type);
+  url.searchParams.set("page", String(page));
+  url.searchParams.set("limit", String(PAGE_SIZE));
+  if (search) url.searchParams.set("search", search);
+
+  const res = await fetch(url.toString(), {
+    headers: { "x-admin-token": token },
+  });
+  if (!res.ok) throw new Error("Fetch failed");
+  return res.json();
+}
+
+function useDebounce<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(id);
+  }, [value, delay]);
+  return debounced;
+}
+
+function DynamicTable({
+  rows,
+  isLoading,
+}: {
+  rows: Record<string, unknown>[];
+  isLoading: boolean;
+}) {
+  const columns = useMemo(() => {
+    if (!rows.length) return [];
+    return Object.keys(rows[0]).filter((k) => !HIDDEN_COLS.has(k));
+  }, [rows]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-16 text-slate-400">
+        <RefreshCw className="w-5 h-5 animate-spin mr-2" />
+        Loading...
+      </div>
+    );
+  }
+
+  if (!rows.length) {
+    return (
+      <div className="py-16 text-center text-slate-400 text-sm">
+        No records found.
+      </div>
+    );
+  }
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="bg-slate-50 border-b border-slate-200">
+            <th className="px-4 py-3 text-left font-semibold text-slate-500 text-xs uppercase tracking-wide w-8">#</th>
+            {columns.map((col) => (
+              <th
+                key={col}
+                className="px-4 py-3 text-left font-semibold text-slate-500 text-xs uppercase tracking-wide whitespace-nowrap"
+              >
+                {humanize(col)}
+              </th>
+            ))}
+            <th className="px-4 py-3 text-left font-semibold text-slate-500 text-xs uppercase tracking-wide whitespace-nowrap">
+              Submitted
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, i) => (
+            <tr key={i} className="border-b border-slate-100 hover:bg-slate-50/60 transition-colors">
+              <td className="px-4 py-3 text-slate-400 text-xs">{i + 1}</td>
+              {columns.map((col) => (
+                <td key={col} className="px-4 py-3 text-slate-700 max-w-xs">
+                  <span className="line-clamp-3">{String(row[col] ?? "—")}</span>
+                </td>
+              ))}
+              <td className="px-4 py-3 text-slate-500 text-xs whitespace-nowrap">
+                {row._submittedAt
+                  ? new Date(row._submittedAt as string).toLocaleDateString()
+                  : "—"}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function Pagination({
+  page,
+  total,
+  limit,
+  onPageChange,
+}: {
+  page: number;
+  total: number;
+  limit: number;
+  onPageChange: (p: number) => void;
+}) {
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+  return (
+    <div className="flex items-center justify-between px-4 py-3 border-t border-slate-100 bg-slate-50/50">
+      <span className="text-xs text-slate-500">
+        {total === 0 ? "No records" : `${Math.min((page - 1) * limit + 1, total)}–${Math.min(page * limit, total)} of ${total}`}
+      </span>
+      <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={page <= 1}
+          onClick={() => onPageChange(page - 1)}
+          className="h-7 px-2"
+        >
+          <ChevronLeft className="w-3.5 h-3.5" />
+        </Button>
+        <span className="text-xs font-medium text-slate-700 px-1">
+          {page} / {totalPages}
+        </span>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={page >= totalPages}
+          onClick={() => onPageChange(page + 1)}
+          className="h-7 px-2"
+        >
+          <ChevronRight className="w-3.5 h-3.5" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function DataPanel({
+  tab,
+  filters,
+  token,
+}: {
+  tab: "faculty" | "student";
+  filters: readonly { key: string; label: string }[];
+  token: string;
+}) {
+  const [activeType, setActiveType] = useState(filters[0].key);
+  const [searchInput, setSearchInput] = useState("");
+  const [page, setPage] = useState(1);
+  const debouncedSearch = useDebounce(searchInput, 400);
+
+  useEffect(() => { setPage(1); }, [activeType, debouncedSearch]);
+
+  const queryKey = [tab, activeType, debouncedSearch, page];
+  const { data, isLoading, isFetching } = useQuery<PaginatedResponse>({
+    queryKey,
+    queryFn: () => fetchData(tab, activeType, debouncedSearch, page, token),
+    refetchInterval: POLL_INTERVAL,
+    staleTime: 10_000,
+  });
+
+  const rows = data?.data ?? [];
+  const visibleColumns = useMemo(() => {
+    if (!rows.length) return [];
+    return Object.keys(rows[0]).filter((k) => !HIDDEN_COLS.has(k));
+  }, [rows]);
+
+  const handleExport = useCallback(() => {
+    if (!rows.length) return;
+    const activeFilter = filters.find((f) => f.key === activeType);
+    const sheetData = rows.map((row) => {
+      const out: Record<string, string> = {};
+      visibleColumns.forEach((col) => {
+        out[humanize(col)] = String(row[col] ?? "");
+      });
+      out["Submitted"] = row._submittedAt
+        ? new Date(row._submittedAt as string).toLocaleDateString()
+        : "";
+      return out;
+    });
+    const ws = XLSX.utils.json_to_sheet(sheetData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, activeFilter?.label ?? "Data");
+    XLSX.writeFile(wb, `${tab}_${activeType}_page${page}.xlsx`);
+  }, [rows, visibleColumns, tab, activeType, page, filters]);
+
+  return (
+    <div className="space-y-4">
+      {/* Toolbar */}
+      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+        {/* Filter pills */}
+        <div className="flex flex-wrap gap-2">
+          {filters.map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setActiveType(f.key)}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                activeType === f.key
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Search + Export */}
+        <div className="flex gap-2 w-full sm:w-auto">
+          <div className="relative flex-1 sm:w-56">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+            <Input
+              placeholder="Search..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="pl-8 h-8 text-sm"
+            />
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExport}
+            disabled={!rows.length}
+            className="h-8 gap-1.5 text-xs whitespace-nowrap"
+          >
+            <Download className="w-3.5 h-3.5" />
+            Export Excel
+          </Button>
+        </div>
+      </div>
+
+      {/* Table */}
+      <Card className="border-slate-200 shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-white">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-slate-800">
+              {filters.find((f) => f.key === activeType)?.label}
+            </span>
+            {data && (
+              <Badge variant="secondary" className="text-xs bg-slate-100 text-slate-600">
+                {data.total} records
+              </Badge>
+            )}
+          </div>
+          {isFetching && !isLoading && (
+            <RefreshCw className="w-3.5 h-3.5 animate-spin text-slate-400" />
+          )}
+        </div>
+
+        <DynamicTable rows={rows} isLoading={isLoading} />
+
+        <Pagination
+          page={page}
+          total={data?.total ?? 0}
+          limit={PAGE_SIZE}
+          onPageChange={setPage}
+        />
+      </Card>
+    </div>
+  );
+}
 
 export default function AdminDashboard() {
   const [, setLocation] = useLocation();
@@ -34,21 +327,17 @@ export default function AdminDashboard() {
     }
   }, [setLocation]);
 
-  const fetchOpts = token ? { request: { headers: { "x-admin-token": token } } } : { query: { enabled: false } };
+  const fetchOpts = token
+    ? { request: { headers: { "x-admin-token": token } } }
+    : { query: { enabled: false } };
 
   const { data: stats, isLoading: statsLoading } = useGetAdminStats({
-    query: { enabled: !!token, queryKey: getGetAdminStatsQueryKey() },
-    ...fetchOpts
-  });
-
-  const { data: facultyData, isLoading: facultyLoading } = useGetAllFacultySubmissions({
-    query: { enabled: !!token, queryKey: getGetAllFacultySubmissionsQueryKey() },
-    ...fetchOpts
-  });
-
-  const { data: studentData, isLoading: studentLoading } = useGetAllStudentSubmissions({
-    query: { enabled: !!token, queryKey: getGetAllStudentSubmissionsQueryKey() },
-    ...fetchOpts
+    query: {
+      enabled: !!token,
+      queryKey: getGetAdminStatsQueryKey(),
+      refetchInterval: POLL_INTERVAL,
+    },
+    ...fetchOpts,
   });
 
   const handleLogout = () => {
@@ -66,7 +355,12 @@ export default function AdminDashboard() {
             <Building2 className="w-5 h-5 opacity-80" />
             <span>Portal Administration</span>
           </div>
-          <Button variant="ghost" size="sm" onClick={handleLogout} className="text-primary-foreground hover:bg-primary-foreground/10 hover:text-white">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleLogout}
+            className="text-primary-foreground hover:bg-primary-foreground/10 hover:text-white"
+          >
             <LogOut className="w-4 h-4 mr-2" />
             Sign Out
           </Button>
@@ -74,8 +368,7 @@ export default function AdminDashboard() {
       </header>
 
       <main className="flex-1 container mx-auto px-4 sm:px-6 py-8 space-y-8">
-        
-        {/* Stats Section */}
+        {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="border-slate-200 shadow-sm">
             <CardContent className="p-6 flex items-center gap-4">
@@ -83,23 +376,23 @@ export default function AdminDashboard() {
                 <FileText className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-sm font-medium text-slate-500">Total Faculty Submissions</p>
+                <p className="text-sm font-medium text-slate-500">Faculty Submissions</p>
                 <h3 className="text-2xl font-bold text-slate-900">
-                  {statsLoading ? "..." : stats?.totalFacultySubmissions || 0}
+                  {statsLoading ? "..." : stats?.totalFacultySubmissions ?? 0}
                 </h3>
               </div>
             </CardContent>
           </Card>
-          
+
           <Card className="border-slate-200 shadow-sm">
             <CardContent className="p-6 flex items-center gap-4">
               <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
                 <Users className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-sm font-medium text-slate-500">Total Student Submissions</p>
+                <p className="text-sm font-medium text-slate-500">Student Submissions</p>
                 <h3 className="text-2xl font-bold text-slate-900">
-                  {statsLoading ? "..." : stats?.totalStudentSubmissions || 0}
+                  {statsLoading ? "..." : stats?.totalStudentSubmissions ?? 0}
                 </h3>
               </div>
             </CardContent>
@@ -111,212 +404,36 @@ export default function AdminDashboard() {
                 <Activity className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-sm font-medium text-slate-500">Recent Activity</p>
+                <p className="text-sm font-medium text-slate-500">Recent (30 days)</p>
                 <p className="text-sm font-semibold text-slate-900 mt-1">
-                  +{statsLoading ? "..." : stats?.recentFacultySubmissions} Faculty
+                  +{statsLoading ? "..." : stats?.recentFacultySubmissions ?? 0} Faculty
                   <span className="mx-2 text-slate-300">|</span>
-                  +{statsLoading ? "..." : stats?.recentStudentSubmissions} Students
+                  +{statsLoading ? "..." : stats?.recentStudentSubmissions ?? 0} Students
                 </p>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Data Sections */}
+        {/* Tabs */}
         <Tabs defaultValue="faculty" className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-2 bg-slate-200/50 p-1">
-            <TabsTrigger value="faculty" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Faculty Data</TabsTrigger>
-            <TabsTrigger value="student" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Student Data</TabsTrigger>
+          <TabsList className="grid w-full max-w-xs grid-cols-2 bg-slate-200/50 p-1">
+            <TabsTrigger value="faculty" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+              Faculty
+            </TabsTrigger>
+            <TabsTrigger value="student" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+              Student
+            </TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="faculty" className="mt-6">
-            <Card className="border-slate-200 shadow-sm">
-              <CardHeader className="bg-white border-b border-slate-100">
-                <CardTitle>Faculty Submissions</CardTitle>
-                <CardDescription>Comprehensive academic records submitted by department faculty.</CardDescription>
-              </CardHeader>
-              <CardContent className="p-0">
-                {facultyLoading ? (
-                  <div className="p-8 text-center text-slate-500">Loading records...</div>
-                ) : facultyData?.length === 0 ? (
-                  <div className="p-8 text-center text-slate-500">No faculty submissions yet.</div>
-                ) : (
-                  <Accordion type="multiple" className="w-full">
-                    {facultyData?.map((sub, i) => (
-                      <AccordionItem value={`item-${sub.id}`} key={sub.id} className="border-b border-slate-100 last:border-0 px-6">
-                        <AccordionTrigger className="hover:no-underline py-4">
-                          <div className="flex flex-col sm:flex-row sm:items-center w-full text-left gap-2 sm:gap-6 pr-4">
-                            <span className="font-semibold text-slate-900">Submission #{i+1}</span>
-                            <Badge variant="secondary" className="w-fit text-xs bg-slate-100 text-slate-600">
-                              {new Date(sub.createdAt).toLocaleDateString()}
-                            </Badge>
-                            <span className="text-sm text-slate-500 sm:ml-auto">
-                              ID: {sub.id.slice(0,8)}...
-                            </span>
-                          </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="pb-6">
-                          <div className="bg-slate-50 rounded-lg p-5 space-y-8 border border-slate-200/60">
-                            
-                            {sub.data.papersPublished?.length > 0 && (
-                              <div>
-                                <h4 className="font-bold text-slate-800 mb-3 border-b pb-2">Papers Published</h4>
-                                <ul className="space-y-3">
-                                  {sub.data.papersPublished.map((p, idx) => (
-                                    <li key={idx} className="bg-white p-3 rounded border border-slate-100 shadow-sm text-sm">
-                                      <div className="font-medium text-slate-900">{p.titleOfPaper}</div>
-                                      <div className="text-slate-600 mt-1 grid grid-cols-2 gap-1">
-                                        <span>Author: {p.facultyName} ({p.designation})</span>
-                                        <span>Journal: {p.journalType}</span>
-                                        <span>Date: {p.monthYear}</span>
-                                      </div>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-
-                            {sub.data.booksChapters?.length > 0 && (
-                              <div>
-                                <h4 className="font-bold text-slate-800 mb-3 border-b pb-2">Books & Chapters</h4>
-                                <ul className="space-y-3">
-                                  {sub.data.booksChapters.map((b, idx) => (
-                                    <li key={idx} className="bg-white p-3 rounded border border-slate-100 shadow-sm text-sm">
-                                      <div className="font-medium text-slate-900">{b.titleOfBook}</div>
-                                      <div className="text-slate-600 mt-1 grid grid-cols-2 gap-1">
-                                        <span>Author: {b.name} ({b.designation})</span>
-                                        <span>Publisher/ISBN: {b.publisherIsbn}</span>
-                                        <span>Date: {b.monthYear}</span>
-                                      </div>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-
-                            {sub.data.patentsGranted?.length > 0 && (
-                              <div>
-                                <h4 className="font-bold text-slate-800 mb-3 border-b pb-2">Patents Granted</h4>
-                                <ul className="space-y-3">
-                                  {sub.data.patentsGranted.map((p, idx) => (
-                                    <li key={idx} className="bg-white p-3 rounded border border-slate-100 shadow-sm text-sm">
-                                      <div className="font-medium text-slate-900">{p.titleOfPatent}</div>
-                                      <div className="text-slate-600 mt-1 grid grid-cols-2 gap-1">
-                                        <span>Inventor: {p.name} ({p.designation})</span>
-                                        <span>Product: {p.designProduct}</span>
-                                        <span>Date: {p.monthYear}</span>
-                                      </div>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    ))}
-                  </Accordion>
-                )}
-              </CardContent>
-            </Card>
+            <DataPanel tab="faculty" filters={FACULTY_FILTERS} token={token} />
           </TabsContent>
 
           <TabsContent value="student" className="mt-6">
-            <Card className="border-slate-200 shadow-sm">
-              <CardHeader className="bg-white border-b border-slate-100">
-                <CardTitle>Student Submissions</CardTitle>
-                <CardDescription>Academic achievement records submitted by departments.</CardDescription>
-              </CardHeader>
-              <CardContent className="p-0">
-                {studentLoading ? (
-                  <div className="p-8 text-center text-slate-500">Loading records...</div>
-                ) : studentData?.length === 0 ? (
-                  <div className="p-8 text-center text-slate-500">No student submissions yet.</div>
-                ) : (
-                  <Accordion type="multiple" className="w-full">
-                    {studentData?.map((sub, i) => (
-                      <AccordionItem value={`student-${sub.id}`} key={sub.id} className="border-b border-slate-100 last:border-0 px-6">
-                        <AccordionTrigger className="hover:no-underline py-4">
-                          <div className="flex flex-col sm:flex-row sm:items-center w-full text-left gap-2 sm:gap-6 pr-4">
-                            <span className="font-semibold text-slate-900">Submission #{i+1}</span>
-                            <Badge variant="secondary" className="w-fit text-xs bg-slate-100 text-slate-600">
-                              {new Date(sub.createdAt).toLocaleDateString()}
-                            </Badge>
-                            <span className="text-sm text-slate-500 sm:ml-auto">
-                              ID: {sub.id.slice(0,8)}...
-                            </span>
-                          </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="pb-6">
-                          <div className="bg-slate-50 rounded-lg p-5 space-y-8 border border-slate-200/60">
-
-                            {sub.data.firstRankHolders?.length > 0 && (
-                              <div>
-                                <h4 className="font-bold text-slate-800 mb-3 border-b pb-2">First rank holder upto Nov/Dec 2025</h4>
-                                <ul className="space-y-3">
-                                  {sub.data.firstRankHolders.map((r, idx) => (
-                                    <li key={idx} className="bg-white p-3 rounded border border-slate-100 shadow-sm text-sm">
-                                      <div className="font-medium text-slate-900">{r.studentName}</div>
-                                      <div className="text-slate-600 mt-1 grid grid-cols-2 gap-1">
-                                        <span>Dept: {r.department}</span>
-                                        <span>Year: {r.yearOfStudy} ({r.ugPg})</span>
-                                        <span>Reg No: {r.regNumber}</span>
-                                        <span>Percentage: {r.percentageSecured}</span>
-                                      </div>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-
-                            {sub.data.semesterWiseRankers?.length > 0 && (
-                              <div>
-                                <h4 className="font-bold text-slate-800 mb-3 border-b pb-2">Semester wise first rank class wise</h4>
-                                <ul className="space-y-3">
-                                  {sub.data.semesterWiseRankers.map((r, idx) => (
-                                    <li key={idx} className="bg-white p-3 rounded border border-slate-100 shadow-sm text-sm">
-                                      <div className="font-medium text-slate-900">{r.studentName}</div>
-                                      <div className="text-slate-600 mt-1 grid grid-cols-2 gap-1">
-                                        <span>Dept: {r.department}</span>
-                                        <span>Year: {r.yearOfStudy} ({r.ugPg})</span>
-                                        <span>Percentage: {r.percentageSecured}</span>
-                                      </div>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-
-                            {sub.data.remarkableAchievements?.length > 0 && (
-                              <div>
-                                <h4 className="font-bold text-slate-800 mb-3 border-b pb-2">Remarkable achievement by student</h4>
-                                <ul className="space-y-3">
-                                  {sub.data.remarkableAchievements.map((a, idx) => (
-                                    <li key={idx} className="bg-white p-3 rounded border border-slate-100 shadow-sm text-sm">
-                                      <div className="font-medium text-slate-900">{a.studentName}</div>
-                                      <div className="text-slate-600 mt-1 grid grid-cols-2 gap-1">
-                                        <span>Dept: {a.department}</span>
-                                        <span>Year: {a.yearOfStudy}</span>
-                                      </div>
-                                      <div className="mt-2 text-slate-700">{a.achievementDetails}</div>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    ))}
-                  </Accordion>
-                )}
-              </CardContent>
-            </Card>
+            <DataPanel tab="student" filters={STUDENT_FILTERS} token={token} />
           </TabsContent>
         </Tabs>
-
       </main>
     </div>
   );

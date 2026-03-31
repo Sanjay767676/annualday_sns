@@ -84,18 +84,37 @@ paths:
     get:
       operationId: getAllFacultySubmissions
       tags: [admin]
-      summary: Get all faculty submissions
+      summary: Get paginated filtered faculty data
       security:
         - AdminToken: []
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [paper, book, patent, phd]
+            default: paper
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
       responses:
         "200":
-          description: List of faculty submissions
+          description: Paginated faculty section data
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/FacultySubmission"
+                $ref: "#/components/schemas/PaginatedDataResponse"
         "401":
           description: Unauthorized
           content:
@@ -107,18 +126,37 @@ paths:
     get:
       operationId: getAllStudentSubmissions
       tags: [admin]
-      summary: Get all student submissions
+      summary: Get paginated filtered student data
       security:
         - AdminToken: []
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [firstRank, semesterWise, achievement]
+            default: firstRank
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
       responses:
         "200":
-          description: List of student submissions
+          description: Paginated student section data
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/StudentSubmission"
+                $ref: "#/components/schemas/PaginatedDataResponse"
         "401":
           description: Unauthorized
           content:
@@ -225,6 +263,26 @@ components:
       required:
         - token
         - message
+
+    PaginatedDataResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+      required:
+        - data
+        - total
+        - page
+        - limit
 
     AdminStats:
       type: object

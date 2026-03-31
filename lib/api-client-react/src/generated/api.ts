@@ -22,10 +22,11 @@ import type {
   AdminStats,
   ErrorResponse,
   FacultyFormData,
-  FacultySubmission,
+  GetAllFacultySubmissionsParams,
+  GetAllStudentSubmissionsParams,
   HealthStatus,
+  PaginatedDataResponse,
   StudentFormData,
-  StudentSubmission,
   SubmissionResponse,
 } from "./api.schemas";
 
@@ -287,44 +288,68 @@ export const useSubmitStudentForm = <
 };
 
 /**
- * @summary Get all faculty submissions
+ * @summary Get paginated filtered faculty data
  */
-export const getGetAllFacultySubmissionsUrl = () => {
-  return `/api/admin/faculty`;
+export const getGetAllFacultySubmissionsUrl = (
+  params?: GetAllFacultySubmissionsParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/admin/faculty?${stringifiedParams}`
+    : `/api/admin/faculty`;
 };
 
 export const getAllFacultySubmissions = async (
+  params?: GetAllFacultySubmissionsParams,
   options?: RequestInit,
-): Promise<FacultySubmission[]> => {
-  return customFetch<FacultySubmission[]>(getGetAllFacultySubmissionsUrl(), {
-    ...options,
-    method: "GET",
-  });
+): Promise<PaginatedDataResponse> => {
+  return customFetch<PaginatedDataResponse>(
+    getGetAllFacultySubmissionsUrl(params),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
 };
 
-export const getGetAllFacultySubmissionsQueryKey = () => {
-  return [`/api/admin/faculty`] as const;
+export const getGetAllFacultySubmissionsQueryKey = (
+  params?: GetAllFacultySubmissionsParams,
+) => {
+  return [`/api/admin/faculty`, ...(params ? [params] : [])] as const;
 };
 
 export const getGetAllFacultySubmissionsQueryOptions = <
   TData = Awaited<ReturnType<typeof getAllFacultySubmissions>>,
   TError = ErrorType<ErrorResponse>,
->(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getAllFacultySubmissions>>,
-    TError,
-    TData
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}) => {
+>(
+  params?: GetAllFacultySubmissionsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getAllFacultySubmissions>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
   const queryKey =
-    queryOptions?.queryKey ?? getGetAllFacultySubmissionsQueryKey();
+    queryOptions?.queryKey ?? getGetAllFacultySubmissionsQueryKey(params);
 
   const queryFn: QueryFunction<
     Awaited<ReturnType<typeof getAllFacultySubmissions>>
-  > = ({ signal }) => getAllFacultySubmissions({ signal, ...requestOptions });
+  > = ({ signal }) =>
+    getAllFacultySubmissions(params, { signal, ...requestOptions });
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof getAllFacultySubmissions>>,
@@ -339,21 +364,24 @@ export type GetAllFacultySubmissionsQueryResult = NonNullable<
 export type GetAllFacultySubmissionsQueryError = ErrorType<ErrorResponse>;
 
 /**
- * @summary Get all faculty submissions
+ * @summary Get paginated filtered faculty data
  */
 
 export function useGetAllFacultySubmissions<
   TData = Awaited<ReturnType<typeof getAllFacultySubmissions>>,
   TError = ErrorType<ErrorResponse>,
->(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getAllFacultySubmissions>>,
-    TError,
-    TData
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-  const queryOptions = getGetAllFacultySubmissionsQueryOptions(options);
+>(
+  params?: GetAllFacultySubmissionsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getAllFacultySubmissions>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetAllFacultySubmissionsQueryOptions(params, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -363,44 +391,68 @@ export function useGetAllFacultySubmissions<
 }
 
 /**
- * @summary Get all student submissions
+ * @summary Get paginated filtered student data
  */
-export const getGetAllStudentSubmissionsUrl = () => {
-  return `/api/admin/student`;
+export const getGetAllStudentSubmissionsUrl = (
+  params?: GetAllStudentSubmissionsParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/admin/student?${stringifiedParams}`
+    : `/api/admin/student`;
 };
 
 export const getAllStudentSubmissions = async (
+  params?: GetAllStudentSubmissionsParams,
   options?: RequestInit,
-): Promise<StudentSubmission[]> => {
-  return customFetch<StudentSubmission[]>(getGetAllStudentSubmissionsUrl(), {
-    ...options,
-    method: "GET",
-  });
+): Promise<PaginatedDataResponse> => {
+  return customFetch<PaginatedDataResponse>(
+    getGetAllStudentSubmissionsUrl(params),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
 };
 
-export const getGetAllStudentSubmissionsQueryKey = () => {
-  return [`/api/admin/student`] as const;
+export const getGetAllStudentSubmissionsQueryKey = (
+  params?: GetAllStudentSubmissionsParams,
+) => {
+  return [`/api/admin/student`, ...(params ? [params] : [])] as const;
 };
 
 export const getGetAllStudentSubmissionsQueryOptions = <
   TData = Awaited<ReturnType<typeof getAllStudentSubmissions>>,
   TError = ErrorType<ErrorResponse>,
->(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getAllStudentSubmissions>>,
-    TError,
-    TData
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}) => {
+>(
+  params?: GetAllStudentSubmissionsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getAllStudentSubmissions>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
   const queryKey =
-    queryOptions?.queryKey ?? getGetAllStudentSubmissionsQueryKey();
+    queryOptions?.queryKey ?? getGetAllStudentSubmissionsQueryKey(params);
 
   const queryFn: QueryFunction<
     Awaited<ReturnType<typeof getAllStudentSubmissions>>
-  > = ({ signal }) => getAllStudentSubmissions({ signal, ...requestOptions });
+  > = ({ signal }) =>
+    getAllStudentSubmissions(params, { signal, ...requestOptions });
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof getAllStudentSubmissions>>,
@@ -415,21 +467,24 @@ export type GetAllStudentSubmissionsQueryResult = NonNullable<
 export type GetAllStudentSubmissionsQueryError = ErrorType<ErrorResponse>;
 
 /**
- * @summary Get all student submissions
+ * @summary Get paginated filtered student data
  */
 
 export function useGetAllStudentSubmissions<
   TData = Awaited<ReturnType<typeof getAllStudentSubmissions>>,
   TError = ErrorType<ErrorResponse>,
->(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getAllStudentSubmissions>>,
-    TError,
-    TData
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-  const queryOptions = getGetAllStudentSubmissionsQueryOptions(options);
+>(
+  params?: GetAllStudentSubmissionsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getAllStudentSubmissions>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetAllStudentSubmissionsQueryOptions(params, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
