@@ -15,6 +15,7 @@
   },
   "private": true,
   "devDependencies": {
+    "effect": "3.18.4",
     "fast-check": "^3.23.2",
     "typescript": "~5.9.2",
     "prettier": "^3.8.1"
