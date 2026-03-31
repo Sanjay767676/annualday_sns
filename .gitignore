@@ -2,6 +2,8 @@
 
 # compiled output
 dist
+!lib/db/dist
+!lib/api-zod/dist
 tmp
 out-tsc
 *.tsbuildinfo
