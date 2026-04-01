@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { MonthPicker } from "@/components/ui/month-picker";
 import SiteHeader from "@/components/site-header";
 import { FACULTY_DEPARTMENT_OPTIONS, DESIGNATION_OPTIONS, PHD_YEAR_OPTIONS } from "@/lib/form-options";
 
@@ -469,14 +470,11 @@ export default function FacultyFormPage() {
                             </Select>
                           ) : config.type === "month" ? (
                             <FormControl>
-                              <div className="relative">
-                                <Input
-                                  type="month"
-                                  className="h-10 bg-white border-slate-300 pr-10 focus:border-blue-400"
-                                  {...formField}
-                                />
-                                <CalendarDays className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
-                              </div>
+                              <MonthPicker
+                                value={formField.value}
+                                onChange={formField.onChange}
+                                disabled={submitMutation.isPending}
+                              />
                             </FormControl>
                           ) : (
                             <FormControl>
