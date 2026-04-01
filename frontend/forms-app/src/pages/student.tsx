@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { useLocation } from "wouter";
 import { GraduationCap, Plus, Trash2, CheckCircle2 } from "lucide-react";
 
@@ -23,7 +23,7 @@ import {
 } from "@/lib/form-options";
 
 const ugPgOptions = ["UG", "PG"] as const;
-const semesterTopperLabels = ["Odd Semester Wise Topper", "Even Semester Wise Topper"] as const;
+const semesterTopperLabels = ["Even Semester Wise Topper", "Odd Semester Wise Topper"] as const;
 
 type StudentFormValues = {
   firstRankHolders: Array<{
@@ -143,7 +143,9 @@ export default function StudentFormPage() {
   const achievementsField = useFieldArray({ control: form.control, name: "remarkableAchievements" });
 
   const submitMutation = useSubmitStudentForm();
-  const watchedValues = form.watch();
+  const watchedFirstRankHolders = useWatch({ control: form.control, name: "firstRankHolders" }) ?? [];
+  const watchedSemesterWiseRankers = useWatch({ control: form.control, name: "semesterWiseRankers" }) ?? [];
+  const watchedRemarkableAchievements = useWatch({ control: form.control, name: "remarkableAchievements" }) ?? [];
 
   const sectionStatus = useMemo(() => {
     const getStatus = (entries: Record<string, string>[]) => {
@@ -154,9 +156,9 @@ export default function StudentFormPage() {
       };
     };
 
-    const firstRankHolders = getStatus(watchedValues.firstRankHolders);
-    const semesterWiseRankers = getStatus(watchedValues.semesterWiseRankers);
-    const remarkableAchievements = getStatus(watchedValues.remarkableAchievements);
+    const firstRankHolders = getStatus(watchedFirstRankHolders);
+    const semesterWiseRankers = getStatus(watchedSemesterWiseRankers);
+    const remarkableAchievements = getStatus(watchedRemarkableAchievements);
 
     return {
       canSubmit:
@@ -167,7 +169,7 @@ export default function StudentFormPage() {
           (section) => section.hasPartialEntry,
         ),
     };
-  }, [watchedValues]);
+  }, [watchedFirstRankHolders, watchedSemesterWiseRankers, watchedRemarkableAchievements]);
 
   function validateSection<T extends Record<string, string>>(
     sectionName: keyof StudentFormValues,
@@ -414,7 +416,7 @@ export default function StudentFormPage() {
                             <FormMessage className="text-xs" />
                           </FormItem>
                         )} />
-                      {form.watch(`firstRankHolders.${index}.department`) === "others" && (
+                      {watchedFirstRankHolders[index]?.department === "others" && (
                         <FormField control={form.control} name={`firstRankHolders.${index}.departmentOther`}
                           render={({ field: f }) => (
                             <FormItem>
@@ -512,7 +514,7 @@ export default function StudentFormPage() {
                             <FormMessage className="text-xs" />
                           </FormItem>
                         )} />
-                      {form.watch(`semesterWiseRankers.${index}.department`) === "others" && (
+                      {watchedSemesterWiseRankers[index]?.department === "others" && (
                         <FormField control={form.control} name={`semesterWiseRankers.${index}.departmentOther`}
                           render={({ field: f }) => (
                             <FormItem>
@@ -591,7 +593,7 @@ export default function StudentFormPage() {
                             <FormMessage className="text-xs" />
                           </FormItem>
                         )} />
-                      {form.watch(`remarkableAchievements.${index}.department`) === "others" && (
+                      {watchedRemarkableAchievements[index]?.department === "others" && (
                         <FormField control={form.control} name={`remarkableAchievements.${index}.departmentOther`}
                           render={({ field: f }) => (
                             <FormItem>

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { useLocation } from "wouter";
 import { format, parse } from "date-fns";
 import { Plus, Trash2, BookOpen, CheckCircle2, CalendarDays } from "lucide-react";
@@ -188,7 +188,10 @@ export default function FacultyFormPage() {
   });
 
   const submitMutation = useSubmitFacultyForm();
-  const watchedValues = form.watch();
+  const watchedPapersPublished = useWatch({ control: form.control, name: "papersPublished" }) ?? [];
+  const watchedBooksChapters = useWatch({ control: form.control, name: "booksChapters" }) ?? [];
+  const watchedPatentsGranted = useWatch({ control: form.control, name: "patentsGranted" }) ?? [];
+  const watchedPhdAwardees = useWatch({ control: form.control, name: "phdAwardees" }) ?? [];
 
   const sectionStatus = useMemo(() => {
     const getStatus = (entries: Record<string, string>[]) => {
@@ -199,10 +202,10 @@ export default function FacultyFormPage() {
       };
     };
 
-    const papersPublished = getStatus(watchedValues.papersPublished);
-    const booksChapters = getStatus(watchedValues.booksChapters);
-    const patentsGranted = getStatus(watchedValues.patentsGranted);
-    const phdAwardees = getStatus(watchedValues.phdAwardees);
+    const papersPublished = getStatus(watchedPapersPublished);
+    const booksChapters = getStatus(watchedBooksChapters);
+    const patentsGranted = getStatus(watchedPatentsGranted);
+    const phdAwardees = getStatus(watchedPhdAwardees);
 
     return {
       papersPublished,
@@ -217,7 +220,7 @@ export default function FacultyFormPage() {
           (section) => section.hasPartialEntry,
         ),
     };
-  }, [watchedValues]);
+  }, [watchedPapersPublished, watchedBooksChapters, watchedPatentsGranted, watchedPhdAwardees]);
 
   function validateSection<T extends Record<string, string>>(
     sectionName: FacultySectionName,
@@ -436,7 +439,15 @@ export default function FacultyFormPage() {
                 {fieldsConfig.map((config) => (
                   <div key={config.name} className="contents">
                     {(() => {
-                      const selectedValue = (watchedValues[name]?.[index] as Record<string, string> | undefined)?.[config.name];
+                      const watchedSection =
+                        name === "papersPublished"
+                          ? watchedPapersPublished
+                          : name === "booksChapters"
+                            ? watchedBooksChapters
+                            : name === "patentsGranted"
+                              ? watchedPatentsGranted
+                              : watchedPhdAwardees;
+                      const selectedValue = (watchedSection[index] as Record<string, string> | undefined)?.[config.name];
 
                       return (
                         <>

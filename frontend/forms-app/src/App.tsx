@@ -1,20 +1,23 @@
+import { Suspense, lazy } from "react";
 import { Switch, Route, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-import NotFound from "@/pages/not-found";
-import Home from "@/pages/home";
-import FacultyFormPage from "@/pages/faculty";
-import StudentFormPage from "@/pages/student";
-import AdminLoginPage from "@/pages/admin-login";
-import AdminDashboard from "@/pages/admin-dashboard";
+const NotFound = lazy(() => import("@/pages/not-found"));
+const Home = lazy(() => import("@/pages/home"));
+const FacultyFormPage = lazy(() => import("@/pages/faculty"));
+const StudentFormPage = lazy(() => import("@/pages/student"));
+const AdminLoginPage = lazy(() => import("@/pages/admin-login"));
+const AdminDashboard = lazy(() => import("@/pages/admin-dashboard"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: false,
       refetchOnWindowFocus: false,
+      staleTime: 10_000,
+      gcTime: 5 * 60_000,
     },
   },
 });
@@ -36,9 +39,11 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <Router />
-        </WouterRouter>
+        <Suspense fallback={<div className="page-frame py-8 text-sm text-slate-500">Loading...</div>}>
+          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+            <Router />
+          </WouterRouter>
+        </Suspense>
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>

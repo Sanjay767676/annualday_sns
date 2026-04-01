@@ -6,6 +6,8 @@ import router from "./routes/index.js";
 import { logger } from "./lib/logger.js";
 
 const app = express();
+app.disable("x-powered-by");
+app.set("trust proxy", true);
 const QUIET_GET_PATHS = new Set([
   "/api/admin/faculty",
   "/api/admin/student",
@@ -46,8 +48,8 @@ app.use(
   }),
 );
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "128kb" }));
+app.use(express.urlencoded({ extended: true, limit: "128kb" }));
 
 app.use("/api", router);
 
