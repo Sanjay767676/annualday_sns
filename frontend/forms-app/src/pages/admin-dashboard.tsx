@@ -79,12 +79,31 @@ function classBranch(row: Record<string, unknown>, branchKey: "department" | "br
   return dep || left;
 }
 
+function prefixedName(row: Record<string, unknown>, key: "facultyName" | "name"): string {
+  const name = asText(row[key]).trim();
+  const prefix = asText(row.prefix).trim();
+
+  if (!prefix) return name;
+  if (!name) return prefix;
+
+  const normalizedPrefix = prefix.endsWith(".") ? prefix : `${prefix}.`;
+  const lowerName = name.toLowerCase();
+  const lowerPrefix = prefix.toLowerCase();
+  const lowerPrefixDot = normalizedPrefix.toLowerCase();
+
+  if (lowerName.startsWith(lowerPrefixDot) || lowerName.startsWith(`${lowerPrefix} `)) {
+    return name;
+  }
+
+  return `${normalizedPrefix} ${name}`;
+}
+
 const EXPORT_SECTION_CONFIG: Record<TabType, Record<SectionType, ExportSection>> = {
   faculty: {
     paper: {
       title: "Published Papers",
       columns: [
-        { header: "Name of the Faculty", value: (r) => asText(r.facultyName) },
+        { header: "Name of the Faculty", value: (r) => prefixedName(r, "facultyName") },
         { header: "Designation", value: (r) => asText(r.designation) },
         { header: "Department", value: (r) => asText(r.department) },
         { header: "Title of paper published", value: (r) => asText(r.titleOfPaper) },
@@ -95,7 +114,7 @@ const EXPORT_SECTION_CONFIG: Record<TabType, Record<SectionType, ExportSection>>
     book: {
       title: "Books / Book Chapters Published",
       columns: [
-        { header: "Name of the Faculty", value: (r) => asText(r.name) },
+        { header: "Name of the Faculty", value: (r) => prefixedName(r, "name") },
         { header: "Designation", value: (r) => asText(r.designation) },
         { header: "Department", value: (r) => asText(r.department) },
         { header: "Title of Book / Book Chapter published", value: (r) => asText(r.titleOfBook) },
@@ -106,7 +125,7 @@ const EXPORT_SECTION_CONFIG: Record<TabType, Record<SectionType, ExportSection>>
     patent: {
       title: "Patent Granted",
       columns: [
-        { header: "Name of the Faculty", value: (r) => asText(r.name) },
+        { header: "Name of the Faculty", value: (r) => prefixedName(r, "name") },
         { header: "Designation", value: (r) => asText(r.designation) },
         { header: "Department", value: (r) => asText(r.department) },
         { header: "Title of the Patent published", value: (r) => asText(r.titleOfPatent) },
@@ -117,7 +136,7 @@ const EXPORT_SECTION_CONFIG: Record<TabType, Record<SectionType, ExportSection>>
     phd: {
       title: "Ph.D Awardees",
       columns: [
-        { header: "Name of the Faculty", value: (r) => asText(r.name) },
+        { header: "Name of the Faculty", value: (r) => prefixedName(r, "name") },
         { header: "Designation", value: (r) => asText(r.designation) },
         { header: "Department", value: (r) => asText(r.branch) },
         { header: "University", value: (r) => asText(r.university) },
