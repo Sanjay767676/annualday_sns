@@ -11,16 +11,6 @@ import {
 
 const router = Router();
 
-router.use(async (_req, res, next) => {
-  try {
-    await ensureDbReady();
-    next();
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Database initialization failed";
-    res.status(500).json({ error: message });
-  }
-});
-
 const ADMIN_PASSWORDS = new Set(["admin123", "sns123"]);
 
 router.post("/admin/login", async (req: Request, res: Response): Promise<void> => {
@@ -47,6 +37,14 @@ router.post("/admin/login", async (req: Request, res: Response): Promise<void> =
 });
 
 router.get("/admin/stats", async (req: Request, res: Response): Promise<void> => {
+  try {
+    await ensureDbReady();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Database connection failed";
+    res.status(500).json({ error: message });
+    return;
+  }
+
   const token = req.headers["x-admin-token"] as string;
   const envPass = process.env.ADMIN_PASSWORD;
   
