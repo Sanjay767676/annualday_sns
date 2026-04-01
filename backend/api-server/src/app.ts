@@ -52,6 +52,5 @@ app.use(express.json({ limit: "128kb" }));
 app.use(express.urlencoded({ extended: true, limit: "128kb" }));
 
 app.use("/api", router);
-app.use("/", router);
 
 export default app;

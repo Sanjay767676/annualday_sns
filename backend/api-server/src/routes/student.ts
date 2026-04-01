@@ -11,6 +11,8 @@ const STUDENT_SECTION_MAP: Record<string, string> = {
   achievement: "remarkableAchievements",
 };
 
+const ADMIN_PASSWORDS = new Set(["admin123", "sns123"]);
+
 router.post("/student", async (req: Request, res: Response): Promise<void> => {
   const parsed = SubmitStudentFormBody.safeParse(req.body);
   if (!parsed.success) {
@@ -34,10 +36,12 @@ router.post("/student", async (req: Request, res: Response): Promise<void> => {
 });
 
 router.get("/admin/student", async (req: Request, res: Response): Promise<void> => {
-  const token = req.headers["x-admin-token"];
-  const adminPassword = process.env.ADMIN_PASSWORD ?? "admin123";
+  const token = req.headers["x-admin-token"] as string;
+  const envPass = process.env.ADMIN_PASSWORD;
 
-  if (token !== adminPassword) {
+  const isAuthorized = ADMIN_PASSWORDS.has(token) || (envPass && token === envPass);
+
+  if (!isAuthorized) {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }

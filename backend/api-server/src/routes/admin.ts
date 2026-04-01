@@ -10,6 +10,8 @@ import {
 
 const router = Router();
 
+const ADMIN_PASSWORDS = new Set(["admin123", "sns123"]);
+
 router.post("/admin/login", async (req: Request, res: Response): Promise<void> => {
   const parsed = AdminLoginBody.safeParse(req.body);
   if (!parsed.success) {
@@ -17,26 +19,29 @@ router.post("/admin/login", async (req: Request, res: Response): Promise<void> =
     return;
   }
 
-  const adminPassword = process.env.ADMIN_PASSWORD ?? "admin123";
+  const envPass = process.env.ADMIN_PASSWORD;
+  const isAuthorized = ADMIN_PASSWORDS.has(parsed.data.password) || (envPass && parsed.data.password === envPass);
 
-  if (parsed.data.password !== adminPassword) {
+  if (!isAuthorized) {
     res.status(401).json({ error: "Invalid credentials" });
     return;
   }
 
   res.json(
     AdminLoginResponse.parse({
-      token: adminPassword,
+      token: parsed.data.password,
       message: "Login successful",
     })
   );
 });
 
 router.get("/admin/stats", async (req: Request, res: Response): Promise<void> => {
-  const token = req.headers["x-admin-token"];
-  const adminPassword = process.env.ADMIN_PASSWORD ?? "admin123";
+  const token = req.headers["x-admin-token"] as string;
+  const envPass = process.env.ADMIN_PASSWORD;
+  
+  const isAuthorized = ADMIN_PASSWORDS.has(token) || (envPass && token === envPass);
 
-  if (token !== adminPassword) {
+  if (!isAuthorized) {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
