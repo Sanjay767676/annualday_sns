@@ -1,21 +1,10 @@
 import { Router, type Request, type Response } from "express";
 import { randomUUID } from "node:crypto";
 import { db, sql } from "../../../db/src/index.js";
-import { ensureDbReady } from "../lib/ensure-db-ready.js";
 import { studentSubmissionsTable } from "../../../db/src/schema/student_submissions.js";
 import { SubmitStudentFormBody } from "../../../api-zod/src/generated/api.js";
 
 const router = Router();
-
-router.use(async (_req, res, next) => {
-  try {
-    await ensureDbReady();
-    next();
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Database initialization failed";
-    res.status(500).json({ error: message });
-  }
-});
 
 const STUDENT_SECTION_MAP: Record<string, string> = {
   firstRank: "firstRankHolders",

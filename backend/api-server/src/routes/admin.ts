@@ -1,6 +1,5 @@
 import { Router, type Request, type Response } from "express";
 import { db, sql, gte } from "../../../db/src/index.js";
-import { ensureDbReady } from "../lib/ensure-db-ready.js";
 import { facultySubmissionsTable } from "../../../db/src/schema/faculty_submissions.js";
 import { studentSubmissionsTable } from "../../../db/src/schema/student_submissions.js";
 import {
@@ -37,14 +36,6 @@ router.post("/admin/login", async (req: Request, res: Response): Promise<void> =
 });
 
 router.get("/admin/stats", async (req: Request, res: Response): Promise<void> => {
-  try {
-    await ensureDbReady();
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Database connection failed";
-    res.status(500).json({ error: message });
-    return;
-  }
-
   const token = req.headers["x-admin-token"] as string;
   const envPass = process.env.ADMIN_PASSWORD;
   
@@ -55,35 +46,40 @@ router.get("/admin/stats", async (req: Request, res: Response): Promise<void> =>
     return;
   }
 
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  try {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  const [facultyTotal] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(facultySubmissionsTable);
+    const [facultyTotal] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(facultySubmissionsTable);
 
-  const [studentTotal] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(studentSubmissionsTable);
+    const [studentTotal] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(studentSubmissionsTable);
 
-  const [recentFaculty] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(facultySubmissionsTable)
-    .where(gte(facultySubmissionsTable.createdAt, thirtyDaysAgo));
+    const [recentFaculty] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(facultySubmissionsTable)
+      .where(gte(facultySubmissionsTable.createdAt, thirtyDaysAgo));
 
-  const [recentStudent] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(studentSubmissionsTable)
-    .where(gte(studentSubmissionsTable.createdAt, thirtyDaysAgo));
+    const [recentStudent] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(studentSubmissionsTable)
+      .where(gte(studentSubmissionsTable.createdAt, thirtyDaysAgo));
 
-  res.json(
-    GetAdminStatsResponse.parse({
-      totalFacultySubmissions: facultyTotal?.count ?? 0,
-      totalStudentSubmissions: studentTotal?.count ?? 0,
-      recentFacultySubmissions: recentFaculty?.count ?? 0,
-      recentStudentSubmissions: recentStudent?.count ?? 0,
-    })
-  );
+    res.json(
+      GetAdminStatsResponse.parse({
+        totalFacultySubmissions: facultyTotal?.count ?? 0,
+        totalStudentSubmissions: studentTotal?.count ?? 0,
+        recentFacultySubmissions: recentFaculty?.count ?? 0,
+        recentStudentSubmissions: recentStudent?.count ?? 0,
+      })
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Database query failed";
+    res.status(500).json({ error: message });
+  }
 });
 
 export default router;
