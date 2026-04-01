@@ -15,13 +15,14 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import SiteHeader from "@/components/site-header";
-import { DEPARTMENT_OPTIONS, DESIGNATION_OPTIONS } from "@/lib/form-options";
+import { FACULTY_DEPARTMENT_OPTIONS, DESIGNATION_OPTIONS } from "@/lib/form-options";
 
 type FacultyFormValues = {
   papersPublished: Array<{
     facultyName: string;
     designation: string;
     department: string;
+    departmentOther: string;
     titleOfPaper: string;
     journalType: string;
     monthYear: string;
@@ -30,6 +31,7 @@ type FacultyFormValues = {
     name: string;
     designation: string;
     department: string;
+    departmentOther: string;
     titleOfBook: string;
     publisherIsbn: string;
     monthYear: string;
@@ -38,6 +40,7 @@ type FacultyFormValues = {
     name: string;
     designation: string;
     department: string;
+    departmentOther: string;
     titleOfPatent: string;
     designProduct: string;
     monthYear: string;
@@ -46,6 +49,7 @@ type FacultyFormValues = {
     name: string;
     designation: string;
     branch: string;
+    branchOther: string;
     university: string;
     year: string;
     title: string;
@@ -90,6 +94,7 @@ function createEmptyPaper() {
     facultyName: "",
     designation: "",
     department: "",
+    departmentOther: "",
     titleOfPaper: "",
     journalType: "",
     monthYear: "",
@@ -101,6 +106,7 @@ function createEmptyBookChapter() {
     name: "",
     designation: "",
     department: "",
+    departmentOther: "",
     titleOfBook: "",
     publisherIsbn: "",
     monthYear: "",
@@ -112,6 +118,7 @@ function createEmptyPatent() {
     name: "",
     designation: "",
     department: "",
+    departmentOther: "",
     titleOfPatent: "",
     designProduct: "",
     monthYear: "",
@@ -123,6 +130,7 @@ function createEmptyPhdAwardee() {
     name: "",
     designation: "",
     branch: "",
+    branchOther: "",
     university: "",
     year: "",
     title: "",
@@ -138,7 +146,18 @@ function isEntryEmpty(entry: Record<string, string>) {
 }
 
 function isEntryComplete(entry: Record<string, string>) {
-  return Object.values(entry).every((value) => isFilled(value));
+  return Object.entries(entry).every(([key, value]) => {
+    if (key.endsWith("Other")) {
+      const baseField = key.slice(0, -5);
+      return entry[baseField] === "others" ? isFilled(value) : true;
+    }
+
+    return isFilled(value);
+  });
+}
+
+function resolveDepartmentValue(department: string, departmentOther: string) {
+  return department === "others" ? departmentOther.trim() : department;
 }
 
 export default function FacultyFormPage() {
@@ -202,6 +221,14 @@ export default function FacultyFormPage() {
       const missingFields = Object.entries(labels).filter(
         ([key]) => !isFilled(entry[key] ?? ""),
       );
+
+      if (entry.department === "others" && !isFilled(entry.departmentOther ?? "")) {
+        missingFields.push(["departmentOther", "Specify Department"]);
+      }
+
+      if (entry.branch === "others" && !isFilled(entry.branchOther ?? "")) {
+        missingFields.push(["branchOther", "Specify Department"]);
+      }
 
       if (missingFields.length > 0) {
         hasPartialEntry = true;
@@ -295,12 +322,37 @@ export default function FacultyFormPage() {
 
     const payload: FacultyFormData = {
       papersPublished: papersPublished.completedEntries.map((entry) => ({
-        ...entry,
+        facultyName: entry.facultyName,
+        designation: entry.designation,
+        department: resolveDepartmentValue(entry.department, entry.departmentOther),
+        titleOfPaper: entry.titleOfPaper,
         journalType: entry.journalType as PaperPublishedJournalType,
+        monthYear: entry.monthYear,
       })),
-      booksChapters: booksChapters.completedEntries,
-      patentsGranted: patentsGranted.completedEntries,
-      phdAwardees: phdAwardees.completedEntries,
+      booksChapters: booksChapters.completedEntries.map((entry) => ({
+        name: entry.name,
+        designation: entry.designation,
+        department: resolveDepartmentValue(entry.department, entry.departmentOther),
+        titleOfBook: entry.titleOfBook,
+        publisherIsbn: entry.publisherIsbn,
+        monthYear: entry.monthYear,
+      })),
+      patentsGranted: patentsGranted.completedEntries.map((entry) => ({
+        name: entry.name,
+        designation: entry.designation,
+        department: resolveDepartmentValue(entry.department, entry.departmentOther),
+        titleOfPatent: entry.titleOfPatent,
+        designProduct: entry.designProduct,
+        monthYear: entry.monthYear,
+      })),
+      phdAwardees: phdAwardees.completedEntries.map((entry) => ({
+        name: entry.name,
+        designation: entry.designation,
+        branch: resolveDepartmentValue(entry.branch, entry.branchOther),
+        university: entry.university,
+        year: entry.year,
+        title: entry.title,
+      })),
     };
 
     submitMutation.mutate(
@@ -371,40 +423,73 @@ export default function FacultyFormPage() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {fieldsConfig.map((config) => (
-                  <FormField
-                    key={config.name}
-                    control={form.control}
-                    name={`${name}.${index}.${config.name}` as any}
-                    render={({ field: formField }) => (
-                      <FormItem>
-                        <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">
-                          {config.label}
-                        </FormLabel>
-                        {config.type === "select" ? (
-                          <Select
-                            onValueChange={formField.onChange}
-                            value={formField.value || undefined}
-                          >
+                  <div key={config.name} className="contents">
+                    {(() => {
+                      const selectedValue = (watchedValues[name]?.[index] as Record<string, string> | undefined)?.[config.name];
+
+                      return (
+                        <>
+                    <FormField
+                      control={form.control}
+                      name={`${name}.${index}.${config.name}` as any}
+                      render={({ field: formField }) => (
+                        <FormItem>
+                          <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">
+                            {config.label}
+                          </FormLabel>
+                          {config.type === "select" ? (
+                            <Select
+                              onValueChange={(value) => {
+                                formField.onChange(value);
+                                if ((config.name === "department" || config.name === "branch") && value !== "others") {
+                                  const otherFieldName = config.name === "branch" ? "branchOther" : "departmentOther";
+                                  form.setValue(`${name}.${index}.${otherFieldName}` as never, "" as never, { shouldValidate: true });
+                                }
+                              }}
+                              value={formField.value || undefined}
+                            >
+                              <FormControl>
+                                <SelectTrigger className="h-10 bg-white border-slate-300">
+                                  <SelectValue placeholder="Select..." />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {config.options?.map(opt => (
+                                  <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
                             <FormControl>
-                              <SelectTrigger className="h-10 bg-white border-slate-300">
-                                <SelectValue placeholder="Select..." />
-                              </SelectTrigger>
+                              <Input className="h-10 bg-white border-slate-300 focus:border-blue-400" {...formField} />
                             </FormControl>
-                            <SelectContent>
-                              {config.options?.map(opt => (
-                                <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        ) : (
-                          <FormControl>
-                            <Input className="h-10 bg-white border-slate-300 focus:border-blue-400" {...formField} />
-                          </FormControl>
-                        )}
-                        <FormMessage className="text-xs" />
-                      </FormItem>
-                    )}
-                  />
+                          )}
+                          <FormMessage className="text-xs" />
+                        </FormItem>
+                      )}
+                    />
+                    {(config.name === "department" || config.name === "branch") &&
+                      selectedValue === "others" && (
+                        <FormField
+                          control={form.control}
+                          name={`${name}.${index}.${config.name === "branch" ? "branchOther" : "departmentOther"}` as never}
+                          render={({ field: formField }) => (
+                            <FormItem>
+                              <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">
+                                Specify Department
+                              </FormLabel>
+                              <FormControl>
+                                <Input className="h-10 bg-white border-slate-300 focus:border-blue-400" placeholder="Enter department" {...formField} />
+                              </FormControl>
+                              <FormMessage className="text-xs" />
+                            </FormItem>
+                          )}
+                        />
+                      )}
+                        </>
+                      );
+                    })()}
+                  </div>
                 ))}
               </div>
             </div>
@@ -468,7 +553,7 @@ export default function FacultyFormPage() {
             {renderSection(1, "Papers Published", "papersPublished", [
               { name: "facultyName", label: "Faculty Name" },
               { name: "designation", label: "Designation", type: "select", options: DESIGNATION_OPTIONS },
-              { name: "department", label: "Department", type: "select", options: DEPARTMENT_OPTIONS },
+              { name: "department", label: "Department", type: "select", options: FACULTY_DEPARTMENT_OPTIONS },
               { name: "titleOfPaper", label: "Title of Paper" },
               { name: "journalType", label: "Journal Type", type: "select", options: JOURNAL_OPTIONS },
               { name: "monthYear", label: "Month & Year" },
@@ -477,7 +562,7 @@ export default function FacultyFormPage() {
             {renderSection(2, "Book / Book Chapter", "booksChapters", [
               { name: "name", label: "Name" },
               { name: "designation", label: "Designation", type: "select", options: DESIGNATION_OPTIONS },
-              { name: "department", label: "Department", type: "select", options: DEPARTMENT_OPTIONS },
+              { name: "department", label: "Department", type: "select", options: FACULTY_DEPARTMENT_OPTIONS },
               { name: "titleOfBook", label: "Title of Book / Chapter" },
               { name: "publisherIsbn", label: "Publisher & ISBN" },
               { name: "monthYear", label: "Month & Year" },
@@ -486,7 +571,7 @@ export default function FacultyFormPage() {
             {renderSection(3, "Patent Granted", "patentsGranted", [
               { name: "name", label: "Name" },
               { name: "designation", label: "Designation", type: "select", options: DESIGNATION_OPTIONS },
-              { name: "department", label: "Department", type: "select", options: DEPARTMENT_OPTIONS },
+              { name: "department", label: "Department", type: "select", options: FACULTY_DEPARTMENT_OPTIONS },
               { name: "titleOfPatent", label: "Title of Patent" },
               { name: "designProduct", label: "Design / Product" },
               { name: "monthYear", label: "Month & Year" },
@@ -495,7 +580,7 @@ export default function FacultyFormPage() {
             {renderSection(4, "PhD Awardees", "phdAwardees", [
               { name: "name", label: "Name" },
               { name: "designation", label: "Designation", type: "select", options: DESIGNATION_OPTIONS },
-              { name: "branch", label: "Department", type: "select", options: DEPARTMENT_OPTIONS },
+              { name: "branch", label: "Department", type: "select", options: FACULTY_DEPARTMENT_OPTIONS },
               { name: "university", label: "University" },
               { name: "year", label: "Year of Award" },
               { name: "title", label: "Title of Thesis" },

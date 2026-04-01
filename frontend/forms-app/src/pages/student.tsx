@@ -18,11 +18,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import SiteHeader from "@/components/site-header";
 import {
-  DEPARTMENT_OPTIONS,
+  STUDENT_DEPARTMENT_OPTIONS,
   YEAR_OF_STUDY_OPTIONS,
 } from "@/lib/form-options";
 
 const ugPgOptions = ["UG", "PG"] as const;
+const semesterTopperLabels = ["Odd Semester Wise Topper", "Even Semester Wise Topper"] as const;
 
 type StudentFormValues = {
   firstRankHolders: Array<{
@@ -30,12 +31,14 @@ type StudentFormValues = {
     yearOfStudy: string;
     ugPg: string;
     department: string;
+    departmentOther: string;
     regNumber: string;
     percentageSecured: string;
   }>;
   semesterWiseRankers: Array<{
     studentName: string;
     department: string;
+    departmentOther: string;
     yearOfStudy: string;
     ugPg: string;
     percentageSecured: string;
@@ -43,6 +46,7 @@ type StudentFormValues = {
   remarkableAchievements: Array<{
     studentName: string;
     department: string;
+    departmentOther: string;
     yearOfStudy: string;
     achievementDetails: string;
   }>;
@@ -72,6 +76,7 @@ function createEmptyFirstRankHolder() {
     yearOfStudy: "",
     ugPg: "",
     department: "",
+    departmentOther: "",
     regNumber: "",
     percentageSecured: "",
   };
@@ -81,6 +86,7 @@ function createEmptySemesterWiseRanker() {
   return {
     studentName: "",
     department: "",
+    departmentOther: "",
     yearOfStudy: "",
     ugPg: "",
     percentageSecured: "",
@@ -91,6 +97,7 @@ function createEmptyAchievement() {
   return {
     studentName: "",
     department: "",
+    departmentOther: "",
     yearOfStudy: "",
     achievementDetails: "",
   };
@@ -105,7 +112,18 @@ function isEntryEmpty(entry: Record<string, string>) {
 }
 
 function isEntryComplete(entry: Record<string, string>) {
-  return Object.values(entry).every((value) => isFilled(value));
+  return Object.entries(entry).every(([key, value]) => {
+    if (key.endsWith("Other")) {
+      const baseField = key.slice(0, -5);
+      return entry[baseField] === "others" ? isFilled(value) : true;
+    }
+
+    return isFilled(value);
+  });
+}
+
+function resolveDepartmentValue(department: string, departmentOther: string) {
+  return department === "others" ? departmentOther.trim() : department;
 }
 
 export default function StudentFormPage() {
@@ -115,7 +133,7 @@ export default function StudentFormPage() {
   const form = useForm<StudentFormValues>({
     defaultValues: {
       firstRankHolders: [createEmptyFirstRankHolder()],
-      semesterWiseRankers: [createEmptySemesterWiseRanker()],
+      semesterWiseRankers: [createEmptySemesterWiseRanker(), createEmptySemesterWiseRanker()],
       remarkableAchievements: [createEmptyAchievement()],
     },
   });
@@ -167,6 +185,10 @@ export default function StudentFormPage() {
       const missingFields = Object.entries(labels).filter(
         ([key]) => !isFilled(entry[key] ?? ""),
       );
+
+      if (entry.department === "others" && !isFilled(entry.departmentOther ?? "")) {
+        missingFields.push(["departmentOther", "Specify Department"]);
+      }
 
       if (missingFields.length > 0) {
         hasPartialEntry = true;
@@ -246,14 +268,26 @@ export default function StudentFormPage() {
 
     const payload: StudentFormData = {
       firstRankHolders: firstRankHolders.completedEntries.map((entry) => ({
-        ...entry,
+        studentName: entry.studentName,
+        yearOfStudy: entry.yearOfStudy,
         ugPg: entry.ugPg as FirstRankHolderUgPg,
+        department: resolveDepartmentValue(entry.department, entry.departmentOther),
+        regNumber: entry.regNumber,
+        percentageSecured: entry.percentageSecured,
       })),
       semesterWiseRankers: semesterWiseRankers.completedEntries.map((entry) => ({
-        ...entry,
+        studentName: entry.studentName,
+        department: resolveDepartmentValue(entry.department, entry.departmentOther),
+        yearOfStudy: entry.yearOfStudy,
         ugPg: entry.ugPg as SemesterWiseRankerUgPg,
+        percentageSecured: entry.percentageSecured,
       })),
-      remarkableAchievements: remarkableAchievements.completedEntries,
+      remarkableAchievements: remarkableAchievements.completedEntries.map((entry) => ({
+        studentName: entry.studentName,
+        department: resolveDepartmentValue(entry.department, entry.departmentOther),
+        yearOfStudy: entry.yearOfStudy,
+        achievementDetails: entry.achievementDetails,
+      })),
     };
 
     submitMutation.mutate(
@@ -299,11 +333,11 @@ export default function StudentFormPage() {
     );
   };
 
-  const EntryWrapper = ({ index, total, onRemove, children }: { index: number; total: number; onRemove: () => void; children: React.ReactNode }) => (
+  const EntryWrapper = ({ index, total, onRemove, children, label }: { index: number; total: number; onRemove?: () => void; children: React.ReactNode; label?: string }) => (
     <div className="surface-muted p-5">
       <div className="mb-5 flex items-center justify-between">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Entry {index + 1}</span>
-        {total > 1 && (
+        <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">{label ?? `Entry ${index + 1}`}</span>
+        {total > 1 && onRemove && (
           <button
             type="button"
             onClick={onRemove}
@@ -371,13 +405,31 @@ export default function StudentFormPage() {
                         render={({ field: f }) => (
                           <FormItem>
                             <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Department</FormLabel>
-                            <Select onValueChange={f.onChange} value={f.value || undefined}>
+                            <Select
+                              onValueChange={(value) => {
+                                f.onChange(value);
+                                if (value !== "others") {
+                                  form.setValue(`firstRankHolders.${index}.departmentOther`, "", { shouldValidate: true });
+                                }
+                              }}
+                              value={f.value || undefined}
+                            >
                               <FormControl><SelectTrigger className="h-10 bg-white border-slate-300"><SelectValue placeholder="Select department" /></SelectTrigger></FormControl>
-                              <SelectContent>{DEPARTMENT_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                              <SelectContent>{STUDENT_DEPARTMENT_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
                             </Select>
                             <FormMessage className="text-xs" />
                           </FormItem>
                         )} />
+                      {form.watch(`firstRankHolders.${index}.department`) === "others" && (
+                        <FormField control={form.control} name={`firstRankHolders.${index}.departmentOther`}
+                          render={({ field: f }) => (
+                            <FormItem>
+                              <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Specify Department</FormLabel>
+                              <FormControl><Input className="h-10 bg-white border-slate-300 focus:border-indigo-400" placeholder="Enter department" {...f} /></FormControl>
+                              <FormMessage className="text-xs" />
+                            </FormItem>
+                          )} />
+                      )}
                       <FormField control={form.control} name={`firstRankHolders.${index}.yearOfStudy`}
                         render={({ field: f }) => (
                           <FormItem>
@@ -432,7 +484,12 @@ export default function StudentFormPage() {
               <SectionHeader num={2} title="Semester Wise First Rank (Class Wise)" />
               <div className="space-y-4 px-5 py-5 sm:px-6">
                 {semesterWiseField.fields.map((field, index) => (
-                  <EntryWrapper key={field.id} index={index} total={semesterWiseField.fields.length} onRemove={() => semesterWiseField.remove(index)}>
+                  <EntryWrapper
+                    key={field.id}
+                    index={index}
+                    total={semesterWiseField.fields.length}
+                    label={semesterTopperLabels[index] ?? `Entry ${index + 1}`}
+                  >
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField control={form.control} name={`semesterWiseRankers.${index}.studentName`}
                         render={({ field: f }) => (
@@ -446,13 +503,31 @@ export default function StudentFormPage() {
                         render={({ field: f }) => (
                           <FormItem>
                             <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Department</FormLabel>
-                            <Select onValueChange={f.onChange} value={f.value || undefined}>
+                            <Select
+                              onValueChange={(value) => {
+                                f.onChange(value);
+                                if (value !== "others") {
+                                  form.setValue(`semesterWiseRankers.${index}.departmentOther`, "", { shouldValidate: true });
+                                }
+                              }}
+                              value={f.value || undefined}
+                            >
                               <FormControl><SelectTrigger className="h-10 bg-white border-slate-300"><SelectValue placeholder="Select department" /></SelectTrigger></FormControl>
-                              <SelectContent>{DEPARTMENT_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                              <SelectContent>{STUDENT_DEPARTMENT_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
                             </Select>
                             <FormMessage className="text-xs" />
                           </FormItem>
                         )} />
+                      {form.watch(`semesterWiseRankers.${index}.department`) === "others" && (
+                        <FormField control={form.control} name={`semesterWiseRankers.${index}.departmentOther`}
+                          render={({ field: f }) => (
+                            <FormItem>
+                              <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Specify Department</FormLabel>
+                              <FormControl><Input className="h-10 bg-white border-slate-300 focus:border-indigo-400" placeholder="Enter department" {...f} /></FormControl>
+                              <FormMessage className="text-xs" />
+                            </FormItem>
+                          )} />
+                      )}
                       <FormField control={form.control} name={`semesterWiseRankers.${index}.yearOfStudy`}
                         render={({ field: f }) => (
                           <FormItem>
@@ -486,12 +561,6 @@ export default function StudentFormPage() {
                     </div>
                   </EntryWrapper>
                 ))}
-                <button type="button"
-                  onClick={() => semesterWiseField.append(createEmptySemesterWiseRanker())}
-                  className={`flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-3 text-sm font-semibold text-slate-600 transition ${SECTION_COLORS[1].add}`}
-                >
-                  <Plus className="w-4 h-4" />Add Another Entry
-                </button>
               </div>
             </section>
 
@@ -513,13 +582,31 @@ export default function StudentFormPage() {
                         render={({ field: f }) => (
                           <FormItem>
                             <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Department</FormLabel>
-                            <Select onValueChange={f.onChange} value={f.value || undefined}>
+                            <Select
+                              onValueChange={(value) => {
+                                f.onChange(value);
+                                if (value !== "others") {
+                                  form.setValue(`remarkableAchievements.${index}.departmentOther`, "", { shouldValidate: true });
+                                }
+                              }}
+                              value={f.value || undefined}
+                            >
                               <FormControl><SelectTrigger className="h-10 bg-white border-slate-300"><SelectValue placeholder="Select department" /></SelectTrigger></FormControl>
-                              <SelectContent>{DEPARTMENT_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                              <SelectContent>{STUDENT_DEPARTMENT_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
                             </Select>
                             <FormMessage className="text-xs" />
                           </FormItem>
                         )} />
+                      {form.watch(`remarkableAchievements.${index}.department`) === "others" && (
+                        <FormField control={form.control} name={`remarkableAchievements.${index}.departmentOther`}
+                          render={({ field: f }) => (
+                            <FormItem>
+                              <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Specify Department</FormLabel>
+                              <FormControl><Input className="h-10 bg-white border-slate-300 focus:border-pink-400" placeholder="Enter department" {...f} /></FormControl>
+                              <FormMessage className="text-xs" />
+                            </FormItem>
+                          )} />
+                      )}
                       <FormField control={form.control} name={`remarkableAchievements.${index}.yearOfStudy`}
                         render={({ field: f }) => (
                           <FormItem>

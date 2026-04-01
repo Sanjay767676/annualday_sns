@@ -157,19 +157,25 @@
       linear-gradient(180deg, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.7));
     background-attachment: fixed;
   }
+
+  input,
+  textarea,
+  select {
+    @apply text-foreground caret-slate-900;
+  }
 }
 
 @layer components {
   .app-shell {
-    @apply min-h-screen text-foreground;
+    @apply min-h-screen text-foreground overflow-x-hidden;
   }
 
   .page-frame {
-    @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+    @apply mx-auto w-full max-w-6xl px-3 sm:px-6 lg:px-8;
   }
 
   .hero-panel {
-    @apply rounded-[2rem] border border-white/70 bg-white/80 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur;
+    @apply relative z-0 rounded-[1.5rem] sm:rounded-[2rem] border border-white/70 bg-white/80 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur;
   }
 
   .editorial-eyebrow {
@@ -177,10 +183,10 @@
   }
 
   .surface-panel {
-    @apply rounded-[1.5rem] border border-stone-200/80 bg-white/88 shadow-[0_18px_50px_rgba(15,23,42,0.06)] backdrop-blur;
+    @apply relative z-0 rounded-[1.15rem] sm:rounded-[1.5rem] border border-stone-200/80 bg-white/88 shadow-[0_18px_50px_rgba(15,23,42,0.06)] backdrop-blur;
   }
 
   .surface-muted {
-    @apply rounded-[1.25rem] border border-stone-200/70 bg-stone-50/85;
+    @apply relative z-0 rounded-[1rem] sm:rounded-[1.25rem] border border-stone-200/70 bg-stone-50/85;
   }
 }
