@@ -39,7 +39,7 @@ type PaginatedResponse = {
 
 type TabType = "faculty" | "student";
 type FacultyType = "paper" | "book" | "patent" | "phd";
-type StudentType = "firstRank" | "semesterWise" | "achievement" | "reputedInstitution";
+type StudentType = "firstRank" | "semesterWise" | "reputedInstitution";
 type SectionType = FacultyType | StudentType;
 type ExportMode = "filtered" | "all";
 type ExportFormat = "excel" | "pdf";
