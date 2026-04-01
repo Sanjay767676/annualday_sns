@@ -13,7 +13,6 @@ const isMissingRelationError = (message: string) =>
 const STUDENT_SECTION_MAP: Record<string, string> = {
   firstRank: "firstRankHolders",
   semesterWise: "semesterWiseRankers",
-  achievement: "remarkableAchievements",
   reputedInstitution: "reputedInstitutionAchievements",
 };
 
@@ -26,14 +25,14 @@ router.post("/student", async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  const { firstRankHolders, semesterWiseRankers, remarkableAchievements, reputedInstitutionAchievements } = parsed.data;
+  const { firstRankHolders, semesterWiseRankers, reputedInstitutionAchievements } = parsed.data;
 
   try {
     const [submission] = await db
       .insert(studentSubmissionsTable)
       .values({
         id: randomUUID(),
-        data: { firstRankHolders, semesterWiseRankers, remarkableAchievements, reputedInstitutionAchievements },
+        data: { firstRankHolders, semesterWiseRankers, reputedInstitutionAchievements },
       })
       .returning();
 

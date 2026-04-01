@@ -528,10 +528,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/SemesterWiseRanker"
-        remarkableAchievements:
-          type: array
-          items:
-            $ref: "#/components/schemas/StudentAchievement"
         reputedInstitutionAchievements:
           type: array
           items:
@@ -539,7 +535,6 @@ components:
       required:
         - firstRankHolders
         - semesterWiseRankers
-        - remarkableAchievements
         - reputedInstitutionAchievements
 
     FacultySubmission:

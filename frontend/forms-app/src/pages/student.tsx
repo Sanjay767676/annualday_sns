@@ -49,13 +49,6 @@ type StudentFormValues = {
     sgpa: string;
     semester: string;
   }>;
-  remarkableAchievements: Array<{
-    studentName: string;
-    department: string;
-    departmentOther: string;
-    yearOfStudy: string;
-    achievementDetails: string;
-  }>;
   reputedInstitutionAchievements: Array<{
     studentName: string;
     department: string;
@@ -177,16 +170,6 @@ function createEmptySemesterWiseRanker() {
   };
 }
 
-function createEmptyAchievement() {
-  return {
-    studentName: "",
-    department: "",
-    departmentOther: "",
-    yearOfStudy: "",
-    achievementDetails: "",
-  };
-}
-
 function createEmptyReputedInstitutionAchievement() {
   return {
     studentName: "",
@@ -238,20 +221,17 @@ export default function StudentFormPage() {
         createEmptySemesterWiseRanker(),
         createEmptySemesterWiseRanker(),
       ],
-      remarkableAchievements: [createEmptyAchievement()],
       reputedInstitutionAchievements: [createEmptyReputedInstitutionAchievement()],
     },
   });
 
   const firstRankField = useFieldArray({ control: form.control, name: "firstRankHolders" });
   const semesterWiseField = useFieldArray({ control: form.control, name: "semesterWiseRankers" });
-  const achievementsField = useFieldArray({ control: form.control, name: "remarkableAchievements" });
   const reputedInstitutionField = useFieldArray({ control: form.control, name: "reputedInstitutionAchievements" });
 
   const submitMutation = useSubmitStudentForm();
   const watchedFirstRankHolders = useWatch({ control: form.control, name: "firstRankHolders" }) ?? [];
   const watchedSemesterWiseRankers = useWatch({ control: form.control, name: "semesterWiseRankers" }) ?? [];
-  const watchedRemarkableAchievements = useWatch({ control: form.control, name: "remarkableAchievements" }) ?? [];
   const watchedReputedInstitutionAchievements = useWatch({ control: form.control, name: "reputedInstitutionAchievements" }) ?? [];
 
   const sectionStatus = useMemo(() => {
@@ -265,19 +245,18 @@ export default function StudentFormPage() {
 
     const firstRankHolders = getStatus(watchedFirstRankHolders);
     const semesterWiseRankers = getStatus(watchedSemesterWiseRankers);
-    const remarkableAchievements = getStatus(watchedRemarkableAchievements);
     const reputedInstitutionAchievements = getStatus(watchedReputedInstitutionAchievements);
 
     return {
       canSubmit:
-        [firstRankHolders, semesterWiseRankers, remarkableAchievements, reputedInstitutionAchievements].some(
+        [firstRankHolders, semesterWiseRankers, reputedInstitutionAchievements].some(
           (section) => section.hasCompleteEntry,
         ) &&
-        ![firstRankHolders, semesterWiseRankers, remarkableAchievements, reputedInstitutionAchievements].some(
+        ![firstRankHolders, semesterWiseRankers, reputedInstitutionAchievements].some(
           (section) => section.hasPartialEntry,
         ),
     };
-  }, [watchedFirstRankHolders, watchedSemesterWiseRankers, watchedRemarkableAchievements, watchedReputedInstitutionAchievements]);
+  }, [watchedFirstRankHolders, watchedSemesterWiseRankers, watchedReputedInstitutionAchievements]);
 
   function validateSection<T extends Record<string, string>>(
     sectionName: keyof StudentFormValues,
@@ -338,13 +317,6 @@ export default function StudentFormPage() {
       semester: "Semester",
     });
 
-    const remarkableAchievements = validateSection("remarkableAchievements", values.remarkableAchievements, {
-      studentName: "Student Name",
-      department: "Department",
-      yearOfStudy: "Year of Study",
-      achievementDetails: "Achievement Details",
-    });
-
     const reputedInstitutionAchievements = validateSection("reputedInstitutionAchievements", values.reputedInstitutionAchievements, {
       studentName: "Student Name",
       department: "Department",
@@ -397,14 +369,12 @@ export default function StudentFormPage() {
     const hasPartialEntry = [
       firstRankHolders,
       semesterWiseRankers,
-      remarkableAchievements,
       reputedInstitutionAchievements,
     ].some((section) => section.hasPartialEntry);
 
     const hasCompletedSection = [
       firstRankHolders,
       semesterWiseRankers,
-      remarkableAchievements,
       reputedInstitutionAchievements,
     ].some((section) => section.completedEntries.length > 0);
 
@@ -721,82 +691,6 @@ export default function StudentFormPage() {
             <section className="surface-panel overflow-hidden">
               <SectionHeader num={3} title="Remarkable Achievements by Student" />
               <div className="space-y-4 px-5 py-5 sm:px-6">
-                {achievementsField.fields.map((field, index) => (
-                  <EntryWrapper key={field.id} index={index} total={achievementsField.fields.length} onRemove={() => achievementsField.remove(index)}>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField control={form.control} name={`remarkableAchievements.${index}.studentName`}
-                        render={({ field: f }) => (
-                          <FormItem>
-                            <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Student Name</FormLabel>
-                            <FormControl><Input className="h-10 bg-white border-slate-300" {...f} /></FormControl>
-                            <FormMessage className="text-xs" />
-                          </FormItem>
-                        )} />
-                      <FormField control={form.control} name={`remarkableAchievements.${index}.department`}
-                        render={({ field: f }) => (
-                          <FormItem>
-                            <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Department</FormLabel>
-                            <Select
-                              onValueChange={(value) => {
-                                f.onChange(value);
-                                if (value !== "others") {
-                                  form.setValue(`remarkableAchievements.${index}.departmentOther`, "", { shouldValidate: true });
-                                }
-                              }}
-                              value={f.value || undefined}
-                            >
-                              <FormControl><SelectTrigger className="h-10 bg-white border-slate-300"><SelectValue placeholder="Select department" /></SelectTrigger></FormControl>
-                              <SelectContent>{STUDENT_DEPARTMENT_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
-                            </Select>
-                            <FormMessage className="text-xs" />
-                          </FormItem>
-                        )} />
-                      {watchedRemarkableAchievements[index]?.department === "others" && (
-                        <FormField control={form.control} name={`remarkableAchievements.${index}.departmentOther`}
-                          render={({ field: f }) => (
-                            <FormItem>
-                              <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Specify Department</FormLabel>
-                              <FormControl><Input className="h-10 bg-white border-slate-300 focus:border-pink-400" placeholder="Enter department" {...f} /></FormControl>
-                              <FormMessage className="text-xs" />
-                            </FormItem>
-                          )} />
-                      )}
-                      <FormField control={form.control} name={`remarkableAchievements.${index}.yearOfStudy`}
-                        render={({ field: f }) => (
-                          <FormItem>
-                            <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Year of Study</FormLabel>
-                            <Select onValueChange={f.onChange} value={f.value || undefined}>
-                              <FormControl><SelectTrigger className="h-10 bg-white border-slate-300"><SelectValue placeholder="Select year" /></SelectTrigger></FormControl>
-                              <SelectContent>{YEAR_OF_STUDY_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
-                            </Select>
-                            <FormMessage className="text-xs" />
-                          </FormItem>
-                        )} />
-                      <FormField control={form.control} name={`remarkableAchievements.${index}.achievementDetails`}
-                        render={({ field: f }) => (
-                          <FormItem className="md:col-span-2">
-                            <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Achievement Details</FormLabel>
-                            <FormControl>
-                              <Textarea className="min-h-[100px] bg-white border-slate-300 focus:border-pink-400" placeholder="Describe the achievement in detail..." {...f} />
-                            </FormControl>
-                            <FormMessage className="text-xs" />
-                          </FormItem>
-                        )} />
-                    </div>
-                  </EntryWrapper>
-                ))}
-                <button type="button"
-                  onClick={() => achievementsField.append(createEmptyAchievement())}
-                  className={`flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-3 text-sm font-semibold text-slate-600 transition ${SECTION_COLORS[2].add}`}
-                >
-                  <Plus className="w-4 h-4" />Add Achievement Entry
-                </button>
-              </div>
-            </section>
-
-            <section className="surface-panel overflow-hidden">
-              <SectionHeader num={4} title="Achievements in Reputed Institutions / Industries" />
-              <div className="space-y-4 px-5 py-5 sm:px-6">
                 {reputedInstitutionField.fields.map((field, index) => (
                   <EntryWrapper key={field.id} index={index} total={reputedInstitutionField.fields.length} onRemove={() => reputedInstitutionField.remove(index)}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1029,7 +923,7 @@ export default function StudentFormPage() {
                   onClick={() => reputedInstitutionField.append(createEmptyReputedInstitutionAchievement())}
                   className={`flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-3 text-sm font-semibold text-slate-600 transition ${SECTION_COLORS[0].add}`}
                 >
-                  <Plus className="w-4 h-4" />Add Institution / Industry Entry
+                  <Plus className="w-4 h-4" />Add Achievement Entry
                 </button>
               </div>
             </section>

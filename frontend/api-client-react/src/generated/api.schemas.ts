@@ -190,7 +190,6 @@ export interface FacultyFormData {
 export interface StudentFormData {
   firstRankHolders: FirstRankHolder[];
   semesterWiseRankers: SemesterWiseRanker[];
-  remarkableAchievements: StudentAchievement[];
   reputedInstitutionAchievements: ReputedInstitutionAchievement[];
 }
 
