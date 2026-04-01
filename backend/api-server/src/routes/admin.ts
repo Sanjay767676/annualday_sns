@@ -9,6 +9,11 @@ import {
 } from "../../../api-zod/src/generated/api.js";
 
 const router = Router();
+const isMissingRelationError = (message: string) =>
+  message.includes("relation") ||
+  message.includes("does not exist") ||
+  message.includes("faculty_submissions") ||
+  message.includes("student_submissions");
 
 const ADMIN_PASSWORDS = new Set(["admin123", "sns123"]);
 
@@ -78,6 +83,18 @@ router.get("/admin/stats", async (req: Request, res: Response): Promise<void> =>
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Database query failed";
+    if (isMissingRelationError(message.toLowerCase())) {
+      res.json(
+        GetAdminStatsResponse.parse({
+          totalFacultySubmissions: 0,
+          totalStudentSubmissions: 0,
+          recentFacultySubmissions: 0,
+          recentStudentSubmissions: 0,
+        })
+      );
+      return;
+    }
+
     res.status(500).json({ error: message });
   }
 });

@@ -5,6 +5,10 @@ import { facultySubmissionsTable } from "../../../db/src/schema/faculty_submissi
 import { SubmitFacultyFormBody } from "../../../api-zod/src/generated/api.js";
 
 const router = Router();
+const isMissingRelationError = (message: string) =>
+  message.includes("relation") ||
+  message.includes("does not exist") ||
+  message.includes("faculty_submissions");
 
 const FACULTY_SECTION_MAP: Record<string, string> = {
   paper: "papersPublished",
@@ -84,22 +88,31 @@ router.get("/admin/faculty", async (req: Request, res: Response): Promise<void> 
           FROM faculty_submissions fs,
                jsonb_array_elements(fs.data->${sectionSql}) AS elem`;
 
-  const [rowsResult, countQueryResult] = await Promise.all([
-    db.execute(rowsQuery),
-    db.execute(countQuery),
-  ]);
+  try {
+    const [rowsResult, countQueryResult] = await Promise.all([
+      db.execute(rowsQuery),
+      db.execute(countQuery),
+    ]);
 
-  const rows = (rowsResult as unknown as { rows: RowResult[] }).rows ?? (rowsResult as unknown as RowResult[]);
-  const countRows = (countQueryResult as unknown as { rows: CountResult[] }).rows ?? (countQueryResult as unknown as CountResult[]);
+    const rows = (rowsResult as unknown as { rows: RowResult[] }).rows ?? (rowsResult as unknown as RowResult[]);
+    const countRows = (countQueryResult as unknown as { rows: CountResult[] }).rows ?? (countQueryResult as unknown as CountResult[]);
 
-  const total = parseInt(countRows[0]?.count ?? "0", 10);
-  const data = rows.map((r) => ({
-    ...(r.elem as Record<string, unknown>),
-    _submissionId: r.submission_id,
-    _submittedAt: r.submitted_at,
-  }));
+    const total = parseInt(countRows[0]?.count ?? "0", 10);
+    const data = rows.map((r) => ({
+      ...(r.elem as Record<string, unknown>),
+      _submissionId: r.submission_id,
+      _submittedAt: r.submitted_at,
+    }));
 
-  res.json({ data, total, page, limit });
+    res.json({ data, total, page, limit });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Database query failed";
+    if (isMissingRelationError(message.toLowerCase())) {
+      res.json({ data: [], total: 0, page, limit });
+      return;
+    }
+    res.status(500).json({ error: message });
+  }
 });
 
 router.delete("/admin/faculty/:submissionId", async (req: Request, res: Response): Promise<void> => {
