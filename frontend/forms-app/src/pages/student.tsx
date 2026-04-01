@@ -484,7 +484,7 @@ export default function StudentFormPage() {
                       <FormField control={form.control} name={`firstRankHolders.${index}.percentageSecured`}
                         render={({ field: f }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Percentage (cumulative from I sem)</FormLabel>
+                            <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide"> CGPA (cumulative from I sem)</FormLabel>
                             <FormControl><Input className="h-10 bg-white border-slate-300" placeholder="e.g. 9.5%" {...f} /></FormControl>
                             <FormMessage className="text-xs" />
                           </FormItem>

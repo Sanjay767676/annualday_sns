@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { useLocation } from "wouter";
-import { format, parse } from "date-fns";
 import { Plus, Trash2, BookOpen, CheckCircle2, CalendarDays } from "lucide-react";
 
 import {
@@ -15,10 +14,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import SiteHeader from "@/components/site-header";
-import { FACULTY_DEPARTMENT_OPTIONS, DESIGNATION_OPTIONS } from "@/lib/form-options";
+import { FACULTY_DEPARTMENT_OPTIONS, DESIGNATION_OPTIONS, PHD_YEAR_OPTIONS } from "@/lib/form-options";
 
 type FacultyFormValues = {
   papersPublished: Array<{
@@ -91,8 +88,6 @@ const SECTION_COLORS = [
 ];
 
 const JOURNAL_OPTIONS = ["Scopus", "SCI", "WOS", "Annexure-1"] as const;
-const MONTH_PICKER_START = new Date(2020, 0, 1);
-const MONTH_PICKER_END = new Date(2026, 11, 31);
 
 function createEmptyPaper() {
   return {
@@ -163,15 +158,6 @@ function isEntryComplete(entry: Record<string, string>) {
 
 function resolveDepartmentValue(department: string, departmentOther: string) {
   return department === "others" ? departmentOther.trim() : department;
-}
-
-function parseMonthYear(value: string) {
-  if (!value) {
-    return undefined;
-  }
-
-  const parsed = parse(value, "yyyy-MM", new Date());
-  return Number.isNaN(parsed.getTime()) ? undefined : parsed;
 }
 
 export default function FacultyFormPage() {
@@ -483,36 +469,14 @@ export default function FacultyFormPage() {
                             </Select>
                           ) : config.type === "month" ? (
                             <FormControl>
-                              <Popover>
-                                <PopoverTrigger asChild>
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    className="h-10 w-full justify-start border-slate-300 bg-white text-left font-normal hover:bg-white"
-                                  >
-                                    <CalendarDays className="mr-2 h-4 w-4 text-slate-500" />
-                                    {formField.value ? (
-                                      <span>{format(parseMonthYear(formField.value) ?? MONTH_PICKER_END, "MMM yyyy")}</span>
-                                    ) : (
-                                      <span className="text-slate-400">Select month & year</span>
-                                    )}
-                                  </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                  <Calendar
-                                    mode="single"
-                                    captionLayout="dropdown-years"
-                                    startMonth={MONTH_PICKER_START}
-                                    endMonth={MONTH_PICKER_END}
-                                    selected={parseMonthYear(formField.value)}
-                                    defaultMonth={parseMonthYear(formField.value) ?? MONTH_PICKER_END}
-                                    onSelect={(date) => {
-                                      formField.onChange(date ? format(date, "yyyy-MM") : "");
-                                    }}
-                                    disabled={(date) => date < MONTH_PICKER_START || date > MONTH_PICKER_END}
-                                  />
-                                </PopoverContent>
-                              </Popover>
+                              <div className="relative">
+                                <Input
+                                  type="month"
+                                  className="h-10 bg-white border-slate-300 pr-10 focus:border-blue-400"
+                                  {...formField}
+                                />
+                                <CalendarDays className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                              </div>
                             </FormControl>
                           ) : (
                             <FormControl>
@@ -634,7 +598,7 @@ export default function FacultyFormPage() {
               { name: "designation", label: "Designation", type: "select", options: DESIGNATION_OPTIONS },
               { name: "branch", label: "Department", type: "select", options: FACULTY_DEPARTMENT_OPTIONS },
               { name: "university", label: "University" },
-              { name: "year", label: "Year of Award" },
+              { name: "year", label: "Year of Award", type: "select", options: PHD_YEAR_OPTIONS },
               { name: "title", label: "Title of Thesis" },
             ])}
 

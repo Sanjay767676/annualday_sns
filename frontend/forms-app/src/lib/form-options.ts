@@ -37,3 +37,5 @@ export const FACULTY_DEPARTMENT_OPTIONS = [
 ] as const;
 
 export const YEAR_OF_STUDY_OPTIONS = ["I", "II", "III", "IV"] as const;
+
+export const PHD_YEAR_OPTIONS = Array.from({ length: 31 }, (_, i) => (2000 + i).toString()).reverse();
