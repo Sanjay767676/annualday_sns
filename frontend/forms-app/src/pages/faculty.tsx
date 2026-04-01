@@ -23,6 +23,7 @@ import { INDIAN_UNIVERSITIES } from "@/lib/universities";
 
 type FacultyFormValues = {
   papersPublished: Array<{
+    prefix: string;
     facultyName: string;
     designation: string;
     department: string;
@@ -32,6 +33,7 @@ type FacultyFormValues = {
     monthYear: string;
   }>;
   booksChapters: Array<{
+    prefix: string;
     name: string;
     designation: string;
     department: string;
@@ -41,6 +43,7 @@ type FacultyFormValues = {
     monthYear: string;
   }>;
   patentsGranted: Array<{
+    prefix: string;
     name: string;
     designation: string;
     department: string;
@@ -50,6 +53,7 @@ type FacultyFormValues = {
     monthYear: string;
   }>;
   phdAwardees: Array<{
+    prefix: string;
     name: string;
     designation: string;
     branch: string;
@@ -92,9 +96,11 @@ const SECTION_COLORS = [
 ];
 
 const JOURNAL_OPTIONS = ["Scopus", "SCI", "WOS", "Annexure-1"] as const;
+const NAME_PREFIX_OPTIONS = ["Mr", "Mrs", "Ms", "Dr", "Prof"] as const;
 
 function createEmptyPaper() {
   return {
+    prefix: "",
     facultyName: "",
     designation: "",
     department: "",
@@ -107,6 +113,7 @@ function createEmptyPaper() {
 
 function createEmptyBookChapter() {
   return {
+    prefix: "",
     name: "",
     designation: "",
     department: "",
@@ -119,6 +126,7 @@ function createEmptyBookChapter() {
 
 function createEmptyPatent() {
   return {
+    prefix: "",
     name: "",
     designation: "",
     department: "",
@@ -131,6 +139,7 @@ function createEmptyPatent() {
 
 function createEmptyPhdAwardee() {
   return {
+    prefix: "",
     name: "",
     designation: "",
     branch: "",
@@ -162,6 +171,12 @@ function isEntryComplete(entry: Record<string, string>) {
 
 function resolveDepartmentValue(department: string, departmentOther: string) {
   return department === "others" ? departmentOther.trim() : department;
+}
+
+function fullName(prefix: string, name: string) {
+  const cleanPrefix = prefix.trim();
+  const cleanName = name.trim();
+  return cleanPrefix ? `${cleanPrefix}. ${cleanName}` : cleanName;
 }
 
 export default function FacultyFormPage() {
@@ -258,6 +273,7 @@ export default function FacultyFormPage() {
     form.clearErrors();
 
     const papersPublished = validateSection("papersPublished", values.papersPublished, {
+      prefix: "Prefix",
       facultyName: "Faculty Name",
       designation: "Designation",
       department: "Department",
@@ -267,6 +283,7 @@ export default function FacultyFormPage() {
     });
 
     const booksChapters = validateSection("booksChapters", values.booksChapters, {
+      prefix: "Prefix",
       name: "Name",
       designation: "Designation",
       department: "Department",
@@ -276,6 +293,7 @@ export default function FacultyFormPage() {
     });
 
     const patentsGranted = validateSection("patentsGranted", values.patentsGranted, {
+      prefix: "Prefix",
       name: "Name",
       designation: "Designation",
       department: "Department",
@@ -285,6 +303,7 @@ export default function FacultyFormPage() {
     });
 
     const phdAwardees = validateSection("phdAwardees", values.phdAwardees, {
+      prefix: "Prefix",
       name: "Name",
       designation: "Designation",
       branch: "Department",
@@ -329,7 +348,7 @@ export default function FacultyFormPage() {
 
     const payload: FacultyFormData = {
       papersPublished: papersPublished.completedEntries.map((entry) => ({
-        facultyName: entry.facultyName,
+        facultyName: fullName(entry.prefix, entry.facultyName),
         designation: entry.designation,
         department: resolveDepartmentValue(entry.department, entry.departmentOther),
         titleOfPaper: entry.titleOfPaper,
@@ -337,7 +356,7 @@ export default function FacultyFormPage() {
         monthYear: entry.monthYear,
       })),
       booksChapters: booksChapters.completedEntries.map((entry) => ({
-        name: entry.name,
+        name: fullName(entry.prefix, entry.name),
         designation: entry.designation,
         department: resolveDepartmentValue(entry.department, entry.departmentOther),
         titleOfBook: entry.titleOfBook,
@@ -345,7 +364,7 @@ export default function FacultyFormPage() {
         monthYear: entry.monthYear,
       })),
       patentsGranted: patentsGranted.completedEntries.map((entry) => ({
-        name: entry.name,
+        name: fullName(entry.prefix, entry.name),
         designation: entry.designation,
         department: resolveDepartmentValue(entry.department, entry.departmentOther),
         titleOfPatent: entry.titleOfPatent,
@@ -353,7 +372,7 @@ export default function FacultyFormPage() {
         monthYear: entry.monthYear,
       })),
       phdAwardees: phdAwardees.completedEntries.map((entry) => ({
-        name: entry.name,
+        name: fullName(entry.prefix, entry.name),
         designation: entry.designation,
         branch: resolveDepartmentValue(entry.branch, entry.branchOther),
         university: entry.university,
@@ -585,6 +604,7 @@ export default function FacultyFormPage() {
             </section>
 
             {renderSection(1, "Papers Published (Scopus, WoS, SCI, Annexure-1)", "papersPublished", [
+              { name: "prefix", label: "Prefix", type: "select", options: NAME_PREFIX_OPTIONS },
               { name: "facultyName", label: "Faculty Name" },
               { name: "designation", label: "Designation", type: "select", options: DESIGNATION_OPTIONS },
               { name: "department", label: "Department", type: "select", options: FACULTY_DEPARTMENT_OPTIONS },
@@ -594,6 +614,7 @@ export default function FacultyFormPage() {
             ])}
 
             {renderSection(2, "Book / Book Chapter", "booksChapters", [
+              { name: "prefix", label: "Prefix", type: "select", options: NAME_PREFIX_OPTIONS },
               { name: "name", label: "Name" },
               { name: "designation", label: "Designation", type: "select", options: DESIGNATION_OPTIONS },
               { name: "department", label: "Department", type: "select", options: FACULTY_DEPARTMENT_OPTIONS },
@@ -603,6 +624,7 @@ export default function FacultyFormPage() {
             ])}
 
             {renderSection(3, "Patent Granted", "patentsGranted", [
+              { name: "prefix", label: "Prefix", type: "select", options: NAME_PREFIX_OPTIONS },
               { name: "name", label: "Name" },
               { name: "designation", label: "Designation", type: "select", options: DESIGNATION_OPTIONS },
               { name: "department", label: "Department", type: "select", options: FACULTY_DEPARTMENT_OPTIONS },
@@ -612,6 +634,7 @@ export default function FacultyFormPage() {
             ])}
 
             {renderSection(4, "PhD Awardees", "phdAwardees", [
+              { name: "prefix", label: "Prefix", type: "select", options: NAME_PREFIX_OPTIONS },
               { name: "name", label: "Name" },
               { name: "designation", label: "Designation", type: "select", options: DESIGNATION_OPTIONS },
               { name: "branch", label: "Department", type: "select", options: FACULTY_DEPARTMENT_OPTIONS },

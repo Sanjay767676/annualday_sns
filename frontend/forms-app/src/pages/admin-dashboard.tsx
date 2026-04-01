@@ -86,6 +86,7 @@ const EXPORT_SECTION_CONFIG: Record<TabType, Record<SectionType, ExportSection>>
       columns: [
         { header: "Name of the Faculty", value: (r) => asText(r.facultyName) },
         { header: "Designation", value: (r) => asText(r.designation) },
+        { header: "Department", value: (r) => asText(r.department) },
         { header: "Title of paper published", value: (r) => asText(r.titleOfPaper) },
         { header: "Name of the journal", value: (r) => asText(r.journalType) },
         { header: "Month & Year", value: (r) => asText(r.monthYear) },
@@ -96,6 +97,7 @@ const EXPORT_SECTION_CONFIG: Record<TabType, Record<SectionType, ExportSection>>
       columns: [
         { header: "Name of the Faculty", value: (r) => asText(r.name) },
         { header: "Designation", value: (r) => asText(r.designation) },
+        { header: "Department", value: (r) => asText(r.department) },
         { header: "Title of Book / Book Chapter published", value: (r) => asText(r.titleOfBook) },
         { header: "Name of the Publisher & ISBN No", value: (r) => asText(r.publisherIsbn) },
         { header: "Month & Year", value: (r) => asText(r.monthYear) },
@@ -106,6 +108,7 @@ const EXPORT_SECTION_CONFIG: Record<TabType, Record<SectionType, ExportSection>>
       columns: [
         { header: "Name of the Faculty", value: (r) => asText(r.name) },
         { header: "Designation", value: (r) => asText(r.designation) },
+        { header: "Department", value: (r) => asText(r.department) },
         { header: "Title of the Patent published", value: (r) => asText(r.titleOfPatent) },
         { header: "Design/Product", value: (r) => asText(r.designProduct) },
         { header: "Month & Year", value: (r) => asText(r.monthYear) },
@@ -116,7 +119,7 @@ const EXPORT_SECTION_CONFIG: Record<TabType, Record<SectionType, ExportSection>>
       columns: [
         { header: "Name of the Faculty", value: (r) => asText(r.name) },
         { header: "Designation", value: (r) => asText(r.designation) },
-        { header: "Branch", value: (r) => asText(r.branch) },
+        { header: "Department", value: (r) => asText(r.branch) },
         { header: "University", value: (r) => asText(r.university) },
         { header: "Year", value: (r) => asText(r.year) },
         { header: "Title", value: (r) => asText(r.title) },
