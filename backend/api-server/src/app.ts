@@ -54,4 +54,14 @@ app.use(express.urlencoded({ extended: true, limit: "128kb" }));
 app.use("/api", router);
 app.use("/", router);
 
+// Add a fallback for 404 to see what's happening
+app.use((req, res) => {
+  res.status(404).json({
+    error: "Not Found",
+    path: req.url,
+    method: req.method,
+    message: "Route not found in Express app",
+  });
+});
+
 export default app;

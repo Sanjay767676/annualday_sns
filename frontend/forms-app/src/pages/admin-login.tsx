@@ -2,7 +2,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useLocation } from "wouter";
-import { ShieldCheck, Lock, ArrowLeft } from "lucide-react";
+import { ShieldCheck, Lock, ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { useState } from "react";
 
 import { useAdminLogin } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
@@ -19,6 +20,7 @@ const loginSchema = z.object({
 export default function AdminLoginPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -74,15 +76,26 @@ export default function AdminLoginPage() {
                           Password
                         </FormLabel>
                         <FormControl>
-                          <div className="relative">
-                            <Lock className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                          <div className="relative group">
+                            <Lock className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
                             <Input
-                              type="password"
+                              type={showPassword ? "text" : "password"}
                               placeholder="Enter admin password"
-                              className="h-12 rounded-2xl border-stone-300 bg-stone-50 pl-11 shadow-none focus:border-slate-400"
+                              className="h-12 rounded-2xl border-stone-300 bg-stone-50 pl-11 pr-11 shadow-none focus:border-slate-400 focus:bg-white transition-all"
                               autoComplete="current-password"
                               {...field}
                             />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900 transition-colors"
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </button>
                           </div>
                         </FormControl>
                         <FormMessage />
