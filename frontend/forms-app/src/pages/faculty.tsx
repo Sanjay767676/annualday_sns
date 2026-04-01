@@ -575,7 +575,7 @@ export default function FacultyFormPage() {
               </div>
             </section>
 
-            {renderSection(1, "Papers Published", "papersPublished", [
+            {renderSection(1, "Papers Published (Scopus, WoS, SCI, Annexure-1)", "papersPublished", [
               { name: "facultyName", label: "Faculty Name" },
               { name: "designation", label: "Designation", type: "select", options: DESIGNATION_OPTIONS },
               { name: "department", label: "Department", type: "select", options: FACULTY_DEPARTMENT_OPTIONS },

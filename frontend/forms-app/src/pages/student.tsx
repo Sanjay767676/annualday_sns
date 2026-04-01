@@ -25,8 +25,8 @@ import {
 const ugPgOptions = ["UG", "PG"] as const;
 const semesterTopperLabels = ["Even Semester Wise Topper", "Odd Semester Wise Topper"] as const;
 const semesterTopperDescriptions = [
-  "Batch 2024 - II Sem, 2023 - IV Sem, 2022 - VI Sem",
-  "Batch 2024 - III Sem, 2023 - V Sem, 2022 - VII Sem",
+  "Batch 2024 - II Sem, Batch 2023 - IV Sem, Batch 2022 - VI Sem",
+  "Batch 2024 - III Sem, Batch 2023 - V Sem, Batch 2022 - VII Sem",
 ] as const;
 
 type StudentFormValues = {

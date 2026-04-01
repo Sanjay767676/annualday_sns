@@ -12,10 +12,10 @@ export default function Home() {
       <main className="page-frame flex flex-1 items-center py-10 lg:py-16">
         <section className="surface-panel w-full px-6 py-8 sm:px-8 sm:py-10">
           <h1 className="text-2xl font-semibold tracking-[-0.03em] text-slate-950 sm:text-3xl">
-            Academic Submission Portal
+            Annual Day Data Collection Portal
           </h1>
           <p className="mt-2 text-sm text-slate-600">
-            Choose a form to continue.
+            Certification And Prize Distribution Committee
           </p>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
