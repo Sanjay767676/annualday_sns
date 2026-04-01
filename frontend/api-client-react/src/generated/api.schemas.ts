@@ -128,14 +128,47 @@ export const ReputedInstitutionAchievementPrizeWon = {
   Runner: "Runner",
 } as const;
 
+export const ReputedInstitutionAchievementEventType = {
+  hackathon: "hackathon",
+  "patent published": "patent published",
+  "paper published": "paper published",
+  "E Kart": "E Kart",
+  "Go J Kart": "Go J Kart",
+} as const;
+
+export type ReputedInstitutionAchievementEventType =
+  (typeof ReputedInstitutionAchievementEventType)[keyof typeof ReputedInstitutionAchievementEventType];
+
+export const ReputedInstitutionAchievementPaperType = {
+  SCI: "SCI",
+  WOS: "WOS",
+  Scopus: "Scopus",
+  "Annexture -1": "Annexture -1",
+} as const;
+
+export type ReputedInstitutionAchievementPaperType =
+  (typeof ReputedInstitutionAchievementPaperType)[keyof typeof ReputedInstitutionAchievementPaperType];
+
+export const ReputedInstitutionAchievementDesignProduct = {
+  Design: "Design",
+  Product: "Product",
+} as const;
+
+export type ReputedInstitutionAchievementDesignProduct =
+  (typeof ReputedInstitutionAchievementDesignProduct)[keyof typeof ReputedInstitutionAchievementDesignProduct];
+
 export interface ReputedInstitutionAchievement {
   studentName: string;
   department: string;
   yearOfStudy: string;
-  institutionIndustry: string;
-  institutionName: string;
-  prizeWon: ReputedInstitutionAchievementPrizeWon;
-  proofLink: string;
+  eventType: ReputedInstitutionAchievementEventType;
+  paperType?: ReputedInstitutionAchievementPaperType;
+  designProduct?: ReputedInstitutionAchievementDesignProduct;
+  dateOfPublished?: string;
+  institutionIndustry?: string;
+  institutionName?: string;
+  prizeWon?: ReputedInstitutionAchievementPrizeWon;
+  proofLink?: string;
 }
 
 export interface PhDAwardee {

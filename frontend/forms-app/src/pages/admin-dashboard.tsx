@@ -56,14 +56,13 @@ const FACULTY_FILTERS = [
 const STUDENT_FILTERS = [
   { key: "firstRank", label: "First Rank Holder" },
   { key: "semesterWise", label: "Semester Wise Rank" },
-  { key: "achievement", label: "Remarkable Achievements" },
-  { key: "reputedInstitution", label: "Reputed Institution / Industry" },
+  { key: "reputedInstitution", label: "Remarkable Achievements" },
 ] as const;
 
 const HIDDEN_COLS = new Set(["_submissionId", "_submittedAt"]);
 
 const FACULTY_FILTER_ORDER: FacultyType[] = ["paper", "book", "patent", "phd"];
-const STUDENT_FILTER_ORDER: StudentType[] = ["firstRank", "semesterWise", "achievement", "reputedInstitution"];
+const STUDENT_FILTER_ORDER: StudentType[] = ["firstRank", "semesterWise", "reputedInstitution"];
 
 function asText(value: unknown): string {
   if (value === null || value === undefined) return "";
@@ -147,7 +146,6 @@ const EXPORT_SECTION_CONFIG: Record<TabType, Record<SectionType, ExportSection>>
     },
     firstRank: { title: "", columns: [] },
     semesterWise: { title: "", columns: [] },
-    achievement: { title: "", columns: [] },
     reputedInstitution: { title: "", columns: [] },
   },
   student: {
@@ -169,22 +167,21 @@ const EXPORT_SECTION_CONFIG: Record<TabType, Record<SectionType, ExportSection>>
         { header: "Percentage secured", value: (r) => asText(r.sgpa) },
       ],
     },
-    achievement: {
-      title: "Students with remarkable Achievements",
-      columns: [
-        { header: "Name of the Student", value: (r) => asText(r.studentName) },
-        { header: "Class/Branch", value: (r) => classBranch(r) },
-        { header: "List of achievements and details", value: (r) => asText(r.achievementDetails) },
-      ],
-    },
     reputedInstitution: {
-      title: "Students in Reputed Institutions / Industries",
+      title: "Remarkable Achievements (Reputed Institutions / Industries)",
       columns: [
         { header: "Name of the Student", value: (r) => asText(r.studentName) },
         { header: "Class/Branch", value: (r) => classBranch(r) },
-        { header: "Institution/Industry Category", value: (r) => asText(r.institutionIndustry) },
-        { header: "Name of Institution/Industry", value: (r) => asText(r.institutionName) },
-        { header: "Prize Won", value: (r) => asText(r.prizeWon) },
+        { header: "Event Type", value: (r) => asText(r.eventType) },
+        { header: "Details", value: (r) => {
+          if (r.eventType === "paper published") {
+            return `Paper: ${asText(r.paperType)}, Date: ${asText(r.dateOfPublished)}`;
+          }
+          if (r.eventType === "patent published") {
+            return `Type: ${asText(r.designProduct)}, Date: ${asText(r.dateOfPublished)}`;
+          }
+          return `Inst: ${asText(r.institutionName)}, Prize: ${asText(r.prizeWon)}`;
+        }},
         { header: "Proof Link", value: (r) => asText(r.proofLink) },
       ],
     },

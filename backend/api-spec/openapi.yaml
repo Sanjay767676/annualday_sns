@@ -442,6 +442,17 @@ components:
           type: string
         yearOfStudy:
           type: string
+        eventType:
+          type: string
+          enum: [hackathon, patent published, paper published, E Kart, Go J Kart]
+        paperType:
+          type: string
+          enum: [SCI, WOS, Scopus, Annexture -1]
+        designProduct:
+          type: string
+          enum: [Design, Product]
+        dateOfPublished:
+          type: string
         institutionIndustry:
           type: string
           enum: [TIRE 1 College, TIRE 2 COLLEGE, MNCs, MANGOBIG 7, Startup]
@@ -456,10 +467,7 @@ components:
         - studentName
         - department
         - yearOfStudy
-        - institutionIndustry
-        - institutionName
-        - prizeWon
-        - proofLink
+        - eventType
 
     PhDAwardee:
       type: object

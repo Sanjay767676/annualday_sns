@@ -96,7 +96,7 @@ const SECTION_COLORS = [
 ];
 
 const JOURNAL_OPTIONS = ["Scopus", "SCI", "WOS", "Annexure-1"] as const;
-const NAME_PREFIX_OPTIONS = ["Mr", "Mrs", "Ms", "Dr", "Prof"] as const;
+const NAME_PREFIX_OPTIONS = ["Mr", "Mrs", "Ms", "Dr"] as const;
 
 function createEmptyPaper() {
   return {
@@ -588,7 +588,7 @@ export default function FacultyFormPage() {
                     Faculty Form
                   </h1>
                   <p className="mt-3 text-sm text-slate-600">
-                    Fill required details and submit.
+                    If you do not have data for any section, you may leave it blank and submit.
                   </p>
                 </div>
                 <div className="surface-muted bg-gradient-to-br from-blue-50/70 via-white to-emerald-50/60 p-5">

@@ -3,6 +3,7 @@ import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { useLocation } from "wouter";
 import { GraduationCap, Plus, Trash2, CheckCircle2 } from "lucide-react";
 
+import { DateCalendarPicker } from "@/components/ui/date-calendar-picker";
 import {
   useSubmitStudentForm,
   type StudentFormData,
@@ -60,6 +61,10 @@ type StudentFormValues = {
     department: string;
     departmentOther: string;
     yearOfStudy: string;
+    eventType: string;
+    paperType: string;
+    designProduct: string;
+    dateOfPublished: string;
     institutionIndustry: string;
     institutionName: string;
     prizeWon: string;
@@ -188,6 +193,10 @@ function createEmptyReputedInstitutionAchievement() {
     department: "",
     departmentOther: "",
     yearOfStudy: "",
+    eventType: "",
+    paperType: "",
+    designProduct: "",
+    dateOfPublished: "",
     institutionIndustry: "",
     institutionName: "",
     prizeWon: "",
@@ -340,10 +349,49 @@ export default function StudentFormPage() {
       studentName: "Student Name",
       department: "Department",
       yearOfStudy: "Year of Study",
-      institutionIndustry: "Reputated Institution / Industry",
-      institutionName: "Name of the Reputated Institution / Industry",
-      prizeWon: "Prize Won",
-      proofLink: "Proof Link",
+      eventType: "Event Type",
+    });
+
+    // Custom validation for Section 4 based on eventType
+    values.reputedInstitutionAchievements.forEach((entry, index) => {
+      if (isEntryEmpty(entry)) return;
+
+      if (entry.eventType === "paper published") {
+        if (!isFilled(entry.paperType)) {
+          form.setError(`reputedInstitutionAchievements.${index}.paperType` as never, { type: "manual", message: "Paper Type is required" });
+        }
+        if (isFilled(entry.paperType)) {
+          if (!isFilled(entry.dateOfPublished)) {
+            form.setError(`reputedInstitutionAchievements.${index}.dateOfPublished` as never, { type: "manual", message: "Date of Published is required" });
+          }
+          if (!isFilled(entry.proofLink)) {
+            form.setError(`reputedInstitutionAchievements.${index}.proofLink` as never, { type: "manual", message: "Proof Link is required" });
+          }
+        }
+      } else if (entry.eventType === "patent published") {
+        if (!isFilled(entry.designProduct)) {
+          form.setError(`reputedInstitutionAchievements.${index}.designProduct` as never, { type: "manual", message: "Design/Product is required" });
+        }
+        if (!isFilled(entry.dateOfPublished)) {
+          form.setError(`reputedInstitutionAchievements.${index}.dateOfPublished` as never, { type: "manual", message: "Date of Published is required" });
+        }
+        if (!isFilled(entry.proofLink)) {
+          form.setError(`reputedInstitutionAchievements.${index}.proofLink` as never, { type: "manual", message: "Proof Link is required" });
+        }
+      } else if (["hackathon", "Go J Kart", "E Kart"].includes(entry.eventType)) {
+        if (!isFilled(entry.institutionIndustry)) {
+          form.setError(`reputedInstitutionAchievements.${index}.institutionIndustry` as never, { type: "manual", message: "Category is required" });
+        }
+        if (!isFilled(entry.institutionName)) {
+          form.setError(`reputedInstitutionAchievements.${index}.institutionName` as never, { type: "manual", message: "Institution Name is required" });
+        }
+        if (!isFilled(entry.prizeWon)) {
+          form.setError(`reputedInstitutionAchievements.${index}.prizeWon` as never, { type: "manual", message: "Prize Won is required" });
+        }
+        if (!isFilled(entry.proofLink)) {
+          form.setError(`reputedInstitutionAchievements.${index}.proofLink` as never, { type: "manual", message: "Proof Link is required" });
+        }
+      }
     });
 
     const hasPartialEntry = [
@@ -407,6 +455,10 @@ export default function StudentFormPage() {
         studentName: entry.studentName,
         department: resolveDepartmentValue(entry.department, entry.departmentOther),
         yearOfStudy: entry.yearOfStudy,
+        eventType: entry.eventType,
+        paperType: entry.paperType,
+        designProduct: entry.designProduct,
+        dateOfPublished: entry.dateOfPublished,
         institutionIndustry: entry.institutionIndustry,
         institutionName: entry.institutionName,
         prizeWon: entry.prizeWon as any,
@@ -796,37 +848,150 @@ export default function StudentFormPage() {
                             <FormMessage className="text-xs" />
                           </FormItem>
                         )} />
-                      <FormField control={form.control} name={`reputedInstitutionAchievements.${index}.institutionIndustry`}
+                      <FormField control={form.control} name={`reputedInstitutionAchievements.${index}.eventType`}
                         render={({ field: f }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Reputated Institution / Industry</FormLabel>
-                            <Select onValueChange={f.onChange} value={f.value || undefined}>
+                            <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Event Type</FormLabel>
+                            <Select onValueChange={(val) => {
+                              f.onChange(val);
+                              // Reset conditional fields when event type changes
+                              form.setValue(`reputedInstitutionAchievements.${index}.paperType`, "");
+                              form.setValue(`reputedInstitutionAchievements.${index}.designProduct`, "");
+                              form.setValue(`reputedInstitutionAchievements.${index}.dateOfPublished`, "");
+                              form.setValue(`reputedInstitutionAchievements.${index}.institutionIndustry`, "");
+                              form.setValue(`reputedInstitutionAchievements.${index}.institutionName`, "");
+                              form.setValue(`reputedInstitutionAchievements.${index}.prizeWon`, "");
+                              form.setValue(`reputedInstitutionAchievements.${index}.proofLink`, "");
+                            }} value={f.value || undefined}>
                               <FormControl>
                                 <SelectTrigger className="h-10 bg-white border-slate-300">
-                                  <SelectValue placeholder="Select institution/industry" />
+                                  <SelectValue placeholder="Select event type" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {[
-                                  "TIRE 1 College",
-                                  "TIRE 2 COLLEGE",
-                                  "MNCs",
-                                  "MANGOBIG 7",
-                                  "Startup",
-                                ].map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                                {["hackathon", "patent published", "paper published", "E Kart", "Go J Kart"].map(o => (
+                                  <SelectItem key={o} value={o}>{o}</SelectItem>
+                                ))}
                               </SelectContent>
                             </Select>
                             <FormMessage className="text-xs" />
                           </FormItem>
                         )} />
 
-                      {watchedReputedInstitutionAchievements[index]?.institutionIndustry && (
+                      {watchedReputedInstitutionAchievements[index]?.eventType === "paper published" && (
                         <>
+                          <FormField control={form.control} name={`reputedInstitutionAchievements.${index}.paperType`}
+                            render={({ field: f }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Type of paper</FormLabel>
+                                <Select onValueChange={f.onChange} value={f.value || undefined}>
+                                  <FormControl>
+                                    <SelectTrigger className="h-10 bg-white border-slate-300">
+                                      <SelectValue placeholder="Select paper type" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {["SCI", "WOS", "Scopus", "Annexture -1"].map(o => (
+                                      <SelectItem key={o} value={o}>{o}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage className="text-xs" />
+                              </FormItem>
+                            )} />
+                          {watchedReputedInstitutionAchievements[index]?.paperType && (
+                            <>
+                              <FormField control={form.control} name={`reputedInstitutionAchievements.${index}.dateOfPublished`}
+                                render={({ field: f }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Date of Published</FormLabel>
+                                    <FormControl>
+                                      <DateCalendarPicker value={f.value} onChange={f.onChange} disabled={submitMutation.isPending} />
+                                    </FormControl>
+                                    <FormMessage className="text-xs" />
+                                  </FormItem>
+                                )} />
+                              <FormField control={form.control} name={`reputedInstitutionAchievements.${index}.proofLink`}
+                                render={({ field: f }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Proof Drive Link</FormLabel>
+                                    <FormControl><Input className="h-10 bg-white border-slate-300" placeholder="https://drive.google.com/..." {...f} /></FormControl>
+                                    <FormMessage className="text-xs" />
+                                  </FormItem>
+                                )} />
+                            </>
+                          )}
+                        </>
+                      )}
+
+                      {watchedReputedInstitutionAchievements[index]?.eventType === "patent published" && (
+                        <>
+                          <FormField control={form.control} name={`reputedInstitutionAchievements.${index}.designProduct`}
+                            render={({ field: f }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Design/Product</FormLabel>
+                                <Select onValueChange={f.onChange} value={f.value || undefined}>
+                                  <FormControl>
+                                    <SelectTrigger className="h-10 bg-white border-slate-300">
+                                      <SelectValue placeholder="Select type" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {["Design", "Product"].map(o => (
+                                      <SelectItem key={o} value={o}>{o}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage className="text-xs" />
+                              </FormItem>
+                            )} />
+                          <FormField control={form.control} name={`reputedInstitutionAchievements.${index}.dateOfPublished`}
+                            render={({ field: f }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Date of Published</FormLabel>
+                                <FormControl>
+                                  <DateCalendarPicker value={f.value} onChange={f.onChange} disabled={submitMutation.isPending} />
+                                </FormControl>
+                                <FormMessage className="text-xs" />
+                              </FormItem>
+                            )} />
+                          <FormField control={form.control} name={`reputedInstitutionAchievements.${index}.proofLink`}
+                            render={({ field: f }) => (
+                              <FormItem className="md:col-span-2">
+                                <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Proof Drive Link</FormLabel>
+                                <FormControl><Input className="h-10 bg-white border-slate-300" placeholder="https://drive.google.com/..." {...f} /></FormControl>
+                                <FormMessage className="text-xs" />
+                              </FormItem>
+                            )} />
+                        </>
+                      )}
+
+                      {["hackathon", "Go J Kart", "E Kart"].includes(watchedReputedInstitutionAchievements[index]?.eventType) && (
+                        <>
+                          <FormField control={form.control} name={`reputedInstitutionAchievements.${index}.institutionIndustry`}
+                            render={({ field: f }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Reputated Institution / Industry</FormLabel>
+                                <Select onValueChange={f.onChange} value={f.value || undefined}>
+                                  <FormControl>
+                                    <SelectTrigger className="h-10 bg-white border-slate-300">
+                                      <SelectValue placeholder="Select category" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {["TIRE 1 College", "TIRE 2 COLLEGE", "MNCs", "MANGOBIG 7", "Startup"].map(o => (
+                                      <SelectItem key={o} value={o}>{o}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage className="text-xs" />
+                              </FormItem>
+                            )} />
                           <FormField control={form.control} name={`reputedInstitutionAchievements.${index}.institutionName`}
                             render={({ field: f }) => (
                               <FormItem>
                                 <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Name of the Reputated Institution / Industry</FormLabel>
-                                <FormControl><Input className="h-10 bg-white border-slate-300 focus:border-indigo-400" placeholder="Enter name" {...f} /></FormControl>
+                                <FormControl><Input className="h-10 bg-white border-slate-300" placeholder="Enter name" {...f} /></FormControl>
                                 <FormMessage className="text-xs" />
                               </FormItem>
                             )} />
@@ -851,7 +1016,7 @@ export default function StudentFormPage() {
                             render={({ field: f }) => (
                               <FormItem className="md:col-span-2">
                                 <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Proof (Insert the proof drive link)</FormLabel>
-                                <FormControl><Input className="h-10 bg-white border-slate-300 focus:border-indigo-400" placeholder="https://drive.google.com/..." {...f} /></FormControl>
+                                <FormControl><Input className="h-10 bg-white border-slate-300" placeholder="https://drive.google.com/..." {...f} /></FormControl>
                                 <FormMessage className="text-xs" />
                               </FormItem>
                             )} />
