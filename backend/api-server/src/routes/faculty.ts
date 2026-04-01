@@ -21,15 +21,20 @@ router.post("/faculty", async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  const [submission] = await db
-    .insert(facultySubmissionsTable)
-    .values({ data: parsed.data })
-    .returning();
+  try {
+    const [submission] = await db
+      .insert(facultySubmissionsTable)
+      .values({ data: parsed.data })
+      .returning();
 
-  res.status(201).json({
-    id: submission.id,
-    message: "Faculty form submitted successfully",
-  });
+    res.status(201).json({
+      id: submission.id,
+      message: "Faculty form submitted successfully",
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Internal server error";
+    res.status(500).json({ error: message });
+  }
 });
 
 router.get("/admin/faculty", async (req: Request, res: Response): Promise<void> => {

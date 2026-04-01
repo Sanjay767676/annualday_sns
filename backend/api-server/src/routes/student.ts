@@ -22,17 +22,22 @@ router.post("/student", async (req: Request, res: Response): Promise<void> => {
 
   const { firstRankHolders, semesterWiseRankers, remarkableAchievements } = parsed.data;
 
-  const [submission] = await db
-    .insert(studentSubmissionsTable)
-    .values({
-      data: { firstRankHolders, semesterWiseRankers, remarkableAchievements },
-    })
-    .returning();
+  try {
+    const [submission] = await db
+      .insert(studentSubmissionsTable)
+      .values({
+        data: { firstRankHolders, semesterWiseRankers, remarkableAchievements },
+      })
+      .returning();
 
-  res.status(201).json({
-    id: submission.id,
-    message: "Student form submitted successfully",
-  });
+    res.status(201).json({
+      id: submission.id,
+      message: "Student form submitted successfully",
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Internal server error";
+    res.status(500).json({ error: message });
+  }
 });
 
 router.get("/admin/student", async (req: Request, res: Response): Promise<void> => {

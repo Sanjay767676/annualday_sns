@@ -458,7 +458,7 @@ export default function FacultyFormPage() {
                                   form.setValue(`${name}.${index}.${otherFieldName}` as never, "" as never, { shouldValidate: true });
                                 }
                               }}
-                              value={formField.value || undefined}
+                              value={formField.value ?? ""}
                             >
                               <FormControl>
                                 <SelectTrigger className="h-10 bg-white border-slate-300">
