@@ -185,10 +185,10 @@ export default function FacultyFormPage() {
 
   const form = useForm<FacultyFormValues>({
     defaultValues: {
-      papersPublished: [],
-      booksChapters: [],
-      patentsGranted: [],
-      phdAwardees: [],
+      papersPublished: [createEmptyPaper()],
+      booksChapters: [createEmptyBookChapter()],
+      patentsGranted: [createEmptyPatent()],
+      phdAwardees: [createEmptyPhdAwardee()],
     },
   });
 
@@ -593,10 +593,10 @@ export default function FacultyFormPage() {
                 </div>
                 <div className="surface-muted bg-gradient-to-br from-blue-50/70 via-white to-emerald-50/60 p-5">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
-                    Status
+                    Note
                   </p>
                   <div className="mt-4 flex items-center gap-2 text-sm font-medium text-slate-800">
-                    <span className={`h-2.5 w-2.5 rounded-full ${sectionStatus.canSubmit ? "bg-emerald-500" : "bg-amber-500"}`} />
+                    <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
                     During the period: May 2025 to April 2026
                   </div>
                 </div>

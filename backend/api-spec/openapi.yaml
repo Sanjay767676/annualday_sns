@@ -134,7 +134,7 @@ paths:
           in: query
           schema:
             type: string
-            enum: [firstRank, semesterWise, achievement]
+            enum: [firstRank, semesterWise, achievement, reputedInstitution]
             default: firstRank
         - name: search
           in: query
@@ -433,6 +433,34 @@ components:
         - yearOfStudy
         - achievementDetails
 
+    ReputedInstitutionAchievement:
+      type: object
+      properties:
+        studentName:
+          type: string
+        department:
+          type: string
+        yearOfStudy:
+          type: string
+        institutionIndustry:
+          type: string
+          enum: [TIRE 1 College, TIRE 2 COLLEGE, MNCs, MANGOBIG 7, Startup]
+        institutionName:
+          type: string
+        prizeWon:
+          type: string
+          enum: [Winner, Runner]
+        proofLink:
+          type: string
+      required:
+        - studentName
+        - department
+        - yearOfStudy
+        - institutionIndustry
+        - institutionName
+        - prizeWon
+        - proofLink
+
     PhDAwardee:
       type: object
       properties:
@@ -496,10 +524,15 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/StudentAchievement"
+        reputedInstitutionAchievements:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReputedInstitutionAchievement"
       required:
         - firstRankHolders
         - semesterWiseRankers
         - remarkableAchievements
+        - reputedInstitutionAchievements
 
     FacultySubmission:
       type: object

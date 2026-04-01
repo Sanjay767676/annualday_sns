@@ -120,6 +120,24 @@ export interface StudentAchievement {
   achievementDetails: string;
 }
 
+export type ReputedInstitutionAchievementPrizeWon =
+  (typeof ReputedInstitutionAchievementPrizeWon)[keyof typeof ReputedInstitutionAchievementPrizeWon];
+
+export const ReputedInstitutionAchievementPrizeWon = {
+  Winner: "Winner",
+  Runner: "Runner",
+} as const;
+
+export interface ReputedInstitutionAchievement {
+  studentName: string;
+  department: string;
+  yearOfStudy: string;
+  institutionIndustry: string;
+  institutionName: string;
+  prizeWon: ReputedInstitutionAchievementPrizeWon;
+  proofLink: string;
+}
+
 export interface PhDAwardee {
   name: string;
   designation: string;
@@ -140,6 +158,7 @@ export interface StudentFormData {
   firstRankHolders: FirstRankHolder[];
   semesterWiseRankers: SemesterWiseRanker[];
   remarkableAchievements: StudentAchievement[];
+  reputedInstitutionAchievements: ReputedInstitutionAchievement[];
 }
 
 export interface FacultySubmission {
@@ -185,4 +204,5 @@ export const GetAllStudentSubmissionsType = {
   firstRank: "firstRank",
   semesterWise: "semesterWise",
   achievement: "achievement",
+  reputedInstitution: "reputedInstitution",
 } as const;

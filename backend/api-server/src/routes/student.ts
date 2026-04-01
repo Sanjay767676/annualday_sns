@@ -14,6 +14,7 @@ const STUDENT_SECTION_MAP: Record<string, string> = {
   firstRank: "firstRankHolders",
   semesterWise: "semesterWiseRankers",
   achievement: "remarkableAchievements",
+  reputedInstitution: "reputedInstitutionAchievements",
 };
 
 const ADMIN_PASSWORDS = new Set(["admin123", "sns123"]);
@@ -25,14 +26,14 @@ router.post("/student", async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  const { firstRankHolders, semesterWiseRankers, remarkableAchievements } = parsed.data;
+  const { firstRankHolders, semesterWiseRankers, remarkableAchievements, reputedInstitutionAchievements } = parsed.data;
 
   try {
     const [submission] = await db
       .insert(studentSubmissionsTable)
       .values({
         id: randomUUID(),
-        data: { firstRankHolders, semesterWiseRankers, remarkableAchievements },
+        data: { firstRankHolders, semesterWiseRankers, remarkableAchievements, reputedInstitutionAchievements },
       })
       .returning();
 

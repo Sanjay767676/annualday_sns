@@ -39,7 +39,7 @@ type PaginatedResponse = {
 
 type TabType = "faculty" | "student";
 type FacultyType = "paper" | "book" | "patent" | "phd";
-type StudentType = "firstRank" | "semesterWise" | "achievement";
+type StudentType = "firstRank" | "semesterWise" | "achievement" | "reputedInstitution";
 type SectionType = FacultyType | StudentType;
 type ExportMode = "filtered" | "all";
 type ExportFormat = "excel" | "pdf";
@@ -57,12 +57,13 @@ const STUDENT_FILTERS = [
   { key: "firstRank", label: "First Rank Holder" },
   { key: "semesterWise", label: "Semester Wise Rank" },
   { key: "achievement", label: "Remarkable Achievements" },
+  { key: "reputedInstitution", label: "Reputed Institution / Industry" },
 ] as const;
 
 const HIDDEN_COLS = new Set(["_submissionId", "_submittedAt"]);
 
 const FACULTY_FILTER_ORDER: FacultyType[] = ["paper", "book", "patent", "phd"];
-const STUDENT_FILTER_ORDER: StudentType[] = ["firstRank", "semesterWise", "achievement"];
+const STUDENT_FILTER_ORDER: StudentType[] = ["firstRank", "semesterWise", "achievement", "reputedInstitution"];
 
 function asText(value: unknown): string {
   if (value === null || value === undefined) return "";
@@ -173,6 +174,17 @@ const EXPORT_SECTION_CONFIG: Record<TabType, Record<SectionType, ExportSection>>
         { header: "Name of the Student", value: (r) => asText(r.studentName) },
         { header: "Class/Branch", value: (r) => classBranch(r) },
         { header: "List of achievements and details", value: (r) => asText(r.achievementDetails) },
+      ],
+    },
+    reputedInstitution: {
+      title: "Students in Reputed Institutions / Industries",
+      columns: [
+        { header: "Name of the Student", value: (r) => asText(r.studentName) },
+        { header: "Class/Branch", value: (r) => classBranch(r) },
+        { header: "Institution/Industry Category", value: (r) => asText(r.institutionIndustry) },
+        { header: "Name of Institution/Industry", value: (r) => asText(r.institutionName) },
+        { header: "Prize Won", value: (r) => asText(r.prizeWon) },
+        { header: "Proof Link", value: (r) => asText(r.proofLink) },
       ],
     },
     paper: { title: "", columns: [] },

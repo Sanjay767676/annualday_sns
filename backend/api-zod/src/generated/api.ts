@@ -92,6 +92,23 @@ export const SubmitStudentFormBody = zod.object({
       achievementDetails: zod.string(),
     }),
   ),
+  reputedInstitutionAchievements: zod.array(
+    zod.object({
+      studentName: zod.string(),
+      department: zod.string(),
+      yearOfStudy: zod.string(),
+      institutionIndustry: zod.enum([
+        "TIRE 1 College",
+        "TIRE 2 COLLEGE",
+        "MNCs",
+        "MANGOBIG 7",
+        "Startup",
+      ]),
+      institutionName: zod.string(),
+      prizeWon: zod.enum(["Winner", "Runner"]),
+      proofLink: zod.string(),
+    }),
+  ),
 });
 
 /**
@@ -126,7 +143,7 @@ export const getAllStudentSubmissionsQueryLimitDefault = 10;
 
 export const GetAllStudentSubmissionsQueryParams = zod.object({
   type: zod
-    .enum(["firstRank", "semesterWise", "achievement"])
+    .enum(["firstRank", "semesterWise", "achievement", "reputedInstitution"])
     .default(getAllStudentSubmissionsQueryTypeDefault),
   search: zod.coerce.string().optional(),
   page: zod.coerce.number().default(getAllStudentSubmissionsQueryPageDefault),
