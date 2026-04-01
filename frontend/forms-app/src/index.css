@@ -61,47 +61,46 @@
 }
 
 :root {
-  /* HSL Values for Navy / Slate Blue academic aesthetic */
-  --background: 210 20% 98%; /* Light slate gray */
-  --foreground: 222 47% 11%; /* Dark navy */
+  --background: 36 35% 97%;
+  --foreground: 222 28% 15%;
 
-  --border: 214 32% 91%;
-  --input: 214 32% 91%;
-  --ring: 221 83% 53%;
+  --border: 30 18% 86%;
+  --input: 30 18% 86%;
+  --ring: 221 58% 34%;
 
   --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
-  --card-border: 214 32% 91%;
+  --card-foreground: 222 28% 15%;
+  --card-border: 30 18% 86%;
 
   --popover: 0 0% 100%;
-  --popover-foreground: 222 47% 11%;
-  --popover-border: 214 32% 91%;
+  --popover-foreground: 222 28% 15%;
+  --popover-border: 30 18% 86%;
 
-  --primary: 222 47% 25%; /* Deep academic navy */
-  --primary-foreground: 210 40% 98%;
+  --primary: 223 37% 24%;
+  --primary-foreground: 36 40% 98%;
 
-  --secondary: 210 40% 96.1%;
-  --secondary-foreground: 222 47% 11%;
+  --secondary: 35 30% 94%;
+  --secondary-foreground: 222 28% 15%;
 
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
+  --muted: 35 30% 94%;
+  --muted-foreground: 220 11% 42%;
 
-  --accent: 210 40% 96.1%;
-  --accent-foreground: 222 47.4% 11.2%;
+  --accent: 37 40% 92%;
+  --accent-foreground: 223 37% 24%;
 
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 36 40% 98%;
 
-  --sidebar: 222 47% 11%;
-  --sidebar-foreground: 210 40% 98%;
-  --sidebar-border: 214 32% 15%;
-  --sidebar-primary: 221 83% 53%;
+  --sidebar: 223 37% 18%;
+  --sidebar-foreground: 36 40% 98%;
+  --sidebar-border: 223 30% 25%;
+  --sidebar-primary: 217 62% 56%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 214 32% 15%;
-  --sidebar-accent-foreground: 210 40% 98%;
-  --sidebar-ring: 221 83% 53%;
+  --sidebar-accent: 223 30% 25%;
+  --sidebar-accent-foreground: 36 40% 98%;
+  --sidebar-ring: 217 62% 56%;
 
-  --radius: 0.5rem;
+  --radius: 0.9rem;
 }
 
 .dark {
@@ -152,5 +151,36 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
+    background-image:
+      radial-gradient(circle at top left, rgba(30, 64, 175, 0.08), transparent 30%),
+      radial-gradient(circle at top right, rgba(180, 83, 9, 0.08), transparent 24%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.7));
+    background-attachment: fixed;
+  }
+}
+
+@layer components {
+  .app-shell {
+    @apply min-h-screen text-foreground;
+  }
+
+  .page-frame {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .hero-panel {
+    @apply rounded-[2rem] border border-white/70 bg-white/80 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur;
+  }
+
+  .editorial-eyebrow {
+    @apply inline-flex items-center gap-2 rounded-full border border-amber-200/80 bg-amber-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-amber-900;
+  }
+
+  .surface-panel {
+    @apply rounded-[1.5rem] border border-stone-200/80 bg-white/88 shadow-[0_18px_50px_rgba(15,23,42,0.06)] backdrop-blur;
+  }
+
+  .surface-muted {
+    @apply rounded-[1.25rem] border border-stone-200/70 bg-stone-50/85;
   }
 }

@@ -23,6 +23,7 @@ export const SubmitFacultyFormBody = zod.object({
     zod.object({
       facultyName: zod.string(),
       designation: zod.string(),
+      department: zod.string(),
       titleOfPaper: zod.string(),
       journalType: zod.enum(["Scopus", "SCI", "WOS", "Annexure-1"]),
       monthYear: zod.string(),
@@ -32,6 +33,7 @@ export const SubmitFacultyFormBody = zod.object({
     zod.object({
       name: zod.string(),
       designation: zod.string(),
+      department: zod.string(),
       titleOfBook: zod.string(),
       publisherIsbn: zod.string(),
       monthYear: zod.string(),
@@ -41,6 +43,7 @@ export const SubmitFacultyFormBody = zod.object({
     zod.object({
       name: zod.string(),
       designation: zod.string(),
+      department: zod.string(),
       titleOfPatent: zod.string(),
       designProduct: zod.string(),
       monthYear: zod.string(),

@@ -89,7 +89,7 @@ function DynamicTable({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-16 text-slate-400">
+      <div className="flex items-center justify-center py-20 text-sm text-slate-400">
         <RefreshCw className="w-5 h-5 animate-spin mr-2" />
         Loading...
       </div>
@@ -98,7 +98,7 @@ function DynamicTable({
 
   if (!rows.length) {
     return (
-      <div className="py-16 text-center text-slate-400 text-sm">
+      <div className="py-20 text-center text-sm text-slate-400">
         No records found.
       </div>
     );
@@ -108,36 +108,36 @@ function DynamicTable({
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="bg-slate-50 border-b border-slate-200">
-            <th className="px-4 py-3 text-left font-semibold text-slate-500 text-xs uppercase tracking-wide w-8">#</th>
+          <tr className="border-b border-stone-200 bg-stone-50/80">
+            <th className="w-8 px-4 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">#</th>
             {columns.map((col) => (
               <th
                 key={col}
-                className="px-4 py-3 text-left font-semibold text-slate-500 text-xs uppercase tracking-wide whitespace-nowrap"
+                className="whitespace-nowrap px-4 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500"
               >
                 {humanize(col)}
               </th>
             ))}
-            <th className="px-4 py-3 text-left font-semibold text-slate-500 text-xs uppercase tracking-wide whitespace-nowrap">
+            <th className="whitespace-nowrap px-4 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
               Submitted
             </th>
           </tr>
         </thead>
         <tbody>
           {rows.map((row, i) => (
-            <tr key={i} className="border-b border-slate-100 hover:bg-slate-50/60 transition-colors">
-              <td className="px-4 py-3 text-slate-400 text-xs">{i + 1}</td>
+            <tr key={i} className="border-b border-stone-100 transition-colors hover:bg-stone-50/60">
+              <td className="px-4 py-4 text-xs text-slate-400">{i + 1}</td>
               {columns.map((col) => (
-                <td key={col} className="px-4 py-3 text-slate-700 max-w-xs">
+                <td key={col} className="max-w-xs px-4 py-4 align-top text-slate-700">
                   <span className="line-clamp-3">{String(row[col] ?? "—")}</span>
                 </td>
               ))}
-              <td className="px-4 py-3 text-slate-500 text-xs whitespace-nowrap">
+              <td className="whitespace-nowrap px-4 py-4 text-xs text-slate-500">
                 <div>{row._submittedAt
                   ? new Date(row._submittedAt as string).toLocaleDateString()
                   : "—"}</div>
                 {Boolean(row._submissionId) && (
-                  <div className="text-slate-400 font-mono text-[10px] mt-0.5 truncate max-w-[120px]" title={String(row._submissionId)}>
+                  <div className="mt-1 max-w-[120px] truncate font-mono text-[10px] text-slate-400" title={String(row._submissionId)}>
                     {String(row._submissionId).slice(0, 8)}…
                   </div>
                 )}
@@ -163,7 +163,7 @@ function Pagination({
 }) {
   const totalPages = Math.max(1, Math.ceil(total / limit));
   return (
-    <div className="flex items-center justify-between px-4 py-3 border-t border-slate-100 bg-slate-50/50">
+    <div className="flex items-center justify-between border-t border-stone-200 px-4 py-3 bg-stone-50/60">
       <span className="text-xs text-slate-500">
         {total === 0 ? "No records" : `${Math.min((page - 1) * limit + 1, total)}–${Math.min(page * limit, total)} of ${total}`}
       </span>
@@ -173,7 +173,7 @@ function Pagination({
           size="sm"
           disabled={page <= 1}
           onClick={() => onPageChange(page - 1)}
-          className="h-7 px-2"
+          className="h-8 rounded-full border-stone-300 px-3"
         >
           <ChevronLeft className="w-3.5 h-3.5" />
         </Button>
@@ -185,7 +185,7 @@ function Pagination({
           size="sm"
           disabled={page >= totalPages}
           onClick={() => onPageChange(page + 1)}
-          className="h-7 px-2"
+          className="h-8 rounded-full border-stone-300 px-3"
         >
           <ChevronRight className="w-3.5 h-3.5" />
         </Button>
@@ -245,18 +245,16 @@ function DataPanel({
 
   return (
     <div className="space-y-4">
-      {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-        {/* Filter pills */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap gap-2">
           {filters.map((f) => (
             <button
               key={f.key}
               onClick={() => setActiveType(f.key)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+              className={`rounded-full border px-3.5 py-2 text-xs font-semibold tracking-[0.14em] uppercase transition ${
                 activeType === f.key
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  ? "border-slate-900 bg-slate-900 text-white"
+                  : "border-stone-200 bg-white text-slate-600 hover:border-stone-300 hover:bg-stone-50"
               }`}
             >
               {f.label}
@@ -264,15 +262,14 @@ function DataPanel({
           ))}
         </div>
 
-        {/* Search + Export */}
-        <div className="flex gap-2 w-full sm:w-auto">
-          <div className="relative flex-1 sm:w-56">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+        <div className="flex w-full gap-2 sm:w-auto">
+          <div className="relative flex-1 sm:w-64">
+            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
             <Input
               placeholder="Search..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="pl-8 h-8 text-sm"
+              className="h-10 rounded-full border-stone-300 bg-white pl-9 text-sm shadow-none"
             />
           </div>
           <Button
@@ -280,7 +277,7 @@ function DataPanel({
             size="sm"
             onClick={handleExport}
             disabled={!rows.length}
-            className="h-8 gap-1.5 text-xs whitespace-nowrap"
+            className="h-10 rounded-full border-stone-300 bg-white px-4 text-xs font-semibold tracking-[0.14em] uppercase whitespace-nowrap"
           >
             <Download className="w-3.5 h-3.5" />
             Export Excel
@@ -288,15 +285,14 @@ function DataPanel({
         </div>
       </div>
 
-      {/* Table */}
-      <Card className="border-slate-200 shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-white">
+      <Card className="overflow-hidden border-stone-200/80 bg-white/92 shadow-[0_18px_50px_rgba(15,23,42,0.05)]">
+        <div className="flex items-center justify-between border-b border-stone-200/80 bg-white px-4 py-4">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-slate-800">
+            <span className="text-sm font-semibold tracking-[-0.02em] text-slate-900">
               {filters.find((f) => f.key === activeType)?.label}
             </span>
             {data && (
-              <Badge variant="secondary" className="text-xs bg-slate-100 text-slate-600">
+              <Badge variant="secondary" className="bg-stone-100 text-xs text-slate-600">
                 {data.total} records
               </Badge>
             )}
@@ -349,72 +345,92 @@ export default function AdminDashboard() {
   if (!token) return null;
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      <header className="sticky top-0 z-20 shadow-md" style={{ background: "linear-gradient(135deg, #0c1f3d, #1e3a8a)" }}>
-        <div className="h-1" style={{ background: "linear-gradient(90deg, #b45309, #f59e0b, #fbbf24, #f59e0b, #b45309)" }} />
-        <div className="container mx-auto px-6 h-14 flex items-center justify-between">
+    <div className="app-shell flex flex-col">
+      <header className="sticky top-0 z-20 border-b border-stone-200/80 bg-background/90 backdrop-blur-xl">
+        <div className="page-frame flex min-h-18 items-center justify-between py-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-black text-[10px]" style={{ background: "rgba(255,255,255,0.15)" }}>
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-950 text-[10px] font-black text-white shadow-sm">
               SNS
             </div>
             <div>
-              <p className="text-white font-bold text-sm leading-tight">SNS College of Technology</p>
-              <p className="text-white/40 text-xs leading-tight">Annual Day 2026 · Admin Portal</p>
+              <p className="text-[0.72rem] font-medium uppercase tracking-[0.24em] text-slate-400">Admin Dashboard</p>
+              <p className="text-sm font-semibold text-slate-900">SNS College of Technology</p>
             </div>
           </div>
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
             onClick={handleLogout}
-            className="text-white/70 hover:text-white hover:bg-white/10 gap-1.5 text-xs"
+            className="h-10 rounded-full border-stone-300 bg-white px-4 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700"
           >
-            <LogOut className="w-3.5 h-3.5" />
+            <LogOut className="mr-1 h-3.5 w-3.5" />
             Sign Out
           </Button>
         </div>
       </header>
 
-      <main className="flex-1 container mx-auto px-4 sm:px-6 py-8 space-y-8">
-        {/* Stats */}
+      <main className="page-frame flex-1 space-y-8 py-8 lg:py-10">
+        <section className="hero-panel px-6 py-7 sm:px-8">
+          <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
+            <div>
+              <span className="editorial-eyebrow">Review & Export</span>
+              <h1 className="mt-5 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
+                Review submissions in a quiet, structured workspace.
+              </h1>
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
+                Search submissions, switch between faculty and student datasets, and export the records you need for reporting and Annual Day preparation.
+              </p>
+            </div>
+            <div className="surface-muted p-5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
+                Live Summary
+              </p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                The dashboard refreshes automatically so recent activity and submission counts remain current while you review data.
+              </p>
+            </div>
+          </div>
+        </section>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="border-slate-200 shadow-sm">
+          <Card className="border-stone-200/80 bg-white/92 shadow-[0_18px_50px_rgba(15,23,42,0.05)]">
             <CardContent className="p-6 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-700 ring-1 ring-blue-100">
                 <FileText className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-sm font-medium text-slate-500">Faculty Submissions</p>
-                <h3 className="text-2xl font-bold text-slate-900">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Faculty Submissions</p>
+                <h3 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-slate-950">
                   {statsLoading ? "..." : stats?.totalFacultySubmissions ?? 0}
                 </h3>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-slate-200 shadow-sm">
+          <Card className="border-stone-200/80 bg-white/92 shadow-[0_18px_50px_rgba(15,23,42,0.05)]">
             <CardContent className="p-6 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100">
                 <Users className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-sm font-medium text-slate-500">Student Submissions</p>
-                <h3 className="text-2xl font-bold text-slate-900">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Student Submissions</p>
+                <h3 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-slate-950">
                   {statsLoading ? "..." : stats?.totalStudentSubmissions ?? 0}
                 </h3>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-slate-200 shadow-sm">
+          <Card className="border-stone-200/80 bg-white/92 shadow-[0_18px_50px_rgba(15,23,42,0.05)]">
             <CardContent className="p-6 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-50 text-violet-700 ring-1 ring-violet-100">
                 <Activity className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-sm font-medium text-slate-500">Recent (30 days)</p>
-                <p className="text-sm font-semibold text-slate-900 mt-1">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Recent Activity</p>
+                <p className="mt-2 text-sm font-medium text-slate-900">
                   +{statsLoading ? "..." : stats?.recentFacultySubmissions ?? 0} Faculty
-                  <span className="mx-2 text-slate-300">|</span>
+                  <span className="mx-2 text-slate-300">•</span>
                   +{statsLoading ? "..." : stats?.recentStudentSubmissions ?? 0} Students
                 </p>
               </div>
@@ -422,13 +438,12 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
-        {/* Tabs */}
         <Tabs defaultValue="faculty" className="w-full">
-          <TabsList className="grid w-full max-w-xs grid-cols-2 bg-slate-200/50 p-1">
-            <TabsTrigger value="faculty" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+          <TabsList className="grid w-full max-w-sm grid-cols-2 rounded-full border border-stone-200 bg-white p-1 shadow-sm">
+            <TabsTrigger value="faculty" className="rounded-full text-xs font-semibold uppercase tracking-[0.14em] data-[state=active]:bg-slate-950 data-[state=active]:text-white data-[state=active]:shadow-none">
               Faculty
             </TabsTrigger>
-            <TabsTrigger value="student" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+            <TabsTrigger value="student" className="rounded-full text-xs font-semibold uppercase tracking-[0.14em] data-[state=active]:bg-slate-950 data-[state=active]:text-white data-[state=active]:shadow-none">
               Student
             </TabsTrigger>
           </TabsList>

@@ -10,6 +10,7 @@ import type { PaperPublishedJournalType } from "./paperPublishedJournalType.js";
 export interface PaperPublished {
   facultyName: string;
   designation: string;
+  department: string;
   titleOfPaper: string;
   journalType: PaperPublishedJournalType;
   monthYear: string;

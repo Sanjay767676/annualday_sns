@@ -56,6 +56,7 @@ export const PaperPublishedJournalType = {
 export interface PaperPublished {
   facultyName: string;
   designation: string;
+  department: string;
   titleOfPaper: string;
   journalType: PaperPublishedJournalType;
   monthYear: string;
@@ -64,6 +65,7 @@ export interface PaperPublished {
 export interface BookChapter {
   name: string;
   designation: string;
+  department: string;
   titleOfBook: string;
   publisherIsbn: string;
   monthYear: string;
@@ -72,6 +74,7 @@ export interface BookChapter {
 export interface PatentGranted {
   name: string;
   designation: string;
+  department: string;
   titleOfPatent: string;
   designProduct: string;
   monthYear: string;

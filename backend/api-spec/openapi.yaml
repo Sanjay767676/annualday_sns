@@ -308,6 +308,8 @@ components:
           type: string
         designation:
           type: string
+        department:
+          type: string
         titleOfPaper:
           type: string
         journalType:
@@ -318,6 +320,7 @@ components:
       required:
         - facultyName
         - designation
+        - department
         - titleOfPaper
         - journalType
         - monthYear
@@ -329,6 +332,8 @@ components:
           type: string
         designation:
           type: string
+        department:
+          type: string
         titleOfBook:
           type: string
         publisherIsbn:
@@ -338,6 +343,7 @@ components:
       required:
         - name
         - designation
+        - department
         - titleOfBook
         - publisherIsbn
         - monthYear
@@ -349,6 +355,8 @@ components:
           type: string
         designation:
           type: string
+        department:
+          type: string
         titleOfPatent:
           type: string
         designProduct:
@@ -358,6 +366,7 @@ components:
       required:
         - name
         - designation
+        - department
         - titleOfPatent
         - designProduct
         - monthYear

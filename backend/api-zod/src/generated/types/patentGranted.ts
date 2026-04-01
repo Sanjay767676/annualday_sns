@@ -9,6 +9,7 @@
 export interface PatentGranted {
   name: string;
   designation: string;
+  department: string;
   titleOfPatent: string;
   designProduct: string;
   monthYear: string;

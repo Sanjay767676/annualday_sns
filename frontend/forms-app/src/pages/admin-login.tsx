@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useLocation } from "wouter";
-import { ShieldCheck, Lock, ArrowLeft, GraduationCap, Award } from "lucide-react";
+import { ShieldCheck, Lock, ArrowLeft, Award } from "lucide-react";
 
 import { useAdminLogin } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
@@ -41,138 +41,114 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row">
-
-      {/* Left panel – branding */}
-      <div
-        className="hidden lg:flex lg:w-5/12 flex-col justify-between p-10"
-        style={{ background: "linear-gradient(160deg, #050d1a 0%, #0c1f3d 55%, #0f1535 100%)" }}
-      >
-        <div>
-          <div className="flex items-center gap-3 mb-12">
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-xs shadow-lg"
-              style={{ background: "linear-gradient(135deg, #1d4ed8, #3b82f6)" }}
-            >
-              SNS
-            </div>
+    <div className="app-shell">
+      <div className="page-frame flex min-h-screen items-center py-10">
+        <div className="grid w-full gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+          <section className="hero-panel flex flex-col justify-between px-6 py-8 sm:px-8 lg:px-10">
             <div>
-              <p className="text-white font-bold text-sm leading-tight">SNS College of Technology</p>
-              <p className="text-white/35 text-xs">Coimbatore – 641 107</p>
-            </div>
-          </div>
-
-          <div
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-6 text-xs font-bold uppercase tracking-widest"
-            style={{ background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.3)", color: "#fbbf24" }}
-          >
-            <Award className="w-3 h-3" />
-            Annual Day 2026
-          </div>
-
-          <h2 className="text-white font-black text-4xl leading-tight mb-3">
-            Administration
-            <br />
-            <span style={{ background: "linear-gradient(90deg, #f59e0b, #fbbf24)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-              Portal
-            </span>
-          </h2>
-          <p className="text-white/40 text-sm leading-relaxed">
-            Secure access to manage faculty and student data submissions for the Annual Day 2026 data collection portal.
-          </p>
-        </div>
-
-        <div className="border-t border-white/10 pt-6">
-          <p className="text-white/25 text-xs">
-            Data Collection · May 2025 – March 2026
-          </p>
-        </div>
-      </div>
-
-      {/* Right panel – login form */}
-      <div className="flex-1 flex flex-col bg-slate-50">
-
-        {/* Mobile header */}
-        <div
-          className="lg:hidden h-1 w-full"
-          style={{ background: "linear-gradient(90deg, #b45309, #f59e0b, #fbbf24)" }}
-        />
-        <div className="lg:hidden px-5 py-4 bg-white border-b border-slate-200 flex items-center gap-3">
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-black text-xs"
-            style={{ background: "linear-gradient(135deg, #1d4ed8, #3b82f6)" }}
-          >
-            SNS
-          </div>
-          <span className="text-slate-700 font-bold text-sm">SNS College of Technology</span>
-        </div>
-
-        <div className="flex-1 flex flex-col items-center justify-center px-5 py-10">
-          <div className="w-full max-w-sm">
-
-            <Button
-              variant="ghost"
-              size="sm"
-              className="mb-8 -ml-2 text-slate-500 hover:text-slate-800 gap-1.5"
-              onClick={() => setLocation("/")}
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Home
-            </Button>
-
-            <div className="mb-8">
-              <div
-                className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5 shadow-md"
-                style={{ background: "linear-gradient(135deg, #1e40af, #3b82f6)" }}
-              >
-                <ShieldCheck className="w-7 h-7 text-white" />
-              </div>
-              <h1 className="text-2xl font-extrabold text-slate-900 mb-1">Admin Sign In</h1>
-              <p className="text-slate-500 text-sm">
-                Annual Day 2026 · Data Collection Portal
+              <span className="editorial-eyebrow">
+                <Award className="h-3.5 w-3.5" />
+                Annual Day 2026
+              </span>
+              <h1 className="mt-6 max-w-xl text-4xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-5xl">
+                Secure admin access for review and export.
+              </h1>
+              <p className="mt-5 max-w-lg text-sm leading-7 text-slate-600 sm:text-base">
+                Use the administration portal to review student and faculty submissions, search records, and prepare export-ready data for the Annual Day programme.
               </p>
             </div>
 
-            <Card className="shadow-lg border-slate-200">
-              <CardContent className="p-6">
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-                    <FormField
-                      control={form.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-slate-700 font-semibold">Password</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Lock className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
-                              <Input
-                                type="password"
-                                placeholder="Enter admin password"
-                                className="pl-10 h-11 border-slate-300 focus:border-blue-500"
-                                autoComplete="current-password"
-                                {...field}
-                              />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Button
-                      type="submit"
-                      disabled={loginMutation.isPending}
-                      className="w-full h-11 font-semibold text-sm"
-                      style={{ background: "linear-gradient(135deg, #1e40af, #3b82f6)" }}
-                    >
-                      {loginMutation.isPending ? "Verifying..." : "Access Dashboard"}
-                    </Button>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
+            <div className="mt-8 grid gap-4 sm:grid-cols-2">
+              <div className="surface-muted p-5">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
+                  Access Type
+                </p>
+                <p className="mt-2 text-lg font-semibold text-slate-900">
+                  Restricted login
+                </p>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  Password-protected entry for staff handling approvals and reporting.
+                </p>
+              </div>
+              <div className="surface-muted p-5">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
+                  Data Window
+                </p>
+                <p className="mt-2 text-lg font-semibold text-slate-900">
+                  May 2025 – March 2026
+                </p>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  Records cover the current Annual Day academic collection cycle.
+                </p>
+              </div>
+            </div>
+          </section>
 
-          </div>
+          <section className="surface-panel flex items-center px-6 py-8 sm:px-8 lg:px-10">
+            <div className="mx-auto w-full max-w-md">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="-ml-2 mb-8 gap-1.5 text-slate-500 hover:text-slate-900"
+                onClick={() => setLocation("/")}
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back to Home
+              </Button>
+
+              <div className="mb-8">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-950 text-white shadow-sm">
+                  <ShieldCheck className="h-6 w-6" />
+                </div>
+                <h2 className="mt-5 text-3xl font-semibold tracking-[-0.04em] text-slate-950">
+                  Admin sign in
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  Enter the administration password to continue to the dashboard.
+                </p>
+              </div>
+
+              <Card className="border-stone-200/80 bg-white shadow-none">
+                <CardContent className="p-6">
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+                      <FormField
+                        control={form.control}
+                        name="password"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                              Password
+                            </FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Lock className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                                <Input
+                                  type="password"
+                                  placeholder="Enter admin password"
+                                  className="h-12 rounded-2xl border-stone-300 bg-stone-50 pl-11 shadow-none focus:border-slate-400"
+                                  autoComplete="current-password"
+                                  {...field}
+                                />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Button
+                        type="submit"
+                        disabled={loginMutation.isPending}
+                        className="h-12 w-full rounded-full bg-slate-950 text-sm font-semibold uppercase tracking-[0.12em] text-white hover:bg-slate-800"
+                      >
+                        {loginMutation.isPending ? "Verifying..." : "Access Dashboard"}
+                      </Button>
+                    </form>
+                  </Form>
+                </CardContent>
+              </Card>
+            </div>
+          </section>
         </div>
       </div>
     </div>

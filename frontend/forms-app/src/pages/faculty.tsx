@@ -1,119 +1,369 @@
+import { useMemo } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { useLocation } from "wouter";
-import { Plus, Trash2, ArrowLeft, BookOpen, CheckCircle2 } from "lucide-react";
+import { Plus, Trash2, BookOpen, CheckCircle2 } from "lucide-react";
 
-import { useSubmitFacultyForm } from "@workspace/api-client-react";
+import {
+  useSubmitFacultyForm,
+  type FacultyFormData,
+  type PaperPublishedJournalType,
+} from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import SiteHeader from "@/components/site-header";
+import { DEPARTMENT_OPTIONS, DESIGNATION_OPTIONS } from "@/lib/form-options";
 
-const facultyFormSchema = z.object({
-  papersPublished: z.array(z.object({
-    facultyName: z.string().min(1, "Required"),
-    designation: z.string().min(1, "Required"),
-    titleOfPaper: z.string().min(1, "Required"),
-    journalType: z.enum(["Scopus", "SCI", "WOS", "Annexure-1"]),
-    monthYear: z.string().min(1, "Required"),
-  })),
-  booksChapters: z.array(z.object({
-    name: z.string().min(1, "Required"),
-    designation: z.string().min(1, "Required"),
-    titleOfBook: z.string().min(1, "Required"),
-    publisherIsbn: z.string().min(1, "Required"),
-    monthYear: z.string().min(1, "Required"),
-  })),
-  patentsGranted: z.array(z.object({
-    name: z.string().min(1, "Required"),
-    designation: z.string().min(1, "Required"),
-    titleOfPatent: z.string().min(1, "Required"),
-    designProduct: z.string().min(1, "Required"),
-    monthYear: z.string().min(1, "Required"),
-  })),
-  phdAwardees: z.array(z.object({
-    name: z.string().min(1, "Required"),
-    designation: z.string().min(1, "Required"),
-    branch: z.string().min(1, "Required"),
-    university: z.string().min(1, "Required"),
-    year: z.string().min(1, "Required"),
-    title: z.string().min(1, "Required"),
-  })),
-});
+type FacultyFormValues = {
+  papersPublished: Array<{
+    facultyName: string;
+    designation: string;
+    department: string;
+    titleOfPaper: string;
+    journalType: string;
+    monthYear: string;
+  }>;
+  booksChapters: Array<{
+    name: string;
+    designation: string;
+    department: string;
+    titleOfBook: string;
+    publisherIsbn: string;
+    monthYear: string;
+  }>;
+  patentsGranted: Array<{
+    name: string;
+    designation: string;
+    department: string;
+    titleOfPatent: string;
+    designProduct: string;
+    monthYear: string;
+  }>;
+  phdAwardees: Array<{
+    name: string;
+    designation: string;
+    branch: string;
+    university: string;
+    year: string;
+    title: string;
+  }>;
+};
 
-type FacultyFormValues = z.infer<typeof facultyFormSchema>;
+type FacultySectionName = keyof FacultyFormValues;
+type FieldConfig = {
+  name: string;
+  label: string;
+  type?: "select";
+  options?: readonly string[];
+};
 
 const SECTION_COLORS = [
-  "from-blue-700 to-blue-500",
-  "from-violet-700 to-violet-500",
-  "from-emerald-700 to-emerald-500",
-  "from-orange-600 to-amber-500",
+  {
+    badge: "bg-blue-50 text-blue-700 ring-blue-100",
+    dot: "bg-blue-500",
+    add: "hover:border-blue-200 hover:bg-blue-50/70 hover:text-blue-800",
+  },
+  {
+    badge: "bg-violet-50 text-violet-700 ring-violet-100",
+    dot: "bg-violet-500",
+    add: "hover:border-violet-200 hover:bg-violet-50/70 hover:text-violet-800",
+  },
+  {
+    badge: "bg-emerald-50 text-emerald-700 ring-emerald-100",
+    dot: "bg-emerald-500",
+    add: "hover:border-emerald-200 hover:bg-emerald-50/70 hover:text-emerald-800",
+  },
+  {
+    badge: "bg-amber-50 text-amber-700 ring-amber-100",
+    dot: "bg-amber-500",
+    add: "hover:border-amber-200 hover:bg-amber-50/70 hover:text-amber-800",
+  },
 ];
+
+const JOURNAL_OPTIONS = ["Scopus", "SCI", "WOS", "Annexure-1"] as const;
+
+function createEmptyPaper() {
+  return {
+    facultyName: "",
+    designation: "",
+    department: "",
+    titleOfPaper: "",
+    journalType: "",
+    monthYear: "",
+  };
+}
+
+function createEmptyBookChapter() {
+  return {
+    name: "",
+    designation: "",
+    department: "",
+    titleOfBook: "",
+    publisherIsbn: "",
+    monthYear: "",
+  };
+}
+
+function createEmptyPatent() {
+  return {
+    name: "",
+    designation: "",
+    department: "",
+    titleOfPatent: "",
+    designProduct: "",
+    monthYear: "",
+  };
+}
+
+function createEmptyPhdAwardee() {
+  return {
+    name: "",
+    designation: "",
+    branch: "",
+    university: "",
+    year: "",
+    title: "",
+  };
+}
+
+function isFilled(value: string) {
+  return value.trim().length > 0;
+}
+
+function isEntryEmpty(entry: Record<string, string>) {
+  return Object.values(entry).every((value) => !isFilled(value));
+}
+
+function isEntryComplete(entry: Record<string, string>) {
+  return Object.values(entry).every((value) => isFilled(value));
+}
 
 export default function FacultyFormPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
   const form = useForm<FacultyFormValues>({
-    resolver: zodResolver(facultyFormSchema),
     defaultValues: {
-      papersPublished: [{ facultyName: "", designation: "", titleOfPaper: "", journalType: "Scopus", monthYear: "" }],
-      booksChapters: [{ name: "", designation: "", titleOfBook: "", publisherIsbn: "", monthYear: "" }],
-      patentsGranted: [{ name: "", designation: "", titleOfPatent: "", designProduct: "", monthYear: "" }],
-      phdAwardees: [{ name: "", designation: "", branch: "", university: "", year: "", title: "" }],
-    }
+      papersPublished: [createEmptyPaper()],
+      booksChapters: [createEmptyBookChapter()],
+      patentsGranted: [createEmptyPatent()],
+      phdAwardees: [createEmptyPhdAwardee()],
+    },
   });
 
   const submitMutation = useSubmitFacultyForm();
+  const watchedValues = form.watch();
 
-  function onSubmit(data: FacultyFormValues) {
-    submitMutation.mutate({ data }, {
-      onSuccess: () => {
-        toast({ title: "Submitted successfully!", description: "Faculty data has been recorded." });
-        setLocation("/");
-      },
-      onError: (err) => {
-        toast({ title: "Submission failed", description: err.message || "An error occurred.", variant: "destructive" });
+  const sectionStatus = useMemo(() => {
+    const getStatus = (entries: Record<string, string>[]) => {
+      const filledEntries = entries.filter((entry) => !isEntryEmpty(entry));
+      return {
+        hasCompleteEntry: filledEntries.some((entry) => isEntryComplete(entry)),
+        hasPartialEntry: filledEntries.some((entry) => !isEntryComplete(entry)),
+      };
+    };
+
+    const papersPublished = getStatus(watchedValues.papersPublished);
+    const booksChapters = getStatus(watchedValues.booksChapters);
+    const patentsGranted = getStatus(watchedValues.patentsGranted);
+    const phdAwardees = getStatus(watchedValues.phdAwardees);
+
+    return {
+      papersPublished,
+      booksChapters,
+      patentsGranted,
+      phdAwardees,
+      canSubmit:
+        [papersPublished, booksChapters, patentsGranted, phdAwardees].some(
+          (section) => section.hasCompleteEntry,
+        ) &&
+        ![papersPublished, booksChapters, patentsGranted, phdAwardees].some(
+          (section) => section.hasPartialEntry,
+        ),
+    };
+  }, [watchedValues]);
+
+  function validateSection<T extends Record<string, string>>(
+    sectionName: FacultySectionName,
+    entries: T[],
+    labels: Record<string, string>,
+  ) {
+    const completedEntries: T[] = [];
+    let hasPartialEntry = false;
+
+    entries.forEach((entry, index) => {
+      if (isEntryEmpty(entry)) {
+        return;
       }
+
+      const missingFields = Object.entries(labels).filter(
+        ([key]) => !isFilled(entry[key] ?? ""),
+      );
+
+      if (missingFields.length > 0) {
+        hasPartialEntry = true;
+        missingFields.forEach(([key, label]) => {
+          form.setError(`${sectionName}.${index}.${key}` as never, {
+            type: "manual",
+            message: `${label} is required`,
+          });
+        });
+        return;
+      }
+
+      completedEntries.push(entry);
     });
+
+    return { completedEntries, hasPartialEntry };
+  }
+
+  function onSubmit(values: FacultyFormValues) {
+    form.clearErrors();
+
+    const papersPublished = validateSection("papersPublished", values.papersPublished, {
+      facultyName: "Faculty Name",
+      designation: "Designation",
+      department: "Department",
+      titleOfPaper: "Title of Paper",
+      journalType: "Journal Type",
+      monthYear: "Month & Year",
+    });
+
+    const booksChapters = validateSection("booksChapters", values.booksChapters, {
+      name: "Name",
+      designation: "Designation",
+      department: "Department",
+      titleOfBook: "Title of Book / Chapter",
+      publisherIsbn: "Publisher & ISBN",
+      monthYear: "Month & Year",
+    });
+
+    const patentsGranted = validateSection("patentsGranted", values.patentsGranted, {
+      name: "Name",
+      designation: "Designation",
+      department: "Department",
+      titleOfPatent: "Title of Patent",
+      designProduct: "Design / Product",
+      monthYear: "Month & Year",
+    });
+
+    const phdAwardees = validateSection("phdAwardees", values.phdAwardees, {
+      name: "Name",
+      designation: "Designation",
+      branch: "Department",
+      university: "University",
+      year: "Year of Award",
+      title: "Title of Thesis",
+    });
+
+    const hasPartialEntry = [
+      papersPublished,
+      booksChapters,
+      patentsGranted,
+      phdAwardees,
+    ].some((section) => section.hasPartialEntry);
+
+    const hasCompletedSection = [
+      papersPublished,
+      booksChapters,
+      patentsGranted,
+      phdAwardees,
+    ].some((section) => section.completedEntries.length > 0);
+
+    if (hasPartialEntry) {
+      toast({
+        title: "Complete or clear unfinished entries",
+        description:
+          "You can submit only when at least one section is fully completed and no partially filled entries remain.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!hasCompletedSection) {
+      toast({
+        title: "Complete at least one section",
+        description:
+          "Fill one full section before submitting the faculty form.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const payload: FacultyFormData = {
+      papersPublished: papersPublished.completedEntries.map((entry) => ({
+        ...entry,
+        journalType: entry.journalType as PaperPublishedJournalType,
+      })),
+      booksChapters: booksChapters.completedEntries,
+      patentsGranted: patentsGranted.completedEntries,
+      phdAwardees: phdAwardees.completedEntries,
+    };
+
+    submitMutation.mutate(
+      {
+        data: payload,
+      },
+      {
+        onSuccess: () => {
+          toast({ title: "Submitted successfully!", description: "Faculty data has been recorded." });
+          setLocation("/");
+        },
+        onError: (err) => {
+          toast({ title: "Submission failed", description: err.message || "An error occurred.", variant: "destructive" });
+        },
+      },
+    );
   }
 
   const renderSection = (
     num: number,
     title: string,
     name: "papersPublished" | "booksChapters" | "patentsGranted" | "phdAwardees",
-    fieldsConfig: { name: string; label: string; type?: "select"; options?: string[] }[]
+    fieldsConfig: FieldConfig[],
   ) => {
     const { fields, append, remove } = useFieldArray({ control: form.control, name });
-    const colorClass = SECTION_COLORS[(num - 1) % SECTION_COLORS.length];
+    const tone = SECTION_COLORS[(num - 1) % SECTION_COLORS.length];
 
     return (
-      <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-white">
-        {/* Section header */}
-        <div className={`bg-gradient-to-r ${colorClass} px-6 py-4 flex items-center gap-3`}>
-          <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-white font-black text-sm">
-            {num}
+      <section className="surface-panel overflow-hidden">
+        <div className="flex flex-col gap-4 border-b border-stone-200/80 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-4">
+            <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ring-1 ${tone.badge}`}>
+              <span className="text-sm font-semibold">{num}</span>
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className={`h-2 w-2 rounded-full ${tone.dot}`} />
+                <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
+                  Section {num}
+                </span>
+              </div>
+              <h2 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-slate-950">
+                {title}
+              </h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Fill complete entries only. Unused sections can remain empty.
+              </p>
+            </div>
           </div>
-          <h2 className="text-white font-bold text-lg">{title}</h2>
         </div>
 
-        {/* Entries */}
-        <div className="p-5 space-y-4">
+        <div className="space-y-4 px-5 py-5 sm:px-6">
           {fields.map((field, index) => (
-            <div key={field.id} className="relative bg-slate-50 border border-slate-200 rounded-xl p-5">
-              {/* Entry number + delete */}
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wide">
+            <div key={field.id} className="surface-muted p-5">
+              <div className="mb-5 flex items-center justify-between">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
                   Entry {index + 1}
                 </span>
                 {fields.length > 1 && (
                   <button
                     type="button"
                     onClick={() => remove(index)}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                    className="flex h-8 w-8 items-center justify-center rounded-full border border-transparent text-slate-400 transition hover:border-rose-100 hover:bg-rose-50 hover:text-rose-600"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -131,7 +381,10 @@ export default function FacultyFormPage() {
                           {config.label}
                         </FormLabel>
                         {config.type === "select" ? (
-                          <Select onValueChange={formField.onChange} defaultValue={formField.value}>
+                          <Select
+                            onValueChange={formField.onChange}
+                            value={formField.value || undefined}
+                          >
                             <FormControl>
                               <SelectTrigger className="h-10 bg-white border-slate-300">
                                 <SelectValue placeholder="Select..." />
@@ -160,86 +413,71 @@ export default function FacultyFormPage() {
           <button
             type="button"
             onClick={() => {
-              const empty = fieldsConfig.reduce(
-                (acc, c) => ({ ...acc, [c.name]: c.type === "select" ? c.options?.[0] ?? "" : "" }),
-                {}
-              );
-              append(empty as any);
+              const empty = fieldsConfig.reduce<Record<string, string>>((acc, c) => {
+                acc[c.name] = "";
+                return acc;
+              }, {});
+              append(empty as never);
             }}
-            className="w-full py-3 rounded-xl border-2 border-dashed border-slate-300 text-slate-500 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50/30 transition-all text-sm font-semibold flex items-center justify-center gap-2"
+            className={`flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-3 text-sm font-semibold text-slate-600 transition ${tone.add}`}
           >
             <Plus className="w-4 h-4" />
             Add Another Entry
           </button>
         </div>
-      </div>
+      </section>
     );
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="app-shell flex flex-col">
+      <SiteHeader onBack={() => setLocation("/")} sticky />
 
-      {/* Gold accent bar */}
-      <div className="h-1 flex-shrink-0" style={{ background: "linear-gradient(90deg, #b45309, #f59e0b, #fbbf24, #f59e0b, #b45309)" }} />
-
-      {/* Sticky header */}
-      <header className="sticky top-0 z-20 bg-white border-b border-slate-200 shadow-sm">
-        <div className="container mx-auto px-4 sm:px-6 max-w-4xl h-14 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setLocation("/")}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </button>
-            <div className="flex items-center gap-2">
-              <div
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-white font-black text-[10px]"
-                style={{ background: "linear-gradient(135deg, #1d4ed8, #3b82f6)" }}
-              >
-                SNS
-              </div>
-              <span className="font-bold text-slate-700 text-sm hidden sm:block">SNS College of Technology</span>
-              <span className="font-bold text-slate-700 text-sm sm:hidden">SNS CoT</span>
-            </div>
-          </div>
-          <div
-            className="text-xs font-bold px-3 py-1 rounded-full"
-            style={{ background: "rgba(245,158,11,0.1)", color: "#b45309", border: "1px solid rgba(245,158,11,0.25)" }}
-          >
-            Annual Day 2026
-          </div>
-        </div>
-      </header>
-
-      {/* Hero banner */}
-      <div style={{ background: "linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #2563eb 100%)" }} className="py-8 px-4">
-        <div className="container mx-auto max-w-4xl">
-          <div className="flex items-center gap-3 mb-2">
-            <BookOpen className="w-6 h-6 text-blue-200" />
-            <span className="text-blue-200 text-sm font-semibold">Faculty Data Submission</span>
-          </div>
-          <h1 className="text-white font-black text-2xl sm:text-3xl mb-1">Faculty Achievements Form</h1>
-          <p className="text-blue-200/80 text-sm">Data Collection Period: May 2025 – March 2026</p>
-        </div>
-      </div>
-
-      {/* Form */}
-      <main className="flex-1 container mx-auto px-4 sm:px-6 max-w-4xl py-8">
+      <main className="page-frame flex-1 py-8 lg:py-10">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <section className="hero-panel px-6 py-7 sm:px-8 sm:py-8">
+              <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr] lg:items-end">
+                <div>
+                  <span className="editorial-eyebrow">
+                    <BookOpen className="h-3.5 w-3.5" />
+                    Faculty Submission
+                  </span>
+                  <h1 className="mt-5 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
+                    Faculty achievements, presented with clarity.
+                  </h1>
+                  <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
+                    Record papers, books, patents, and PhD awardees for the May 2025 to March 2026 cycle. The form accepts submissions when at least one section is fully complete.
+                  </p>
+                </div>
+                <div className="surface-muted p-5">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
+                    Submission Rule
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    Leave unused sections blank. If a section is started, each entry in that section must be complete before you submit.
+                  </p>
+                  <div className="mt-4 flex items-center gap-2 text-sm font-medium text-slate-800">
+                    <span className={`h-2.5 w-2.5 rounded-full ${sectionStatus.canSubmit ? "bg-emerald-500" : "bg-amber-500"}`} />
+                    {sectionStatus.canSubmit ? "Ready to submit" : "Complete one section to continue"}
+                  </div>
+                </div>
+              </div>
+            </section>
 
             {renderSection(1, "Papers Published", "papersPublished", [
               { name: "facultyName", label: "Faculty Name" },
-              { name: "designation", label: "Designation" },
+              { name: "designation", label: "Designation", type: "select", options: DESIGNATION_OPTIONS },
+              { name: "department", label: "Department", type: "select", options: DEPARTMENT_OPTIONS },
               { name: "titleOfPaper", label: "Title of Paper" },
-              { name: "journalType", label: "Journal Type", type: "select", options: ["Scopus", "SCI", "WOS", "Annexure-1"] },
+              { name: "journalType", label: "Journal Type", type: "select", options: JOURNAL_OPTIONS },
               { name: "monthYear", label: "Month & Year" },
             ])}
 
             {renderSection(2, "Book / Book Chapter", "booksChapters", [
               { name: "name", label: "Name" },
-              { name: "designation", label: "Designation" },
+              { name: "designation", label: "Designation", type: "select", options: DESIGNATION_OPTIONS },
+              { name: "department", label: "Department", type: "select", options: DEPARTMENT_OPTIONS },
               { name: "titleOfBook", label: "Title of Book / Chapter" },
               { name: "publisherIsbn", label: "Publisher & ISBN" },
               { name: "monthYear", label: "Month & Year" },
@@ -247,7 +485,8 @@ export default function FacultyFormPage() {
 
             {renderSection(3, "Patent Granted", "patentsGranted", [
               { name: "name", label: "Name" },
-              { name: "designation", label: "Designation" },
+              { name: "designation", label: "Designation", type: "select", options: DESIGNATION_OPTIONS },
+              { name: "department", label: "Department", type: "select", options: DEPARTMENT_OPTIONS },
               { name: "titleOfPatent", label: "Title of Patent" },
               { name: "designProduct", label: "Design / Product" },
               { name: "monthYear", label: "Month & Year" },
@@ -255,35 +494,48 @@ export default function FacultyFormPage() {
 
             {renderSection(4, "PhD Awardees", "phdAwardees", [
               { name: "name", label: "Name" },
-              { name: "designation", label: "Designation" },
-              { name: "branch", label: "Branch" },
+              { name: "designation", label: "Designation", type: "select", options: DESIGNATION_OPTIONS },
+              { name: "branch", label: "Department", type: "select", options: DEPARTMENT_OPTIONS },
               { name: "university", label: "University" },
               { name: "year", label: "Year of Award" },
               { name: "title", label: "Title of Thesis" },
             ])}
 
-            {/* Submit */}
-            <div className="pt-4 pb-8">
-              <Button
-                type="submit"
-                disabled={submitMutation.isPending}
-                className="w-full h-13 text-base font-bold rounded-xl shadow-lg"
-                style={{ background: "linear-gradient(135deg, #1e40af, #2563eb)", padding: "0.875rem 2rem" }}
-              >
-                {submitMutation.isPending ? (
-                  <span className="flex items-center gap-2">Submitting...</span>
-                ) : (
-                  <span className="flex items-center gap-2">
-                    <CheckCircle2 className="w-5 h-5" />
-                    Submit Faculty Form
-                  </span>
-                )}
-              </Button>
-              <p className="text-center text-slate-400 text-xs mt-3">
-                Annual Day 2026 · SNS College of Technology, Coimbatore
-              </p>
-            </div>
+            <div className="surface-panel px-6 py-6 sm:px-8">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
+                    Final Step
+                  </p>
+                  <h3 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-slate-950">
+                    Submit faculty data
+                  </h3>
+                  <p className="mt-1 text-sm text-slate-600">
+                    Review all started entries before continuing.
+                  </p>
+                </div>
+                <div className="text-sm text-slate-500">
+                  SNS College of Technology
+                </div>
+              </div>
 
+              <div className="mt-6">
+                <Button
+                  type="submit"
+                  disabled={submitMutation.isPending || !sectionStatus.canSubmit}
+                  className="h-12 w-full rounded-full bg-slate-950 px-6 text-sm font-semibold tracking-[0.12em] uppercase text-white transition hover:bg-slate-800 disabled:bg-slate-300"
+                >
+                  {submitMutation.isPending ? (
+                    <span className="flex items-center gap-2">Submitting...</span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4" />
+                      Submit Faculty Form
+                    </span>
+                  )}
+                </Button>
+              </div>
+            </div>
           </form>
         </Form>
       </main>

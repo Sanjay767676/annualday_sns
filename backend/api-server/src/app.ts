@@ -6,10 +6,29 @@ import router from "./routes/index.js";
 import { logger } from "./lib/logger.js";
 
 const app = express();
+const QUIET_GET_PATHS = new Set([
+  "/api/admin/faculty",
+  "/api/admin/student",
+  "/api/admin/stats",
+]);
 
 app.use(
   pinoHttp({
     logger,
+    autoLogging: {
+      ignore: (req) => req.url?.split("?")[0] === "/api/healthz",
+    },
+    customLogLevel: (req, res, err) => {
+      if (err || res.statusCode >= 500) return "error";
+
+      const method = req.method?.toUpperCase();
+      const path = req.url?.split("?")[0] ?? "";
+      const isRoutinePoll = method === "GET" && QUIET_GET_PATHS.has(path) && res.statusCode < 400;
+
+      if (isRoutinePoll || res.statusCode === 304) return "silent";
+      if (res.statusCode >= 400) return "warn";
+      return "info";
+    },
     serializers: {
       req(req: IncomingMessage & { id?: string | number }) {
         return {

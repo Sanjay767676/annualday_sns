@@ -9,6 +9,7 @@
 export interface BookChapter {
   name: string;
   designation: string;
+  department: string;
   titleOfBook: string;
   publisherIsbn: string;
   monthYear: string;
