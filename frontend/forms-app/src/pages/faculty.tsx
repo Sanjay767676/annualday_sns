@@ -15,9 +15,10 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { MonthPicker } from "@/components/ui/month-picker";
+import { DateCalendarPicker } from "@/components/ui/date-calendar-picker";
 import { SearchableCombobox } from "@/components/ui/searchable-combobox";
 import SiteHeader from "@/components/site-header";
-import { FACULTY_DEPARTMENT_OPTIONS, DESIGNATION_OPTIONS, PHD_YEAR_OPTIONS } from "@/lib/form-options";
+import { FACULTY_DEPARTMENT_OPTIONS, DESIGNATION_OPTIONS } from "@/lib/form-options";
 import { INDIAN_UNIVERSITIES } from "@/lib/universities";
 
 type FacultyFormValues = {
@@ -63,7 +64,7 @@ type FacultySectionName = keyof FacultyFormValues;
 type FieldConfig = {
   name: string;
   label: string;
-  type?: "select" | "month" | "combobox";
+  type?: "select" | "month" | "combobox" | "date";
   options?: readonly string[];
 };
 
@@ -288,7 +289,7 @@ export default function FacultyFormPage() {
       designation: "Designation",
       branch: "Department",
       university: "University",
-      year: "Year of Award",
+      year: "Date of Graduation / Viva Voce Completion",
       title: "Title of Thesis",
     });
 
@@ -487,6 +488,14 @@ export default function FacultyFormPage() {
                                 placeholder={`Search ${config.label.toLowerCase()}...`}
                               />
                             </FormControl>
+                          ) : config.type === "date" ? (
+                            <FormControl>
+                              <DateCalendarPicker
+                                value={formField.value}
+                                onChange={formField.onChange}
+                                disabled={submitMutation.isPending}
+                              />
+                            </FormControl>
                           ) : (
                             <FormControl>
                               <Input className="h-10 bg-white border-slate-300 focus:border-blue-400" {...formField} />
@@ -607,7 +616,7 @@ export default function FacultyFormPage() {
               { name: "designation", label: "Designation", type: "select", options: DESIGNATION_OPTIONS },
               { name: "branch", label: "Department", type: "select", options: FACULTY_DEPARTMENT_OPTIONS },
               { name: "university", label: "University", type: "combobox", options: INDIAN_UNIVERSITIES },
-              { name: "year", label: "Year of Award", type: "select", options: PHD_YEAR_OPTIONS },
+              { name: "year", label: "Date of Graduation / Viva Voce Completion", type: "date" },
               { name: "title", label: "Title of Thesis" },
             ])}
 
