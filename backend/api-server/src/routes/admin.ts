@@ -56,20 +56,46 @@ router.get("/admin/stats", async (req: Request, res: Response): Promise<void> =>
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
     const [facultyTotal] = await db
-      .select({ count: sql<number>`count(*)::int` })
+      .select({
+        count: sql<number>`COALESCE(sum(
+          COALESCE(jsonb_array_length(data->'papersPublished'), 0) +
+          COALESCE(jsonb_array_length(data->'booksChapters'), 0) +
+          COALESCE(jsonb_array_length(data->'patentsGranted'), 0) +
+          COALESCE(jsonb_array_length(data->'phdAwardees'), 0)
+        ), 0)::int`,
+      })
       .from(facultySubmissionsTable);
 
     const [studentTotal] = await db
-      .select({ count: sql<number>`count(*)::int` })
+      .select({
+        count: sql<number>`COALESCE(sum(
+          COALESCE(jsonb_array_length(data->'firstRankHolders'), 0) +
+          COALESCE(jsonb_array_length(data->'semesterWiseRankers'), 0) +
+          COALESCE(jsonb_array_length(data->'reputedInstitutionAchievements'), 0)
+        ), 0)::int`,
+      })
       .from(studentSubmissionsTable);
 
     const [recentFaculty] = await db
-      .select({ count: sql<number>`count(*)::int` })
+      .select({
+        count: sql<number>`COALESCE(sum(
+          COALESCE(jsonb_array_length(data->'papersPublished'), 0) +
+          COALESCE(jsonb_array_length(data->'booksChapters'), 0) +
+          COALESCE(jsonb_array_length(data->'patentsGranted'), 0) +
+          COALESCE(jsonb_array_length(data->'phdAwardees'), 0)
+        ), 0)::int`,
+      })
       .from(facultySubmissionsTable)
       .where(gte(facultySubmissionsTable.createdAt, thirtyDaysAgo));
 
     const [recentStudent] = await db
-      .select({ count: sql<number>`count(*)::int` })
+      .select({
+        count: sql<number>`COALESCE(sum(
+          COALESCE(jsonb_array_length(data->'firstRankHolders'), 0) +
+          COALESCE(jsonb_array_length(data->'semesterWiseRankers'), 0) +
+          COALESCE(jsonb_array_length(data->'reputedInstitutionAchievements'), 0)
+        ), 0)::int`,
+      })
       .from(studentSubmissionsTable)
       .where(gte(studentSubmissionsTable.createdAt, thirtyDaysAgo));
 

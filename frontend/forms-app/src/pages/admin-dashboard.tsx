@@ -756,7 +756,7 @@ export default function AdminDashboard() {
                 <FileText className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Faculty Submissions</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Faculty Entries</p>
                 <h3 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-slate-950">
                   {statsLoading ? "..." : stats?.totalFacultySubmissions ?? 0}
                 </h3>
@@ -770,7 +770,7 @@ export default function AdminDashboard() {
                 <Users className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Student Submissions</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Student Entries</p>
                 <h3 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-slate-950">
                   {statsLoading ? "..." : stats?.totalStudentSubmissions ?? 0}
                 </h3>
