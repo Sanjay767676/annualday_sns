@@ -2,7 +2,13 @@
   "installCommand": "npm ci",
   "buildCommand": "npm run build",
   "outputDirectory": "frontend/forms-app/dist/public",
+  "functions": {
+    "api/*.ts": {
+      "includeFiles": "backend/**"
+    }
+  },
   "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }

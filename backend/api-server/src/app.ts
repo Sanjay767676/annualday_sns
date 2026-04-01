@@ -54,6 +54,17 @@ app.use(express.urlencoded({ extended: true, limit: "128kb" }));
 app.use("/api", router);
 app.use("/", router);
 
+// Health check specifically for root path debugging
+app.get("/_debug", (req, res) => {
+  res.json({
+    status: "ok",
+    env: process.env.NODE_ENV,
+    url: req.url,
+    originalUrl: req.originalUrl,
+    message: "Express is reached",
+  });
+});
+
 // Add a fallback for 404 to see what's happening
 app.use((req, res) => {
   res.status(404).json({
