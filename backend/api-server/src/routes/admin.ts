@@ -1,5 +1,6 @@
 import { Router, type Request, type Response } from "express";
 import { db, sql, gte } from "../../../db/src/index.js";
+import { ensureDbReady } from "../lib/ensure-db-ready.js";
 import { facultySubmissionsTable } from "../../../db/src/schema/faculty_submissions.js";
 import { studentSubmissionsTable } from "../../../db/src/schema/student_submissions.js";
 import {
@@ -9,6 +10,16 @@ import {
 } from "../../../api-zod/src/generated/api.js";
 
 const router = Router();
+
+router.use(async (_req, res, next) => {
+  try {
+    await ensureDbReady();
+    next();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Database initialization failed";
+    res.status(500).json({ error: message });
+  }
+});
 
 const ADMIN_PASSWORDS = new Set(["admin123", "sns123"]);
 
