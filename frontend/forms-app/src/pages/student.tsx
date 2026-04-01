@@ -963,7 +963,7 @@ export default function StudentFormPage() {
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    {["Tire 1 College", "Tire 2 College", "MNCs", "Mango Big 7", "Startup"].map(o => (
+                                    {["Tire 1 Institution", "Tire 2 Institution", "MNCs", "MAANGO Big 7", "Startup"].map(o => (
                                       <SelectItem key={o} value={o}>{o}</SelectItem>
                                     ))}
                                   </SelectContent>
