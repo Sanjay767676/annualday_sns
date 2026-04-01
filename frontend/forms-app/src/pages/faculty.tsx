@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { useLocation } from "wouter";
-import { Plus, Trash2, BookOpen, CheckCircle2 } from "lucide-react";
+import { format, parse } from "date-fns";
+import { Plus, Trash2, BookOpen, CheckCircle2, CalendarDays } from "lucide-react";
 
 import {
   useSubmitFacultyForm,
@@ -14,6 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import SiteHeader from "@/components/site-header";
 import { FACULTY_DEPARTMENT_OPTIONS, DESIGNATION_OPTIONS } from "@/lib/form-options";
 
@@ -60,7 +63,7 @@ type FacultySectionName = keyof FacultyFormValues;
 type FieldConfig = {
   name: string;
   label: string;
-  type?: "select";
+  type?: "select" | "month";
   options?: readonly string[];
 };
 
@@ -88,6 +91,8 @@ const SECTION_COLORS = [
 ];
 
 const JOURNAL_OPTIONS = ["Scopus", "SCI", "WOS", "Annexure-1"] as const;
+const MONTH_PICKER_START = new Date(2020, 0, 1);
+const MONTH_PICKER_END = new Date(2026, 11, 31);
 
 function createEmptyPaper() {
   return {
@@ -158,6 +163,15 @@ function isEntryComplete(entry: Record<string, string>) {
 
 function resolveDepartmentValue(department: string, departmentOther: string) {
   return department === "others" ? departmentOther.trim() : department;
+}
+
+function parseMonthYear(value: string) {
+  if (!value) {
+    return undefined;
+  }
+
+  const parsed = parse(value, "yyyy-MM", new Date());
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed;
 }
 
 export default function FacultyFormPage() {
@@ -397,9 +411,6 @@ export default function FacultyFormPage() {
               <h2 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-slate-950">
                 {title}
               </h2>
-              <p className="mt-1 text-sm text-slate-500">
-                Fill complete entries only. Unused sections can remain empty.
-              </p>
             </div>
           </div>
         </div>
@@ -459,6 +470,39 @@ export default function FacultyFormPage() {
                                 ))}
                               </SelectContent>
                             </Select>
+                          ) : config.type === "month" ? (
+                            <FormControl>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="h-10 w-full justify-start border-slate-300 bg-white text-left font-normal hover:bg-white"
+                                  >
+                                    <CalendarDays className="mr-2 h-4 w-4 text-slate-500" />
+                                    {formField.value ? (
+                                      <span>{format(parseMonthYear(formField.value) ?? MONTH_PICKER_END, "MMM yyyy")}</span>
+                                    ) : (
+                                      <span className="text-slate-400">Select month & year</span>
+                                    )}
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                  <Calendar
+                                    mode="single"
+                                    captionLayout="dropdown-years"
+                                    startMonth={MONTH_PICKER_START}
+                                    endMonth={MONTH_PICKER_END}
+                                    selected={parseMonthYear(formField.value)}
+                                    defaultMonth={parseMonthYear(formField.value) ?? MONTH_PICKER_END}
+                                    onSelect={(date) => {
+                                      formField.onChange(date ? format(date, "yyyy-MM") : "");
+                                    }}
+                                    disabled={(date) => date < MONTH_PICKER_START || date > MONTH_PICKER_END}
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                            </FormControl>
                           ) : (
                             <FormControl>
                               <Input className="h-10 bg-white border-slate-300 focus:border-blue-400" {...formField} />
@@ -529,18 +573,15 @@ export default function FacultyFormPage() {
                     Faculty Submission
                   </span>
                   <h1 className="mt-5 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
-                    Faculty achievements, presented with clarity.
+                    Faculty Form
                   </h1>
-                  <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
-                    Record papers, books, patents, and PhD awardees for the May 2025 to March 2026 cycle. The form accepts submissions when at least one section is fully complete.
+                  <p className="mt-3 text-sm text-slate-600">
+                    Fill required details and submit.
                   </p>
                 </div>
-                <div className="surface-muted p-5">
+                <div className="surface-muted bg-gradient-to-br from-blue-50/70 via-white to-emerald-50/60 p-5">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
-                    Submission Rule
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">
-                    Leave unused sections blank. If a section is started, each entry in that section must be complete before you submit.
+                    Status
                   </p>
                   <div className="mt-4 flex items-center gap-2 text-sm font-medium text-slate-800">
                     <span className={`h-2.5 w-2.5 rounded-full ${sectionStatus.canSubmit ? "bg-emerald-500" : "bg-amber-500"}`} />
@@ -556,7 +597,7 @@ export default function FacultyFormPage() {
               { name: "department", label: "Department", type: "select", options: FACULTY_DEPARTMENT_OPTIONS },
               { name: "titleOfPaper", label: "Title of Paper" },
               { name: "journalType", label: "Journal Type", type: "select", options: JOURNAL_OPTIONS },
-              { name: "monthYear", label: "Month & Year" },
+              { name: "monthYear", label: "Month & Year", type: "month" },
             ])}
 
             {renderSection(2, "Book / Book Chapter", "booksChapters", [
@@ -565,7 +606,7 @@ export default function FacultyFormPage() {
               { name: "department", label: "Department", type: "select", options: FACULTY_DEPARTMENT_OPTIONS },
               { name: "titleOfBook", label: "Title of Book / Chapter" },
               { name: "publisherIsbn", label: "Publisher & ISBN" },
-              { name: "monthYear", label: "Month & Year" },
+              { name: "monthYear", label: "Month & Year", type: "month" },
             ])}
 
             {renderSection(3, "Patent Granted", "patentsGranted", [
@@ -574,7 +615,7 @@ export default function FacultyFormPage() {
               { name: "department", label: "Department", type: "select", options: FACULTY_DEPARTMENT_OPTIONS },
               { name: "titleOfPatent", label: "Title of Patent" },
               { name: "designProduct", label: "Design / Product" },
-              { name: "monthYear", label: "Month & Year" },
+              { name: "monthYear", label: "Month & Year", type: "month" },
             ])}
 
             {renderSection(4, "PhD Awardees", "phdAwardees", [
@@ -595,12 +636,6 @@ export default function FacultyFormPage() {
                   <h3 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-slate-950">
                     Submit faculty data
                   </h3>
-                  <p className="mt-1 text-sm text-slate-600">
-                    Review all started entries before continuing.
-                  </p>
-                </div>
-                <div className="text-sm text-slate-500">
-                  SNS College of Technology
                 </div>
               </div>
 

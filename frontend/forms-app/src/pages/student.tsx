@@ -324,9 +324,6 @@ export default function StudentFormPage() {
             <h2 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-slate-950">
               {title}
             </h2>
-            <p className="mt-1 text-sm text-slate-500">
-              Fill complete entries only. Unused sections can remain empty.
-            </p>
           </div>
         </div>
       </div>
@@ -366,18 +363,15 @@ export default function StudentFormPage() {
                     Student Submission
                   </span>
                   <h1 className="mt-5 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
-                    Student achievements, arranged in a clean academic format.
+                    Student Form
                   </h1>
-                  <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
-                    Capture first ranks, semester-wise results, and notable achievements in a layout designed to feel formal, polished, and easy to complete.
+                  <p className="mt-3 text-sm text-slate-600">
+                    Fill required details and submit.
                   </p>
                 </div>
-                <div className="surface-muted p-5">
+                <div className="surface-muted bg-gradient-to-br from-indigo-50/70 via-white to-cyan-50/60 p-5">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
-                    Submission Rule
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">
-                    Complete one full section to enable submission. Any section you begin must be filled completely.
+                    Status
                   </p>
                   <div className="mt-4 flex items-center gap-2 text-sm font-medium text-slate-800">
                     <span className={`h-2.5 w-2.5 rounded-full ${sectionStatus.canSubmit ? "bg-emerald-500" : "bg-amber-500"}`} />
@@ -649,12 +643,6 @@ export default function StudentFormPage() {
                   <h3 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-slate-950">
                     Submit student data
                   </h3>
-                  <p className="mt-1 text-sm text-slate-600">
-                    Review all started entries before continuing.
-                  </p>
-                </div>
-                <div className="text-sm text-slate-500">
-                  SNS College of Technology
                 </div>
               </div>
 

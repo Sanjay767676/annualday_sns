@@ -3,14 +3,14 @@ import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import * as XLSX from "xlsx";
 import {
-  LogOut, Users, FileText, Activity,
+  LogOut, Users, FileText,
   Search, Download, ChevronLeft, ChevronRight, RefreshCw,
 } from "lucide-react";
 
 import { useGetAdminStats, getGetAdminStatsQueryKey } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 
@@ -370,29 +370,11 @@ export default function AdminDashboard() {
       </header>
 
       <main className="page-frame flex-1 space-y-8 py-8 lg:py-10">
-        <section className="hero-panel px-6 py-7 sm:px-8">
-          <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
-            <div>
-              <span className="editorial-eyebrow">Review & Export</span>
-              <h1 className="mt-5 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
-                Review submissions in a quiet, structured workspace.
-              </h1>
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
-                Search submissions, switch between faculty and student datasets, and export the records you need for reporting and Annual Day preparation.
-              </p>
-            </div>
-            <div className="surface-muted p-5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
-                Live Summary
-              </p>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
-                The dashboard refreshes automatically so recent activity and submission counts remain current while you review data.
-              </p>
-            </div>
-          </div>
+        <section>
+          <h1 className="text-2xl font-semibold tracking-[-0.03em] text-slate-950">Admin Dashboard</h1>
         </section>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card className="border-stone-200/80 bg-white/92 shadow-[0_18px_50px_rgba(15,23,42,0.05)]">
             <CardContent className="p-6 flex items-center gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-700 ring-1 ring-blue-100">
@@ -417,22 +399,6 @@ export default function AdminDashboard() {
                 <h3 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-slate-950">
                   {statsLoading ? "..." : stats?.totalStudentSubmissions ?? 0}
                 </h3>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-stone-200/80 bg-white/92 shadow-[0_18px_50px_rgba(15,23,42,0.05)]">
-            <CardContent className="p-6 flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-50 text-violet-700 ring-1 ring-violet-100">
-                <Activity className="w-6 h-6" />
-              </div>
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Recent Activity</p>
-                <p className="mt-2 text-sm font-medium text-slate-900">
-                  +{statsLoading ? "..." : stats?.recentFacultySubmissions ?? 0} Faculty
-                  <span className="mx-2 text-slate-300">•</span>
-                  +{statsLoading ? "..." : stats?.recentStudentSubmissions ?? 0} Students
-                </p>
               </div>
             </CardContent>
           </Card>
