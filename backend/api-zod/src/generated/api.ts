@@ -91,19 +91,19 @@ export const SubmitStudentFormBody = zod.object({
       department: zod.string(),
       yearOfStudy: zod.string(),
       eventType: zod.enum([
-        "hackathon",
-        "patent published",
-        "paper published",
-        "E Kart",
+        "Hackathon",
+        "Patent Published",
+        "Paper Published",
+        "E-Kart",
         "Go J Kart",
       ]),
       paperType: zod
-        .enum(["SCI", "WOS", "Scopus", "Annexture -1"])
+        .enum(["SCI", "WOS", "Scopus", "Annexure-1"])
         .optional(),
       designProduct: zod.enum(["Design", "Product"]).optional(),
       dateOfPublished: zod.string().optional(),
       institutionIndustry: zod
-        .enum(["TIRE 1 College", "TIRE 2 COLLEGE", "MNCs", "MANGOBIG 7", "Startup"])
+        .enum(["Tire 1 College", "Tire 2 College", "MNCs", "Mango Big 7", "Startup"])
         .optional(),
       institutionName: zod.string().optional(),
       prizeWon: zod.enum(["Winner", "Runner"]).optional(),

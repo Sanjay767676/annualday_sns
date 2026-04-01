@@ -344,7 +344,7 @@ export default function StudentFormPage() {
     values.reputedInstitutionAchievements.forEach((entry, index) => {
       if (isEntryEmpty(entry)) return;
 
-      if (entry.eventType === "paper published") {
+      if (entry.eventType === "Paper Published") {
         if (!isFilled(entry.paperType)) {
           form.setError(`reputedInstitutionAchievements.${index}.paperType` as never, { type: "manual", message: "Paper Type is required" });
         }
@@ -373,7 +373,7 @@ export default function StudentFormPage() {
             form.setError(`reputedInstitutionAchievements.${index}.proofLink` as never, { type: "manual", message: "Proof Link is required" });
           }
         }
-      } else if (entry.eventType === "patent published") {
+      } else if (entry.eventType === "Patent Published") {
         if (!isFilled(entry.designProduct)) {
           form.setError(`reputedInstitutionAchievements.${index}.designProduct` as never, { type: "manual", message: "Design/Product is required" });
         }
@@ -383,7 +383,7 @@ export default function StudentFormPage() {
         if (!isFilled(entry.proofLink)) {
           form.setError(`reputedInstitutionAchievements.${index}.proofLink` as never, { type: "manual", message: "Proof Link is required" });
         }
-      } else if (["hackathon", "Go J Kart", "E Kart"].includes(entry.eventType)) {
+      } else if (["Hackathon", "Go J Kart", "E-Kart"].includes(entry.eventType)) {
         if (!isFilled(entry.institutionIndustry)) {
           form.setError(`reputedInstitutionAchievements.${index}.institutionIndustry` as never, { type: "manual", message: "Category is required" });
         }
@@ -806,7 +806,7 @@ export default function StudentFormPage() {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {["hackathon", "patent published", "paper published", "E Kart", "Go J Kart"].map(o => (
+                                {["Hackathon", "Patent Published", "Paper Published", "E-Kart", "Go J Kart"].map(o => (
                                   <SelectItem key={o} value={o}>{o}</SelectItem>
                                 ))}
                               </SelectContent>
@@ -815,7 +815,7 @@ export default function StudentFormPage() {
                           </FormItem>
                         )} />
 
-                      {watchedReputedInstitutionAchievements[index]?.eventType === "paper published" && (
+                      {watchedReputedInstitutionAchievements[index]?.eventType === "Paper Published" && (
                         <>
                           <FormField control={form.control} name={`reputedInstitutionAchievements.${index}.paperType`}
                             render={({ field: f }) => (
@@ -828,7 +828,7 @@ export default function StudentFormPage() {
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    {["SCI", "WOS", "Scopus", "Annexture -1"].map(o => (
+                                    {["SCI", "WOS", "Scopus", "Annexure-1"].map(o => (
                                       <SelectItem key={o} value={o}>{o}</SelectItem>
                                     ))}
                                   </SelectContent>
@@ -873,11 +873,11 @@ export default function StudentFormPage() {
                             )} />
 
                           {watchedReputedInstitutionAchievements[index]?.numberOfAuthors && Array.from({ length: parseInt(watchedReputedInstitutionAchievements[index].numberOfAuthors) || 0 }).map((_, i) => (
-                            <FormField key={i} control={form.control} name={`reputedInstitutionAchievements.${index}.author${i + 1}`}
+                            <FormField key={i} control={form.control} name={`reputedInstitutionAchievements.${index}.author${i + 1}` as any}
                               render={({ field: f }) => (
                                 <FormItem>
                                   <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Name of Author {i + 1}</FormLabel>
-                                  <FormControl><Input className="h-10 bg-white border-slate-300 focus:border-indigo-400" placeholder={`Author ${i + 1} name`} {...f} /></FormControl>
+                                  <FormControl><Input className="h-10 bg-white border-slate-300 focus:border-indigo-400" placeholder={`Author ${i + 1} name`} value={(f.value as string) || ""} onChange={f.onChange} onBlur={f.onBlur} name={f.name} /></FormControl>
                                   <FormMessage className="text-xs" />
                                 </FormItem>
                               )} />
@@ -908,7 +908,7 @@ export default function StudentFormPage() {
                         </>
                       )}
 
-                      {watchedReputedInstitutionAchievements[index]?.eventType === "patent published" && (
+                      {watchedReputedInstitutionAchievements[index]?.eventType === "Patent Published" && (
                         <>
                           <FormField control={form.control} name={`reputedInstitutionAchievements.${index}.designProduct`}
                             render={({ field: f }) => (
@@ -950,7 +950,7 @@ export default function StudentFormPage() {
                         </>
                       )}
 
-                      {["hackathon", "Go J Kart", "E Kart"].includes(watchedReputedInstitutionAchievements[index]?.eventType) && (
+                      {["Hackathon", "Go J Kart", "E-Kart"].includes(watchedReputedInstitutionAchievements[index]?.eventType) && (
                         <>
                           <FormField control={form.control} name={`reputedInstitutionAchievements.${index}.institutionIndustry`}
                             render={({ field: f }) => (
@@ -963,7 +963,7 @@ export default function StudentFormPage() {
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    {["TIRE 1 College", "TIRE 2 COLLEGE", "MNCs", "MANGOBIG 7", "Startup"].map(o => (
+                                    {["Tire 1 College", "Tire 2 College", "MNCs", "Mango Big 7", "Startup"].map(o => (
                                       <SelectItem key={o} value={o}>{o}</SelectItem>
                                     ))}
                                   </SelectContent>

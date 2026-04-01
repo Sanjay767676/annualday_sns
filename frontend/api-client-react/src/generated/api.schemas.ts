@@ -129,10 +129,10 @@ export const ReputedInstitutionAchievementPrizeWon = {
 } as const;
 
 export const ReputedInstitutionAchievementEventType = {
-  hackathon: "hackathon",
-  "patent published": "patent published",
-  "paper published": "paper published",
-  "E Kart": "E Kart",
+  Hackathon: "Hackathon",
+  "Patent Published": "Patent Published",
+  "Paper Published": "Paper Published",
+  "E-Kart": "E-Kart",
   "Go J Kart": "Go J Kart",
 } as const;
 
@@ -143,7 +143,7 @@ export const ReputedInstitutionAchievementPaperType = {
   SCI: "SCI",
   WOS: "WOS",
   Scopus: "Scopus",
-  "Annexture -1": "Annexture -1",
+  "Annexure-1": "Annexure-1",
 } as const;
 
 export type ReputedInstitutionAchievementPaperType =

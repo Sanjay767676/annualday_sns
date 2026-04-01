@@ -444,10 +444,10 @@ components:
           type: string
         eventType:
           type: string
-          enum: [hackathon, patent published, paper published, E Kart, Go J Kart]
+          enum: [Hackathon, Patent Published, Paper Published, E-Kart, Go J Kart]
         paperType:
           type: string
-          enum: [SCI, WOS, Scopus, Annexture -1]
+          enum: [SCI, WOS, Scopus, Annexure-1]
         designProduct:
           type: string
           enum: [Design, Product]
@@ -455,7 +455,7 @@ components:
           type: string
         institutionIndustry:
           type: string
-          enum: [TIRE 1 College, TIRE 2 COLLEGE, MNCs, MANGOBIG 7, Startup]
+          enum: [Tire 1 College, Tire 2 College, MNCs, Mango Big 7, Startup]
         institutionName:
           type: string
         prizeWon:
