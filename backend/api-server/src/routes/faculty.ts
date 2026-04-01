@@ -102,4 +102,39 @@ router.get("/admin/faculty", async (req: Request, res: Response): Promise<void> 
   res.json({ data, total, page, limit });
 });
 
+router.delete("/admin/faculty/:submissionId", async (req: Request, res: Response): Promise<void> => {
+  const token = req.headers["x-admin-token"] as string;
+  const envPass = process.env.ADMIN_PASSWORD;
+
+  const isAuthorized = ADMIN_PASSWORDS.has(token) || (envPass && token === envPass);
+  if (!isAuthorized) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  const submissionId = req.params.submissionId;
+  if (!submissionId) {
+    res.status(400).json({ error: "Submission id is required" });
+    return;
+  }
+
+  try {
+    const deleted = await db
+      .delete(facultySubmissionsTable)
+      .where(sql`${facultySubmissionsTable.id} = ${submissionId}`)
+      .returning({ id: facultySubmissionsTable.id });
+
+    if (!deleted.length) {
+      res.status(404).json({ error: "Submission not found" });
+      return;
+    }
+
+    res.json({ message: "Faculty submission deleted", id: deleted[0].id });
+  } catch (error) {
+    req.log.error({ err: error }, "Failed to delete faculty submission");
+    const message = error instanceof Error ? error.message : "Internal server error";
+    res.status(500).json({ error: message });
+  }
+});
+
 export default router;
