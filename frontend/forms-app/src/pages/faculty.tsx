@@ -15,8 +15,10 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { MonthPicker } from "@/components/ui/month-picker";
+import { SearchableCombobox } from "@/components/ui/searchable-combobox";
 import SiteHeader from "@/components/site-header";
 import { FACULTY_DEPARTMENT_OPTIONS, DESIGNATION_OPTIONS, PHD_YEAR_OPTIONS } from "@/lib/form-options";
+import { INDIAN_UNIVERSITIES } from "@/lib/universities";
 
 type FacultyFormValues = {
   papersPublished: Array<{
@@ -61,7 +63,7 @@ type FacultySectionName = keyof FacultyFormValues;
 type FieldConfig = {
   name: string;
   label: string;
-  type?: "select" | "month";
+  type?: "select" | "month" | "combobox";
   options?: readonly string[];
 };
 
@@ -476,6 +478,15 @@ export default function FacultyFormPage() {
                                 disabled={submitMutation.isPending}
                               />
                             </FormControl>
+                          ) : config.type === "combobox" ? (
+                            <FormControl>
+                              <SearchableCombobox
+                                options={config.options || []}
+                                value={formField.value}
+                                onChange={formField.onChange}
+                                placeholder={`Search ${config.label.toLowerCase()}...`}
+                              />
+                            </FormControl>
                           ) : (
                             <FormControl>
                               <Input className="h-10 bg-white border-slate-300 focus:border-blue-400" {...formField} />
@@ -595,7 +606,7 @@ export default function FacultyFormPage() {
               { name: "name", label: "Name" },
               { name: "designation", label: "Designation", type: "select", options: DESIGNATION_OPTIONS },
               { name: "branch", label: "Department", type: "select", options: FACULTY_DEPARTMENT_OPTIONS },
-              { name: "university", label: "University" },
+              { name: "university", label: "University", type: "combobox", options: INDIAN_UNIVERSITIES },
               { name: "year", label: "Year of Award", type: "select", options: PHD_YEAR_OPTIONS },
               { name: "title", label: "Title of Thesis" },
             ])}
