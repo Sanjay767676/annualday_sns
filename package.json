@@ -19,6 +19,7 @@
     "typecheck": "npm run typecheck:libs && npm --prefix frontend/forms-app run typecheck && npm --prefix backend/api-server run typecheck"
   },
   "private": true,
+  "type": "module",
   "packageManager": "npm@10.8.2",
   "devDependencies": {
     "concurrently": "^9.2.1",
