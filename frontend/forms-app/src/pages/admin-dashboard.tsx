@@ -37,6 +37,15 @@ type PaginatedResponse = {
   limit: number;
 };
 
+type TabType = "faculty" | "student";
+type FacultyType = "paper" | "book" | "patent" | "phd";
+type StudentType = "firstRank" | "semesterWise" | "achievement";
+type SectionType = FacultyType | StudentType;
+type ExportMode = "filtered" | "all";
+type ExportFormat = "excel" | "pdf";
+type ExportColumn = { header: string; value: (row: Record<string, unknown>) => string };
+type ExportSection = { title: string; columns: ExportColumn[] };
+
 const FACULTY_FILTERS = [
   { key: "paper", label: "Papers Published" },
   { key: "book", label: "Book / Chapter" },
@@ -51,6 +60,105 @@ const STUDENT_FILTERS = [
 ] as const;
 
 const HIDDEN_COLS = new Set(["_submissionId", "_submittedAt"]);
+
+const FACULTY_FILTER_ORDER: FacultyType[] = ["paper", "book", "patent", "phd"];
+const STUDENT_FILTER_ORDER: StudentType[] = ["firstRank", "semesterWise", "achievement"];
+
+function asText(value: unknown): string {
+  if (value === null || value === undefined) return "";
+  return String(value);
+}
+
+function classBranch(row: Record<string, unknown>, branchKey: "department" | "branch" = "department"): string {
+  const dep = asText(row[branchKey]).trim();
+  const ugPg = asText(row.ugPg).trim();
+  const year = asText(row.yearOfStudy).trim();
+
+  const left = [ugPg, year].filter(Boolean).join(" ").trim();
+  if (left && dep) return `${left} - ${dep}`;
+  return dep || left;
+}
+
+const EXPORT_SECTION_CONFIG: Record<TabType, Record<SectionType, ExportSection>> = {
+  faculty: {
+    paper: {
+      title: "Published Papers",
+      columns: [
+        { header: "Name of the Faculty", value: (r) => asText(r.facultyName) },
+        { header: "Designation", value: (r) => asText(r.designation) },
+        { header: "Title of paper published", value: (r) => asText(r.titleOfPaper) },
+        { header: "Name of the journal", value: (r) => asText(r.journalType) },
+        { header: "Month & Year", value: (r) => asText(r.monthYear) },
+      ],
+    },
+    book: {
+      title: "Books / Book Chapters Published",
+      columns: [
+        { header: "Name of the Faculty", value: (r) => asText(r.name) },
+        { header: "Designation", value: (r) => asText(r.designation) },
+        { header: "Title of Book / Book Chapter published", value: (r) => asText(r.titleOfBook) },
+        { header: "Name of the Publisher & ISBN No", value: (r) => asText(r.publisherIsbn) },
+        { header: "Month & Year", value: (r) => asText(r.monthYear) },
+      ],
+    },
+    patent: {
+      title: "Patent Granted",
+      columns: [
+        { header: "Name of the Faculty", value: (r) => asText(r.name) },
+        { header: "Designation", value: (r) => asText(r.designation) },
+        { header: "Title of the Patent published", value: (r) => asText(r.titleOfPatent) },
+        { header: "Design/Product", value: (r) => asText(r.designProduct) },
+        { header: "Month & Year", value: (r) => asText(r.monthYear) },
+      ],
+    },
+    phd: {
+      title: "Ph.D Awardees",
+      columns: [
+        { header: "Name of the Faculty", value: (r) => asText(r.name) },
+        { header: "Designation", value: (r) => asText(r.designation) },
+        { header: "Branch", value: (r) => asText(r.branch) },
+        { header: "University", value: (r) => asText(r.university) },
+        { header: "Year", value: (r) => asText(r.year) },
+        { header: "Title", value: (r) => asText(r.title) },
+      ],
+    },
+    firstRank: { title: "", columns: [] },
+    semesterWise: { title: "", columns: [] },
+    achievement: { title: "", columns: [] },
+  },
+  student: {
+    firstRank: {
+      title: "First Rank Holder Year wise (UG & PG)",
+      columns: [
+        { header: "Class/Branch", value: (r) => classBranch(r) },
+        { header: "Reg.No", value: (r) => asText(r.regNumber) },
+        { header: "Name of the student", value: (r) => asText(r.studentName) },
+        { header: "Percentage secured (cumulative from I Sem without arrear)", value: (r) => asText(r.percentageSecured) },
+      ],
+    },
+    semesterWise: {
+      title: "Semester wise first (Class wise) (UG & PG)",
+      columns: [
+        { header: "Class/Branch", value: (r) => classBranch(r) },
+        { header: "Reg.No", value: (r) => asText(r.regNumber) },
+        { header: "Name of the student", value: (r) => asText(r.studentName) },
+        { header: "Percentage secured", value: (r) => asText(r.sgpa) },
+      ],
+    },
+    achievement: {
+      title: "Students with remarkable Achievements",
+      columns: [
+        { header: "Name of the Student", value: (r) => asText(r.studentName) },
+        { header: "Class/Branch", value: (r) => classBranch(r) },
+        { header: "List of achievements and details", value: (r) => asText(r.achievementDetails) },
+      ],
+    },
+    paper: { title: "", columns: [] },
+    book: { title: "", columns: [] },
+    patent: { title: "", columns: [] },
+    phd: { title: "", columns: [] },
+  },
+};
 
 function humanize(key: string): string {
   return key
@@ -122,48 +230,69 @@ async function deleteSubmission(
   }
 }
 
-function toExportRows(rows: Record<string, unknown>[]) {
-  const columns = rows.length ? Object.keys(rows[0]).filter((k) => !HIDDEN_COLS.has(k)) : [];
-  const exportRows = rows.map((row) => {
-    const out: Record<string, string> = {};
-    columns.forEach((col) => {
-      out[humanize(col)] = String(row[col] ?? "");
-    });
-    out["Submitted"] = row._submittedAt
-      ? new Date(row._submittedAt as string).toLocaleDateString()
-      : "";
-    return out;
-  });
-
-  return { columns, exportRows };
+function toSectionRows(tab: TabType, type: SectionType, rows: Record<string, unknown>[]) {
+  const config = EXPORT_SECTION_CONFIG[tab][type];
+  const header = ["S.No.", ...config.columns.map((c) => c.header)];
+  const body = rows.map((row, idx) => [String(idx + 1), ...config.columns.map((c) => c.value(row))]);
+  return { title: config.title, header, body };
 }
 
-function exportExcel(filename: string, rows: Record<string, unknown>[]) {
-  const { exportRows } = toExportRows(rows);
-  if (!exportRows.length) return;
-  const ws = XLSX.utils.json_to_sheet(exportRows);
+function exportExcelBySections(
+  filename: string,
+  sections: Array<{ type: SectionType; rows: Record<string, unknown>[]; label: string }>,
+  tab: TabType,
+) {
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Export");
+
+  sections.forEach((section) => {
+    if (!section.rows.length) return;
+    const mapped = toSectionRows(tab, section.type, section.rows);
+    const sheetRows = [mapped.header, ...mapped.body];
+    const ws = XLSX.utils.aoa_to_sheet(sheetRows);
+    XLSX.utils.book_append_sheet(wb, ws, section.label.slice(0, 31));
+  });
+
   XLSX.writeFile(wb, `${filename}.xlsx`);
 }
 
-function exportPdf(title: string, filename: string, rows: Record<string, unknown>[]) {
-  const { columns, exportRows } = toExportRows(rows);
-  if (!exportRows.length) return;
-
+function exportPdfBySections(
+  filename: string,
+  reportTitle: string,
+  sections: Array<{ type: SectionType; rows: Record<string, unknown>[]; label: string }>,
+  tab: TabType,
+) {
   const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
   doc.setFontSize(12);
-  doc.text(title, 40, 30);
+  doc.text(reportTitle, 40, 30);
 
-  autoTable(doc, {
-    startY: 40,
-    head: [columns.map((c) => humanize(c)).concat("Submitted")],
-    body: exportRows.map((row) => Object.values(row)),
-    styles: { fontSize: 8, cellPadding: 4 },
-    headStyles: { fillColor: [15, 23, 42] },
+  let startY = 44;
+  let hasAnySection = false;
+
+  sections.forEach((section, idx) => {
+    if (!section.rows.length) return;
+    const mapped = toSectionRows(tab, section.type, section.rows);
+    hasAnySection = true;
+
+    if (idx > 0) {
+      doc.addPage("a4", "landscape");
+      startY = 40;
+    }
+
+    doc.setFontSize(11);
+    doc.text(mapped.title || section.label, 40, startY);
+
+    autoTable(doc, {
+      startY: startY + 8,
+      head: [mapped.header],
+      body: mapped.body,
+      styles: { fontSize: 8, cellPadding: 4 },
+      headStyles: { fillColor: [15, 23, 42] },
+    });
   });
 
-  doc.save(`${filename}.pdf`);
+  if (hasAnySection) {
+    doc.save(`${filename}.pdf`);
+  }
 }
 
 function useDebounce<T>(value: T, delay: number): T {
@@ -373,39 +502,49 @@ function DataPanel({
   }, [queryClient, tab, token, toast]);
 
   const runExport = useCallback(async (
-    format: "excel" | "pdf",
-    mode: "filtered" | "all",
+    format: ExportFormat,
+    mode: ExportMode,
   ) => {
     try {
       setIsExporting(true);
 
-      let exportRows: Record<string, unknown>[] = [];
       const today = new Date().toISOString().slice(0, 10);
+      const sections: Array<{ type: SectionType; rows: Record<string, unknown>[]; label: string }> = [];
 
       if (mode === "filtered") {
-        exportRows = await fetchAllTypeRows(tab, activeType, debouncedSearch, token);
+        const filteredRows = await fetchAllTypeRows(tab, activeType, debouncedSearch, token);
+        sections.push({
+          type: activeType as SectionType,
+          rows: filteredRows,
+          label: filters.find((f) => f.key === activeType)?.label ?? activeType,
+        });
       } else {
-        const grouped = await Promise.all(
-          filters.map((f) => fetchAllTypeRows(tab, f.key, "", token)),
-        );
-        exportRows = grouped.flat();
+        const order = tab === "faculty" ? FACULTY_FILTER_ORDER : STUDENT_FILTER_ORDER;
+        for (const type of order) {
+          const rowsForType = await fetchAllTypeRows(tab, type, "", token);
+          sections.push({
+            type,
+            rows: rowsForType,
+            label: filters.find((f) => f.key === type)?.label ?? type,
+          });
+        }
       }
 
-      if (!exportRows.length) {
+      if (!sections.some((s) => s.rows.length > 0)) {
         toast({ title: "No data", description: "Nothing to export for the selected option." });
         return;
       }
 
       const scope = mode === "filtered" ? `${tab}_${activeType}_filtered` : `${tab}_all`;
       const filename = `${scope}_${today}`;
-      const title = mode === "filtered"
+      const reportTitle = mode === "filtered"
         ? `${tab.toUpperCase()} - ${activeType} (Filtered)`
         : `${tab.toUpperCase()} - All Data`;
 
       if (format === "excel") {
-        exportExcel(filename, exportRows);
+        exportExcelBySections(filename, sections, tab);
       } else {
-        exportPdf(title, filename, exportRows);
+        exportPdfBySections(filename, reportTitle, sections, tab);
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : "Export failed";
