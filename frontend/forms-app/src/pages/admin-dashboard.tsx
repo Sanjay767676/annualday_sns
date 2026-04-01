@@ -148,6 +148,7 @@ const EXPORT_SECTION_CONFIG: Record<TabType, Record<SectionType, ExportSection>>
     firstRank: { title: "", columns: [] },
     semesterWise: { title: "", columns: [] },
     achievement: { title: "", columns: [] },
+    reputedInstitution: { title: "", columns: [] },
   },
   student: {
     firstRank: {
