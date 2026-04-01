@@ -463,6 +463,22 @@ components:
           enum: [Winner, Runner]
         proofLink:
           type: string
+        journalName:
+          type: string
+        isbn:
+          type: string
+        numberOfAuthors:
+          type: string
+        author1:
+          type: string
+        author2:
+          type: string
+        author3:
+          type: string
+        author4:
+          type: string
+        author5:
+          type: string
       required:
         - studentName
         - department

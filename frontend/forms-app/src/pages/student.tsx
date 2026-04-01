@@ -62,6 +62,14 @@ type StudentFormValues = {
     institutionName: string;
     prizeWon: string;
     proofLink: string;
+    journalName: string;
+    isbn: string;
+    numberOfAuthors: string;
+    author1: string;
+    author2: string;
+    author3: string;
+    author4: string;
+    author5: string;
   }>;
 };
 
@@ -184,6 +192,14 @@ function createEmptyReputedInstitutionAchievement() {
     institutionName: "",
     prizeWon: "",
     proofLink: "",
+    journalName: "",
+    isbn: "",
+    numberOfAuthors: "",
+    author1: "",
+    author2: "",
+    author3: "",
+    author4: "",
+    author5: "",
   };
 }
 
@@ -332,6 +348,23 @@ export default function StudentFormPage() {
         if (!isFilled(entry.paperType)) {
           form.setError(`reputedInstitutionAchievements.${index}.paperType` as never, { type: "manual", message: "Paper Type is required" });
         }
+        if (!isFilled(entry.journalName)) {
+          form.setError(`reputedInstitutionAchievements.${index}.journalName` as never, { type: "manual", message: "Journal Name is required" });
+        }
+        if (!isFilled(entry.isbn)) {
+          form.setError(`reputedInstitutionAchievements.${index}.isbn` as never, { type: "manual", message: "ISBN is required" });
+        }
+        if (!isFilled(entry.numberOfAuthors)) {
+          form.setError(`reputedInstitutionAchievements.${index}.numberOfAuthors` as never, { type: "manual", message: "Number of authors is required" });
+        } else {
+          const num = parseInt(entry.numberOfAuthors);
+          for (let i = 1; i <= num; i++) {
+            const fieldName = `author${i}` as keyof typeof entry;
+            if (!isFilled(entry[fieldName] as string)) {
+              form.setError(`reputedInstitutionAchievements.${index}.${fieldName}` as never, { type: "manual", message: `Author ${i} name is required` });
+            }
+          }
+        }
         if (isFilled(entry.paperType)) {
           if (!isFilled(entry.dateOfPublished)) {
             form.setError(`reputedInstitutionAchievements.${index}.dateOfPublished` as never, { type: "manual", message: "Date of Published is required" });
@@ -427,6 +460,14 @@ export default function StudentFormPage() {
         institutionName: entry.institutionName,
         prizeWon: entry.prizeWon as any,
         proofLink: entry.proofLink,
+        journalName: entry.journalName,
+        isbn: entry.isbn,
+        numberOfAuthors: entry.numberOfAuthors,
+        author1: entry.author1,
+        author2: entry.author2,
+        author3: entry.author3,
+        author4: entry.author4,
+        author5: entry.author5,
       })),
     };
 
@@ -750,6 +791,14 @@ export default function StudentFormPage() {
                               form.setValue(`reputedInstitutionAchievements.${index}.institutionName`, "");
                               form.setValue(`reputedInstitutionAchievements.${index}.prizeWon`, "");
                               form.setValue(`reputedInstitutionAchievements.${index}.proofLink`, "");
+                              form.setValue(`reputedInstitutionAchievements.${index}.journalName`, "");
+                              form.setValue(`reputedInstitutionAchievements.${index}.isbn`, "");
+                              form.setValue(`reputedInstitutionAchievements.${index}.numberOfAuthors`, "");
+                              form.setValue(`reputedInstitutionAchievements.${index}.author1`, "");
+                              form.setValue(`reputedInstitutionAchievements.${index}.author2`, "");
+                              form.setValue(`reputedInstitutionAchievements.${index}.author3`, "");
+                              form.setValue(`reputedInstitutionAchievements.${index}.author4`, "");
+                              form.setValue(`reputedInstitutionAchievements.${index}.author5`, "");
                             }} value={f.value || undefined}>
                               <FormControl>
                                 <SelectTrigger className="h-10 bg-white border-slate-300">
@@ -787,6 +836,53 @@ export default function StudentFormPage() {
                                 <FormMessage className="text-xs" />
                               </FormItem>
                             )} />
+                          <FormField control={form.control} name={`reputedInstitutionAchievements.${index}.journalName`}
+                            render={({ field: f }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Name of the Journal</FormLabel>
+                                <FormControl><Input className="h-10 bg-white border-slate-300 focus:border-indigo-400" placeholder="Enter journal name" {...f} /></FormControl>
+                                <FormMessage className="text-xs" />
+                              </FormItem>
+                            )} />
+                          <FormField control={form.control} name={`reputedInstitutionAchievements.${index}.isbn`}
+                            render={({ field: f }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">ISBN</FormLabel>
+                                <FormControl><Input className="h-10 bg-white border-slate-300 focus:border-indigo-400" placeholder="Enter ISBN" {...f} /></FormControl>
+                                <FormMessage className="text-xs" />
+                              </FormItem>
+                            )} />
+                          <FormField control={form.control} name={`reputedInstitutionAchievements.${index}.numberOfAuthors`}
+                            render={({ field: f }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Number of authors</FormLabel>
+                                <Select onValueChange={f.onChange} value={f.value || undefined}>
+                                  <FormControl>
+                                    <SelectTrigger className="h-10 bg-white border-slate-300">
+                                      <SelectValue placeholder="Select number" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {["1", "2", "3", "4", "5"].map(o => (
+                                      <SelectItem key={o} value={o}>{o}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage className="text-xs" />
+                              </FormItem>
+                            )} />
+
+                          {watchedReputedInstitutionAchievements[index]?.numberOfAuthors && Array.from({ length: parseInt(watchedReputedInstitutionAchievements[index].numberOfAuthors) || 0 }).map((_, i) => (
+                            <FormField key={i} control={form.control} name={`reputedInstitutionAchievements.${index}.author${i + 1}`}
+                              render={({ field: f }) => (
+                                <FormItem>
+                                  <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Name of Author {i + 1}</FormLabel>
+                                  <FormControl><Input className="h-10 bg-white border-slate-300 focus:border-indigo-400" placeholder={`Author ${i + 1} name`} {...f} /></FormControl>
+                                  <FormMessage className="text-xs" />
+                                </FormItem>
+                              )} />
+                          ))}
+
                           {watchedReputedInstitutionAchievements[index]?.paperType && (
                             <>
                               <FormField control={form.control} name={`reputedInstitutionAchievements.${index}.dateOfPublished`}

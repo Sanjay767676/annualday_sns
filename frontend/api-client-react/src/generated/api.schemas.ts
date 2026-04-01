@@ -169,6 +169,14 @@ export interface ReputedInstitutionAchievement {
   institutionName?: string;
   prizeWon?: ReputedInstitutionAchievementPrizeWon;
   proofLink?: string;
+  journalName?: string;
+  isbn?: string;
+  numberOfAuthors?: string;
+  author1?: string;
+  author2?: string;
+  author3?: string;
+  author4?: string;
+  author5?: string;
 }
 
 export interface PhDAwardee {

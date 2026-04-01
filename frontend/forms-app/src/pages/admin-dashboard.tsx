@@ -175,7 +175,10 @@ const EXPORT_SECTION_CONFIG: Record<TabType, Record<SectionType, ExportSection>>
         { header: "Event Type", value: (r) => asText(r.eventType) },
         { header: "Details", value: (r) => {
           if (r.eventType === "paper published") {
-            return `Paper: ${asText(r.paperType)}, Date: ${asText(r.dateOfPublished)}`;
+            const authors = [r.author1, r.author2, r.author3, r.author4, r.author5]
+              .filter(Boolean)
+              .join(", ");
+            return `Journal: ${asText(r.journalName)}, ISBN: ${asText(r.isbn)}, Type: ${asText(r.paperType)}, Date: ${asText(r.dateOfPublished)}, Authors: ${authors}`;
           }
           if (r.eventType === "patent published") {
             return `Type: ${asText(r.designProduct)}, Date: ${asText(r.dateOfPublished)}`;
