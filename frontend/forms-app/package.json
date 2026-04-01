@@ -75,6 +75,7 @@
     "zod": "^3.25.76"
   },
   "dependencies": {
+    "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.7",
     "react-calendar": "^6.0.0",
