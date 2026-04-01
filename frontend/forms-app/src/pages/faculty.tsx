@@ -169,10 +169,10 @@ export default function FacultyFormPage() {
 
   const form = useForm<FacultyFormValues>({
     defaultValues: {
-      papersPublished: [createEmptyPaper()],
-      booksChapters: [createEmptyBookChapter()],
-      patentsGranted: [createEmptyPatent()],
-      phdAwardees: [createEmptyPhdAwardee()],
+      papersPublished: [],
+      booksChapters: [],
+      patentsGranted: [],
+      phdAwardees: [],
     },
   });
 
@@ -535,7 +535,7 @@ export default function FacultyFormPage() {
             className={`flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-3 text-sm font-semibold text-slate-600 transition ${tone.add}`}
           >
             <Plus className="w-4 h-4" />
-            Add Another Entry
+            Add {title} Entry
           </button>
         </div>
       </section>

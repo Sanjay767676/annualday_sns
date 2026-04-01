@@ -199,9 +199,9 @@ export default function StudentFormPage() {
 
   const form = useForm<StudentFormValues>({
     defaultValues: {
-      firstRankHolders: [createEmptyFirstRankHolder()],
-      semesterWiseRankers: [createEmptySemesterWiseRanker(), createEmptySemesterWiseRanker()],
-      remarkableAchievements: [createEmptyAchievement()],
+      firstRankHolders: [],
+      semesterWiseRankers: [],
+      remarkableAchievements: [],
     },
   });
 
@@ -485,7 +485,7 @@ export default function StudentFormPage() {
                         render={({ field: f }) => (
                           <FormItem>
                             <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide"> CGPA (cumulative from I sem)</FormLabel>
-                            <FormControl><Input className="h-10 bg-white border-slate-300" placeholder="e.g. 9.5%" {...f} /></FormControl>
+                            <FormControl><Input className="h-10 bg-white border-slate-300" placeholder="e.g. 9.5" {...f} /></FormControl>
                             <FormMessage className="text-xs" />
                           </FormItem>
                         )} />
@@ -496,7 +496,7 @@ export default function StudentFormPage() {
                   onClick={() => firstRankField.append(createEmptyFirstRankHolder())}
                   className={`flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-3 text-sm font-semibold text-slate-600 transition ${SECTION_COLORS[0].add}`}
                 >
-                  <Plus className="w-4 h-4" />Add Another Entry
+                  <Plus className="w-4 h-4" />Add First Rank Holder Entry
                 </button>
               </div>
             </section>
@@ -583,6 +583,12 @@ export default function StudentFormPage() {
                     </div>
                   </EntryWrapper>
                 ))}
+                <button type="button"
+                  onClick={() => semesterWiseField.append(createEmptySemesterWiseRanker())}
+                  className={`flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-3 text-sm font-semibold text-slate-600 transition ${SECTION_COLORS[1].add}`}
+                >
+                  <Plus className="w-4 h-4" />Add Semester Topper Entry
+                </button>
               </div>
             </section>
 
@@ -657,7 +663,7 @@ export default function StudentFormPage() {
                   onClick={() => achievementsField.append(createEmptyAchievement())}
                   className={`flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-3 text-sm font-semibold text-slate-600 transition ${SECTION_COLORS[2].add}`}
                 >
-                  <Plus className="w-4 h-4" />Add Another Entry
+                  <Plus className="w-4 h-4" />Add Achievement Entry
                 </button>
               </div>
             </section>
