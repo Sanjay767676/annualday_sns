@@ -1,4 +1,5 @@
 import { Router, type Request, type Response } from "express";
+import { randomUUID } from "node:crypto";
 import { db, sql } from "../../../db/src/index.js";
 import { studentSubmissionsTable } from "../../../db/src/schema/student_submissions.js";
 import { SubmitStudentFormBody } from "../../../api-zod/src/generated/api.js";
@@ -26,6 +27,7 @@ router.post("/student", async (req: Request, res: Response): Promise<void> => {
     const [submission] = await db
       .insert(studentSubmissionsTable)
       .values({
+        id: randomUUID(),
         data: { firstRankHolders, semesterWiseRankers, remarkableAchievements },
       })
       .returning();
@@ -35,6 +37,7 @@ router.post("/student", async (req: Request, res: Response): Promise<void> => {
       message: "Student form submitted successfully",
     });
   } catch (error) {
+    req.log.error({ err: error }, "Failed to insert student submission");
     const message = error instanceof Error ? error.message : "Internal server error";
     res.status(500).json({ error: message });
   }
