@@ -110,7 +110,7 @@ export interface SemesterWiseRanker {
   department: string;
   yearOfStudy: string;
   ugPg: SemesterWiseRankerUgPg;
-  percentageSecured: string;
+  sgpa: string;
 }
 
 export interface StudentAchievement {

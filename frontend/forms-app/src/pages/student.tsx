@@ -45,7 +45,7 @@ type StudentFormValues = {
     departmentOther: string;
     yearOfStudy: string;
     ugPg: string;
-    percentageSecured: string;
+    sgpa: string;
   }>;
   remarkableAchievements: Array<{
     studentName: string;
@@ -156,7 +156,7 @@ function createEmptySemesterWiseRanker() {
     departmentOther: "",
     yearOfStudy: "",
     ugPg: "",
-    percentageSecured: "",
+    sgpa: "",
   };
 }
 
@@ -293,7 +293,7 @@ export default function StudentFormPage() {
       department: "Department",
       yearOfStudy: "Year of Study",
       ugPg: "UG / PG",
-      percentageSecured: "Percentage Secured",
+      sgpa: "SGPA",
     });
 
     const remarkableAchievements = validateSection("remarkableAchievements", values.remarkableAchievements, {
@@ -349,7 +349,7 @@ export default function StudentFormPage() {
         department: resolveDepartmentValue(entry.department, entry.departmentOther),
         yearOfStudy: entry.yearOfStudy,
         ugPg: entry.ugPg as SemesterWiseRankerUgPg,
-        percentageSecured: entry.percentageSecured,
+        sgpa: entry.sgpa,
       })),
       remarkableAchievements: remarkableAchievements.completedEntries.map((entry) => ({
         studentName: entry.studentName,
@@ -572,11 +572,11 @@ export default function StudentFormPage() {
                             <FormMessage className="text-xs" />
                           </FormItem>
                         )} />
-                      <FormField control={form.control} name={`semesterWiseRankers.${index}.percentageSecured`}
+                      <FormField control={form.control} name={`semesterWiseRankers.${index}.sgpa`}
                         render={({ field: f }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Percentage Secured</FormLabel>
-                            <FormControl><Input className="h-10 bg-white border-slate-300" placeholder="e.g. 88.3%" {...f} /></FormControl>
+                            <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">SGPA</FormLabel>
+                            <FormControl><Input className="h-10 bg-white border-slate-300" placeholder="e.g. 8.8" {...f} /></FormControl>
                             <FormMessage className="text-xs" />
                           </FormItem>
                         )} />

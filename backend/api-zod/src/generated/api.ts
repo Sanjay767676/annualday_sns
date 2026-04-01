@@ -81,7 +81,7 @@ export const SubmitStudentFormBody = zod.object({
       department: zod.string(),
       yearOfStudy: zod.string(),
       ugPg: zod.enum(["UG", "PG"]),
-      percentageSecured: zod.string(),
+      sgpa: zod.string(),
     }),
   ),
   remarkableAchievements: zod.array(

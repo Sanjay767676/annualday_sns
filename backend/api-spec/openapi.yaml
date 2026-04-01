@@ -407,14 +407,14 @@ components:
         ugPg:
           type: string
           enum: [UG, PG]
-        percentageSecured:
+        sgpa:
           type: string
       required:
         - studentName
         - department
         - yearOfStudy
         - ugPg
-        - percentageSecured
+        - sgpa
 
     StudentAchievement:
       type: object
