@@ -205,7 +205,9 @@ git push origin main
 ### Database Connection Times Out
 
 **Checklist:**
+- [ ] Using the **Supabase Pooler** URL (recommended for Vercel)
 - [ ] DATABASE_URL format is correct
+- [ ] sslmode is set to `no-verify` or `verify-full`
 - [ ] Supabase project is active
 - [ ] IP whitelist includes Vercel
 - [ ] Connection string has correct password

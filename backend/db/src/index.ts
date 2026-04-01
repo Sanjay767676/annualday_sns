@@ -22,10 +22,19 @@ try {
 
   if (sslMode === "disable") {
     poolOptions.ssl = false;
-  } else if (sslMode === "no-verify") {
+  } else if (sslMode === "verify-full") {
+    poolOptions.ssl = { rejectUnauthorized: true };
+  } else if (sslMode === "no-verify" || sslMode === "require" || sslMode === "prefer") {
     poolOptions.ssl = { rejectUnauthorized: false };
   } else if (!isLocalHost) {
     poolOptions.ssl = { rejectUnauthorized: false };
+  }
+
+  // To suppress pg-connection-string v3 security warnings, we strip sslmode
+  // from the connection string after parsing it ourselves.
+  if (sslMode) {
+    parsed.searchParams.delete("sslmode");
+    poolOptions.connectionString = parsed.toString();
   }
 } catch {
   // If URL parsing fails, Pool will raise a detailed error at connection time.

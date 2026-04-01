@@ -106,7 +106,7 @@ pnpm --filter @workspace/api-server run dev
    - Go to your Vercel project settings
    - Navigate to **Settings → Environment Variables**
    - Add the following:
-     - `DATABASE_URL`: Your Supabase PostgreSQL connection string
+     - `DATABASE_URL`: Your **Supabase Pooler** URL (e.g., `postgresql://postgres.xxx:password@aws-0-region.pooler.supabase.com:5432/postgres?sslmode=no-verify`)
      - `ADMIN_PASSWORD`: Your secure admin password
      - `NODE_ENV`: `production`
      - `BASE_PATH`: `/`
