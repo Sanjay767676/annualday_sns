@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
@@ -188,5 +189,9 @@
 
   .surface-muted {
     @apply relative z-0 rounded-[1rem] sm:rounded-[1.25rem] border border-stone-200/70 bg-stone-50/85;
+  }
+
+  .forms-lora {
+    font-family: "Lora", Georgia, serif;
   }
 }

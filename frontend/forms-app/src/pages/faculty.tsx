@@ -570,7 +570,7 @@ export default function FacultyFormPage() {
   };
 
   return (
-    <div className="app-shell flex flex-col">
+    <div className="app-shell forms-lora flex flex-col">
       <SiteHeader onBack={() => setLocation("/")} sticky />
 
       <main className="page-frame flex-1 py-8 lg:py-10">

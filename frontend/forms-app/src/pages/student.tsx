@@ -24,6 +24,10 @@ import {
 
 const ugPgOptions = ["UG", "PG"] as const;
 const semesterTopperLabels = ["Even Semester Wise Topper", "Odd Semester Wise Topper"] as const;
+const semesterTopperDescriptions = [
+  "Batch 2024 - II Sem, 2023 - IV Sem, 2022 - VI Sem",
+  "Batch 2024 - III Sem, 2023 - V Sem, 2022 - VII Sem",
+] as const;
 
 type StudentFormValues = {
   firstRankHolders: Array<{
@@ -69,6 +73,69 @@ const SECTION_COLORS = [
     add: "hover:border-pink-200 hover:bg-pink-50/70 hover:text-pink-800",
   },
 ];
+
+function SectionHeader({ num, title }: { num: number; title: string }) {
+  const tone = SECTION_COLORS[(num - 1) % SECTION_COLORS.length];
+  return (
+    <div className="flex flex-col gap-4 border-b border-stone-200/80 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-start gap-4">
+        <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ring-1 ${tone.badge}`}>
+          <span className="text-sm font-semibold">{num}</span>
+        </div>
+        <div>
+          <div className="flex items-center gap-2">
+            <span className={`h-2 w-2 rounded-full ${tone.dot}`} />
+            <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
+              Section {num}
+            </span>
+          </div>
+          <h2 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-slate-950">
+            {title}
+          </h2>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EntryWrapper({
+  index,
+  total,
+  onRemove,
+  children,
+  label,
+  description,
+}: {
+  index: number;
+  total: number;
+  onRemove?: () => void;
+  children: React.ReactNode;
+  label?: string;
+  description?: string;
+}) {
+  return (
+    <div className="surface-muted p-5">
+      <div className="mb-5 flex items-center justify-between">
+        <div>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">{label ?? `Entry ${index + 1}`}</span>
+          {description ? (
+            <p className="mt-1 text-xs text-slate-500">{description}</p>
+          ) : null}
+        </div>
+        {total > 1 && onRemove && (
+          <button
+            type="button"
+            onClick={onRemove}
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-transparent text-slate-400 transition hover:border-rose-100 hover:bg-rose-50 hover:text-rose-600"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        )}
+      </div>
+      {children}
+    </div>
+  );
+}
 
 function createEmptyFirstRankHolder() {
   return {
@@ -308,50 +375,8 @@ export default function StudentFormPage() {
     );
   }
 
-  const SectionHeader = ({ num, title }: { num: number; title: string }) => {
-    const tone = SECTION_COLORS[(num - 1) % SECTION_COLORS.length];
-    return (
-      <div className="flex flex-col gap-4 border-b border-stone-200/80 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-start gap-4">
-          <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ring-1 ${tone.badge}`}>
-            <span className="text-sm font-semibold">{num}</span>
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className={`h-2 w-2 rounded-full ${tone.dot}`} />
-              <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
-                Section {num}
-              </span>
-            </div>
-            <h2 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-slate-950">
-              {title}
-            </h2>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const EntryWrapper = ({ index, total, onRemove, children, label }: { index: number; total: number; onRemove?: () => void; children: React.ReactNode; label?: string }) => (
-    <div className="surface-muted p-5">
-      <div className="mb-5 flex items-center justify-between">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">{label ?? `Entry ${index + 1}`}</span>
-        {total > 1 && onRemove && (
-          <button
-            type="button"
-            onClick={onRemove}
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-transparent text-slate-400 transition hover:border-rose-100 hover:bg-rose-50 hover:text-rose-600"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
-        )}
-      </div>
-      {children}
-    </div>
-  );
-
   return (
-    <div className="app-shell flex flex-col">
+    <div className="app-shell forms-lora flex flex-col">
       <SiteHeader onBack={() => setLocation("/")} sticky />
 
       <main className="page-frame flex-1 py-8 lg:py-10">
@@ -485,6 +510,7 @@ export default function StudentFormPage() {
                     index={index}
                     total={semesterWiseField.fields.length}
                     label={semesterTopperLabels[index] ?? `Entry ${index + 1}`}
+                    description={semesterTopperDescriptions[index]}
                   >
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField control={form.control} name={`semesterWiseRankers.${index}.studentName`}
