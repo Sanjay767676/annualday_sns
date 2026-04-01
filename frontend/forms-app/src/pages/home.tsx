@@ -12,10 +12,10 @@ export default function Home() {
       <main className="page-frame flex flex-1 items-center py-10 lg:py-16">
         <section className="surface-panel w-full px-6 py-8 sm:px-8 sm:py-10">
           <h1 className="text-2xl font-semibold tracking-[-0.03em] text-slate-950 sm:text-3xl">
-            Annual Day Data Collection Portal
+            Annual Day Prize Distribution Committee 
           </h1>
-          <p className="mt-2 text-sm text-slate-600">
-            Certification And Prize Distribution Committee
+          <p className="mt-3 text-sm text-slate-700">
+            Data Collection Portal 
           </p>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2">

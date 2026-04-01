@@ -402,7 +402,7 @@ export default function StudentFormPage() {
                   </p>
                   <div className="mt-4 flex items-center gap-2 text-sm font-medium text-slate-800">
                     <span className={`h-2.5 w-2.5 rounded-full ${sectionStatus.canSubmit ? "bg-emerald-500" : "bg-amber-500"}`} />
-                    {sectionStatus.canSubmit ? "Ready to submit" : "Complete one section to continue"}
+                    During the period: May 2025 to April 2026
                   </div>
                 </div>
               </div>
