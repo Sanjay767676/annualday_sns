@@ -13,6 +13,8 @@ export interface PaperPublished {
   department: string;
   phoneNumber: string;
   titleOfPaper: string;
+  author1: string;
+  author2: string;
   publisherIsbn: string;
   proofLink: string;
   journalType: PaperPublishedJournalType;

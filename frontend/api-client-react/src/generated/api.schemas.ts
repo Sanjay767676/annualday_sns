@@ -59,6 +59,8 @@ export interface PaperPublished {
   department: string;
   phoneNumber: string;
   titleOfPaper: string;
+  author1: string;
+  author2: string;
   journalName?: string;
   publisherIsbn: string;
   proofLink: string;

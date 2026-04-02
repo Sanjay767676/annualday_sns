@@ -109,6 +109,8 @@ const SECTION_COLUMN_ORDER: Record<TabType, Record<SectionType, string[]>> = {
     paper: [
       "facultyName",
       "titleOfPaper",
+      "author1",
+      "author2",
       "journalName",
       "journalType",
       "publisherIsbn",

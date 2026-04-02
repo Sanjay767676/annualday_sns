@@ -30,6 +30,8 @@ type FacultyFormValues = {
     departmentOther: string;
     phoneNumber: string;
     titleOfPaper: string;
+    author1: string;
+    author2: string;
     journalName: string;
     publisherIsbn: string;
     proofLink: string;
@@ -117,6 +119,8 @@ function createEmptyPaper() {
     departmentOther: "",
     phoneNumber: "",
     titleOfPaper: "",
+    author1: "",
+    author2: "",
     journalName: "",
     publisherIsbn: "",
     proofLink: "",
@@ -299,6 +303,8 @@ export default function FacultyFormPage() {
       department: "Department",
       phoneNumber: "Phone Number",
       titleOfPaper: "Title of Paper",
+      author1: "Author 1",
+      author2: "Author 2",
       publisherIsbn: "Publisher & ISBN",
       proofLink: "Proof Drive Link",
       journalType: "Journal Type",
@@ -382,6 +388,8 @@ export default function FacultyFormPage() {
         department: resolveDepartmentValue(entry.department, entry.departmentOther),
         phoneNumber: entry.phoneNumber,
         titleOfPaper: entry.titleOfPaper,
+        author1: entry.author1,
+        author2: entry.author2,
         journalName: entry.journalName,
         publisherIsbn: entry.publisherIsbn,
         proofLink: entry.proofLink,
@@ -653,6 +661,8 @@ export default function FacultyFormPage() {
               { name: "department", label: "Department", type: "select", options: FACULTY_DEPARTMENT_OPTIONS },
               { name: "phoneNumber", label: "Phone Number" },
               { name: "titleOfPaper", label: "Title of Paper" },
+              { name: "author1", label: "Author 1" },
+              { name: "author2", label: "Author 2" },
               { name: "journalName", label: "Name of the Journal" },
               { name: "journalType", label: "Journal Type", type: "select", options: JOURNAL_OPTIONS },
               { name: "publisherIsbn", label: "Publisher & ISSN" },

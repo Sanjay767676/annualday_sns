@@ -26,6 +26,8 @@ export const SubmitFacultyFormBody = zod.object({
       department: zod.string(),
       phoneNumber: zod.string(),
       titleOfPaper: zod.string(),
+      author1: zod.string(),
+      author2: zod.string(),
       journalName: zod.string().optional(),
       publisherIsbn: zod.string(),
       proofLink: zod.string(),
