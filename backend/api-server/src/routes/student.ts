@@ -8,8 +8,18 @@ const router = Router();
 const isMissingRelationError = (message: string) =>
   message.includes("relation") ||
   message.includes("student_submissions");
-const isMissingDeletedColumnError = (message: string) =>
-  message.includes("deleted_at") && (message.includes("does not exist") || message.includes("not found") || message.includes("column") || message.includes("unknown field"));
+const isMissingDeletedColumnError = (error: unknown) => {
+  const errorStr = JSON.stringify(error).toLowerCase();
+  return errorStr.includes("deleted_at") && 
+    (errorStr.includes("does not exist") || 
+     errorStr.includes("not found") || 
+     errorStr.includes("unknown column") ||
+     errorStr.includes("unknown field"));
+};
+const isDeletedAtError = (error: unknown) => {
+  const errorStr = JSON.stringify(error).toLowerCase();
+  return errorStr.includes("deleted_at") && errorStr.includes("does not exist");
+};
 
 const STUDENT_SECTION_MAP: Record<string, string> = {
   firstRank: "firstRankHolders",
@@ -30,8 +40,7 @@ async function purgeOldDeletedStudentSubmissions() {
       .delete(studentSubmissionsTable)
       .where(sql`${studentSubmissionsTable.deletedAt} IS NOT NULL AND ${studentSubmissionsTable.deletedAt} < ${deletedCutoffDate()}`);
   } catch (error) {
-    const message = error instanceof Error ? error.message.toLowerCase() : "";
-    if (!isMissingDeletedColumnError(message)) {
+    if (!isMissingDeletedColumnError(error)) {
       throw error;
     }
   }
@@ -161,8 +170,9 @@ router.get("/admin/student", async (req: Request, res: Response): Promise<void> 
   } catch (error) {
     const message = error instanceof Error ? error.message.toLowerCase() : "database query failed";
 
-    if (isMissingDeletedColumnError(message)) {
-      const [rowsResult, countQueryResult] = await Promise.all([
+    if (isMissingDeletedColumnError(error)) {
+       try {
+         const [rowsResult, countQueryResult] = await Promise.all([
         db.execute(legacyRowsQuery),
         db.execute(legacyCountQuery),
       ]);
@@ -178,7 +188,12 @@ router.get("/admin/student", async (req: Request, res: Response): Promise<void> 
       }));
 
       res.json({ data, total, page, limit });
-      return;
+         return;
+       } catch (legacyError) {
+         req.log.error({ err: legacyError }, "Legacy query also failed");
+         res.json({ data: [], total: 0, page, limit });
+         return;
+       }
     }
 
     if (isMissingRelationError(message)) {
