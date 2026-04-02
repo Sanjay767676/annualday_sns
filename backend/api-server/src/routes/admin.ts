@@ -14,7 +14,7 @@ const isMissingRelationError = (message: string) =>
   message.includes("faculty_submissions") ||
   message.includes("student_submissions");
 const isMissingDeletedColumnError = (message: string) =>
-  message.includes("deleted_at") && message.includes("does not exist");
+  message.includes("deleted_at") && (message.includes("does not exist") || message.includes("not found") || message.includes("column") || message.includes("unknown field"));
 
 const ADMIN_PASSWORDS = new Set(["admin123", "sns123"]);
 const SOFT_DELETE_RETENTION_HOURS = 30;
