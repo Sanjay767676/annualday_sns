@@ -488,6 +488,8 @@ function DynamicTable({
   rowOffset,
   deletingId,
   onDelete,
+  token,
+  onUpdated,
 }: {
   tab: TabType;
   type: SectionType;
@@ -496,11 +498,95 @@ function DynamicTable({
   rowOffset: number;
   deletingId: string | null;
   onDelete: (submissionId: string) => void;
+  token: string;
+  onUpdated?: () => void;
 }) {
   const columns = useMemo(() => {
     if (!rows.length) return [];
     return getOrderedColumns(tab, type, rows);
   }, [rows, tab, type]);
+
+  const [editingKey, setEditingKey] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState("");
+  const [isUpdating, setIsUpdating] = useState(false);
+  const { toast } = useToast();
+
+  // editingKey format: "submissionId:rowIndex:fieldName"
+  const parseEditingKey = (key: string | null) => {
+    if (!key) return null;
+    const [submissionId, rowIndexStr, fieldName] = key.split(":");
+    return { submissionId, rowIndex: parseInt(rowIndexStr), fieldName };
+  };
+
+  const isNullOrEmpty = (value: unknown): boolean => {
+    return value === null || value === undefined || value === "";
+  };
+
+  const handleCellClick = (row: Record<string, unknown>, col: string) => {
+    const cellValue = row[col];
+    const submissionId = String(row._submissionId || "");
+    // Find the row index by matching the submission ID
+    const rowIndex = rows.indexOf(row);
+
+    // Only allow editing if value is null/empty
+    if (isNullOrEmpty(cellValue) && submissionId) {
+      setEditingKey(`${submissionId}:${rowIndex}:${col}`);
+      setEditValue("");
+    }
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const parsed = parseEditingKey(editingKey);
+    if (!parsed || !editValue.trim()) return;
+
+    try {
+      setIsUpdating(true);
+      const endpoint = tab === "faculty" ? "faculty" : "student";
+      
+      const response = await fetch(`/api/admin/${endpoint}/${parsed.submissionId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-token": token,
+        },
+        body: JSON.stringify({
+          section: type,
+          fieldName: parsed.fieldName,
+          fieldValue: editValue.trim(),
+          rowIndex: parsed.rowIndex,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Update failed");
+      }
+
+      toast({
+        title: "Updated",
+        description: "Field updated successfully",
+      });
+
+      setEditingKey(null);
+      setEditValue("");
+      onUpdated?.();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Update failed";
+      toast({
+        title: "Update failed",
+        description: message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setEditingKey(null);
+    setEditValue("");
+  };
 
   if (isLoading) {
     return (
@@ -542,43 +628,92 @@ function DynamicTable({
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, i) => (
-            <tr key={i} className="border-b border-stone-100 transition-colors hover:bg-stone-50/60">
-              <td className="px-4 py-4 text-xs text-slate-400">{rowOffset + i + 1}</td>
-              {columns.map((col) => (
-                <td key={col} className="max-w-xs px-4 py-4 align-top text-slate-700">
-                  <span className="line-clamp-3">{renderCell(row[col])}</span>
+          {rows.map((row, i) => {
+            const isEditingThisRow = editingKey?.startsWith(String(row._submissionId));
+            return (
+              <tr key={i} className="border-b border-stone-100 transition-colors hover:bg-stone-50/60">
+                <td className="px-4 py-4 text-xs text-slate-400">{rowOffset + i + 1}</td>
+                {columns.map((col) => {
+                  const cellValue = row[col];
+                  const isCellEmpty = isNullOrEmpty(cellValue);
+                  const isThisEditing = editingKey === `${row._submissionId}:${i}:${col}`;
+                  
+                  return (
+                    <td key={col} className="max-w-xs px-4 py-4 align-top text-slate-700">
+                      {isThisEditing ? (
+                        <form onSubmit={handleSaveEdit} className="flex gap-2">
+                          <input
+                            type="text"
+                            value={editValue}
+                            onChange={(e) => setEditValue(e.target.value)}
+                            placeholder="Enter value..."
+                            autoFocus
+                            className="flex-1 rounded border border-stone-300 px-2 py-1 text-xs focus:border-blue-500 focus:outline-none"
+                          />
+                          <div className="flex gap-1">
+                            <button
+                              type="submit"
+                              disabled={isUpdating || !editValue.trim()}
+                              className="rounded bg-blue-600 text-white px-2 py-1 text-xs font-medium hover:bg-blue-700 disabled:bg-gray-400"
+                            >
+                              {isUpdating ? "..." : "✓"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleCancel}
+                              disabled={isUpdating}
+                              className="rounded bg-gray-300 text-gray-700 px-2 py-1 text-xs font-medium hover:bg-gray-400"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        </form>
+                      ) : (
+                        <span
+                          onClick={() => handleCellClick(row, col)}
+                          className={`line-clamp-3 block ${
+                            isCellEmpty && row._submissionId
+                              ? "cursor-pointer text-blue-500 hover:text-blue-700 font-medium"
+                              : ""
+                          }`}
+                          title={isCellEmpty && row._submissionId ? "Click to edit" : ""}
+                        >
+                          {renderCell(cellValue)}
+                        </span>
+                      )}
+                    </td>
+                  );
+                })}
+                <td className="whitespace-nowrap px-4 py-4 text-xs text-slate-500">
+                  <div>{row._submittedAt
+                    ? new Date(row._submittedAt as string).toLocaleDateString()
+                    : "—"}</div>
+                  {Boolean(row._submissionId) && (
+                    <div className="mt-1 max-w-[120px] truncate font-mono text-[10px] text-slate-400" title={String(row._submissionId)}>
+                      {String(row._submissionId).slice(0, 8)}…
+                    </div>
+                  )}
                 </td>
-              ))}
-              <td className="whitespace-nowrap px-4 py-4 text-xs text-slate-500">
-                <div>{row._submittedAt
-                  ? new Date(row._submittedAt as string).toLocaleDateString()
-                  : "—"}</div>
-                {Boolean(row._submissionId) && (
-                  <div className="mt-1 max-w-[120px] truncate font-mono text-[10px] text-slate-400" title={String(row._submissionId)}>
-                    {String(row._submissionId).slice(0, 8)}…
-                  </div>
-                )}
-              </td>
-              <td className="px-4 py-4 text-right">
-                {row._submissionId ? (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onDelete(String(row._submissionId))}
-                    disabled={deletingId === String(row._submissionId)}
-                    className="h-8 rounded-full border-red-200 bg-white px-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-red-600 hover:bg-red-50"
-                  >
-                    <Trash2 className="mr-1 h-3.5 w-3.5" />
-                    {deletingId === String(row._submissionId) ? "Deleting" : "Delete"}
-                  </Button>
-                ) : (
-                  <span className="text-xs text-slate-400">—</span>
-                )}
-              </td>
-            </tr>
-          ))}
+                <td className="px-4 py-4 text-right">
+                  {row._submissionId ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onDelete(String(row._submissionId))}
+                      disabled={deletingId === String(row._submissionId) || isEditingThisRow}
+                      className="h-8 rounded-full border-red-200 bg-white px-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-red-600 hover:bg-red-50"
+                    >
+                      <Trash2 className="mr-1 h-3.5 w-3.5" />
+                      {deletingId === String(row._submissionId) ? "Deleting" : "Delete"}
+                    </Button>
+                  ) : (
+                    <span className="text-xs text-slate-400">—</span>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
@@ -808,6 +943,10 @@ function DataPanel({
           rowOffset={(page - 1) * PAGE_SIZE}
           deletingId={deletingId}
           onDelete={handleDelete}
+          token={token}
+          onUpdated={() => {
+            queryClient.invalidateQueries({ queryKey });
+          }}
         />
 
         <Pagination

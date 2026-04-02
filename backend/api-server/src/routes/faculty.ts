@@ -368,5 +368,77 @@ router.post("/admin/faculty/:submissionId/restore", async (req: Request, res: Re
   }
 });
 
+router.patch("/admin/faculty/:submissionId", async (req: Request, res: Response): Promise<void> => {
+  const token = req.headers["x-admin-token"] as string;
+  const envPass = process.env.ADMIN_PASSWORD;
+  const isAuthorized = ADMIN_PASSWORDS.has(token) || (envPass && token === envPass);
+
+  if (!isAuthorized) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  const submissionId = req.params.submissionId;
+  const { section, fieldName, fieldValue, rowIndex } = req.body;
+
+  if (!submissionId || !section || !fieldName) {
+    res.status(400).json({ error: "Missing required fields: submissionId, section, fieldName" });
+    return;
+  }
+
+  const sectionKey = FACULTY_SECTION_MAP[section] ?? section;
+
+  try {
+    // Fetch the current submission
+    const [submission] = await db
+      .select({ data: facultySubmissionsTable.data })
+      .from(facultySubmissionsTable)
+      .where(sql`${facultySubmissionsTable.id} = ${submissionId}`);
+
+    if (!submission) {
+      res.status(404).json({ error: "Submission not found" });
+      return;
+    }
+
+    // Get the data object
+    const data = submission.data as Record<string, unknown>;
+    const sectionArray = Array.isArray(data[sectionKey]) ? (data[sectionKey] as Record<string, unknown>[]) : [];
+
+    // Update the specific field in the array element
+    if (rowIndex !== undefined && rowIndex >= 0 && rowIndex < sectionArray.length) {
+      sectionArray[rowIndex] = {
+        ...sectionArray[rowIndex],
+        [fieldName]: fieldValue,
+      };
+    } else {
+      res.status(400).json({ error: "Invalid rowIndex" });
+      return;
+    }
+
+    // Update the data back
+    const updatedData = {
+      ...data,
+      [sectionKey]: sectionArray,
+    };
+
+    // Save to database
+    await db
+      .update(facultySubmissionsTable)
+      .set({ data: updatedData })
+      .where(sql`${facultySubmissionsTable.id} = ${submissionId}`);
+
+    // Return the updated row
+    const updatedRow = sectionArray[rowIndex];
+    res.json({ 
+      message: "Faculty submission updated", 
+      id: submissionId,
+      updatedRow 
+    });
+  } catch (error) {
+    req.log.error({ err: error }, "Failed to update faculty submission");
+    res.status(500).json({ error: error instanceof Error ? error.message : "Internal server error" });
+  }
+});
+
 export default router;
 
