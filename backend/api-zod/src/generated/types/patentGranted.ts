@@ -10,6 +10,7 @@ export interface PatentGranted {
   name: string;
   designation: string;
   department: string;
+  phoneNumber: string;
   titleOfPatent: string;
   designProduct: string;
   proofLink: string;

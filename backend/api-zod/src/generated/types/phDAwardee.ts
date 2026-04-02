@@ -10,6 +10,7 @@ export interface PhDAwardee {
   name: string;
   designation: string;
   branch: string;
+  phoneNumber: string;
   university: string;
   year: string;
   title: string;

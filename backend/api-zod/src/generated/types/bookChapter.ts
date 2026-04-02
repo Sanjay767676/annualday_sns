@@ -10,6 +10,7 @@ export interface BookChapter {
   name: string;
   designation: string;
   department: string;
+  phoneNumber: string;
   titleOfBook: string;
   publisherIsbn: string;
   proofLink: string;

@@ -89,21 +89,26 @@ router.get("/admin/faculty", async (req: Request, res: Response): Promise<void> 
   const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 10));
   const offset = (page - 1) * limit;
 
-  type RowResult = { elem: Record<string, unknown>; submission_id: string; submitted_at: Date };
+  type RowResult = {
+    elem: Record<string, unknown>;
+    submission_id: string;
+    submitted_at: Date;
+    row_index: number | string;
+  };
   type CountResult = { count: string };
 
   const sectionSql = sql.raw(`'${section}'`);
 
-  const rowsQuery = search
-    ? sql`SELECT elem, fs.id AS submission_id, fs.created_at AS submitted_at
-          FROM faculty_submissions fs,
-               jsonb_array_elements(COALESCE(fs.data->${sectionSql}, '[]'::jsonb)) AS elem
-      WHERE fs.deleted_at IS NULL AND cast(elem AS text) ILIKE ${"%" + search + "%"}
+    const rowsQuery = search
+      ? sql`SELECT arr.elem AS elem, fs.id AS submission_id, fs.created_at AS submitted_at, (arr.row_index - 1) AS row_index
+        FROM faculty_submissions fs,
+         jsonb_array_elements(COALESCE(fs.data->${sectionSql}, '[]'::jsonb)) WITH ORDINALITY AS arr(elem, row_index)
+    WHERE fs.deleted_at IS NULL AND cast(arr.elem AS text) ILIKE ${"%" + search + "%"}
           ORDER BY fs.created_at DESC
           LIMIT ${limit} OFFSET ${offset}`
-    : sql`SELECT elem, fs.id AS submission_id, fs.created_at AS submitted_at
-          FROM faculty_submissions fs,
-               jsonb_array_elements(COALESCE(fs.data->${sectionSql}, '[]'::jsonb)) AS elem
+      : sql`SELECT arr.elem AS elem, fs.id AS submission_id, fs.created_at AS submitted_at, (arr.row_index - 1) AS row_index
+        FROM faculty_submissions fs,
+         jsonb_array_elements(COALESCE(fs.data->${sectionSql}, '[]'::jsonb)) WITH ORDINALITY AS arr(elem, row_index)
       WHERE fs.deleted_at IS NULL
           ORDER BY fs.created_at DESC
           LIMIT ${limit} OFFSET ${offset}`;
@@ -119,15 +124,15 @@ router.get("/admin/faculty", async (req: Request, res: Response): Promise<void> 
       WHERE fs.deleted_at IS NULL`;
 
         const legacyRowsQuery = search
-          ? sql`SELECT elem, fs.id AS submission_id, fs.created_at AS submitted_at
+          ? sql`SELECT arr.elem AS elem, fs.id AS submission_id, fs.created_at AS submitted_at, (arr.row_index - 1) AS row_index
           FROM faculty_submissions fs,
-            jsonb_array_elements(COALESCE(fs.data->${sectionSql}, '[]'::jsonb)) AS elem
-          WHERE cast(elem AS text) ILIKE ${"%" + search + "%"}
+            jsonb_array_elements(COALESCE(fs.data->${sectionSql}, '[]'::jsonb)) WITH ORDINALITY AS arr(elem, row_index)
+          WHERE cast(arr.elem AS text) ILIKE ${"%" + search + "%"}
           ORDER BY fs.created_at DESC
           LIMIT ${limit} OFFSET ${offset}`
-          : sql`SELECT elem, fs.id AS submission_id, fs.created_at AS submitted_at
+          : sql`SELECT arr.elem AS elem, fs.id AS submission_id, fs.created_at AS submitted_at, (arr.row_index - 1) AS row_index
           FROM faculty_submissions fs,
-            jsonb_array_elements(COALESCE(fs.data->${sectionSql}, '[]'::jsonb)) AS elem
+            jsonb_array_elements(COALESCE(fs.data->${sectionSql}, '[]'::jsonb)) WITH ORDINALITY AS arr(elem, row_index)
           ORDER BY fs.created_at DESC
           LIMIT ${limit} OFFSET ${offset}`;
 
@@ -160,6 +165,7 @@ router.get("/admin/faculty", async (req: Request, res: Response): Promise<void> 
       ...(r.elem as Record<string, unknown>),
       _submissionId: r.submission_id,
       _submittedAt: r.submitted_at,
+      _rowIndex: Number(r.row_index),
     }));
 
     res.json({ data, total, page, limit });
@@ -181,6 +187,7 @@ router.get("/admin/faculty", async (req: Request, res: Response): Promise<void> 
         ...(r.elem as Record<string, unknown>),
         _submissionId: r.submission_id,
         _submittedAt: r.submitted_at,
+        _rowIndex: Number(r.row_index),
       }));
 
       res.json({ data, total, page, limit });

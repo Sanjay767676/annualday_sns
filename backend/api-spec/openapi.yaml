@@ -310,6 +310,8 @@ components:
           type: string
         department:
           type: string
+        phoneNumber:
+          type: string
         titleOfPaper:
           type: string
         journalName:
@@ -327,6 +329,7 @@ components:
         - facultyName
         - designation
         - department
+        - phoneNumber
         - titleOfPaper
         - publisherIsbn
         - proofLink
@@ -342,6 +345,8 @@ components:
           type: string
         department:
           type: string
+        phoneNumber:
+          type: string
         titleOfBook:
           type: string
         publisherIsbn:
@@ -354,6 +359,7 @@ components:
         - name
         - designation
         - department
+        - phoneNumber
         - titleOfBook
         - publisherIsbn
         - proofLink
@@ -368,6 +374,8 @@ components:
           type: string
         department:
           type: string
+        phoneNumber:
+          type: string
         titleOfPatent:
           type: string
         designProduct:
@@ -380,6 +388,7 @@ components:
         - name
         - designation
         - department
+        - phoneNumber
         - titleOfPatent
         - designProduct
         - proofLink
@@ -514,6 +523,8 @@ components:
           type: string
         branch:
           type: string
+        phoneNumber:
+          type: string
         university:
           type: string
         year:
@@ -526,6 +537,7 @@ components:
         - name
         - designation
         - branch
+        - phoneNumber
         - university
         - year
         - title

@@ -59,7 +59,7 @@ const STUDENT_FILTERS = [
   { key: "reputedInstitution", label: "Remarkable Achievements" },
 ] as const;
 
-const HIDDEN_COLS = new Set(["_submissionId", "_submittedAt"]);
+const HIDDEN_COLS = new Set(["_submissionId", "_submittedAt", "_rowIndex"]);
 
 const FACULTY_FILTER_ORDER: FacultyType[] = ["paper", "book", "patent", "phd"];
 const STUDENT_FILTER_ORDER: StudentType[] = ["firstRank", "semesterWise", "reputedInstitution"];
@@ -75,6 +75,7 @@ const COLUMN_LABELS: Record<string, string> = {
   journalName: "Name of the Journal",
   journalType: "Journal Type",
   publisherIsbn: "Publisher & ISBN",
+  phoneNumber: "Phone Number",
   proofLink: "Proof",
   designation: "Designation",
   department: "Department",
@@ -113,12 +114,13 @@ const SECTION_COLUMN_ORDER: Record<TabType, Record<SectionType, string[]>> = {
       "publisherIsbn",
       "designation",
       "department",
+      "phoneNumber",
       "monthYear",
       "proofLink",
     ],
-    book: ["name", "titleOfBook", "publisherIsbn", "designation", "department", "monthYear", "proofLink"],
-    patent: ["name", "titleOfPatent", "designProduct", "designation", "department", "monthYear", "proofLink"],
-    phd: ["name", "title", "university", "designation", "branch", "year", "proofLink"],
+    book: ["name", "titleOfBook", "publisherIsbn", "designation", "department", "phoneNumber", "monthYear", "proofLink"],
+    patent: ["name", "titleOfPatent", "designProduct", "designation", "department", "phoneNumber", "monthYear", "proofLink"],
+    phd: ["name", "title", "university", "designation", "branch", "phoneNumber", "year", "proofLink"],
     firstRank: [],
     semesterWise: [],
     reputedInstitution: [],
@@ -518,7 +520,9 @@ function DynamicTable({
   const parseEditingKey = (key: string | null) => {
     if (!key) return null;
     const [submissionId, rowIndexStr, fieldName] = key.split(":");
-    return { submissionId, rowIndex: parseInt(rowIndexStr), fieldName };
+    const rowIndex = Number.parseInt(rowIndexStr, 10);
+    if (!Number.isInteger(rowIndex) || rowIndex < 0 || !fieldName) return null;
+    return { submissionId, rowIndex, fieldName };
   };
 
   const isNullOrEmpty = (value: unknown): boolean => {
@@ -528,8 +532,9 @@ function DynamicTable({
   const handleCellClick = (row: Record<string, unknown>, col: string) => {
     const cellValue = row[col];
     const submissionId = String(row._submissionId || "");
-    // Find the row index by matching the submission ID
-    const rowIndex = rows.indexOf(row);
+    const rowIndex = Number.isInteger(row._rowIndex)
+      ? Number(row._rowIndex)
+      : rows.indexOf(row);
 
     // Only allow editing if value is null/empty
     if (isNullOrEmpty(cellValue) && submissionId) {
@@ -639,7 +644,10 @@ function DynamicTable({
                 {columns.map((col) => {
                   const cellValue = row[col];
                   const isCellEmpty = isNullOrEmpty(cellValue);
-                  const isThisEditing = editingKey === `${row._submissionId}:${i}:${col}`;
+                  const currentRowIndex = Number.isInteger(row._rowIndex)
+                    ? Number(row._rowIndex)
+                    : i;
+                  const isThisEditing = editingKey === `${row._submissionId}:${currentRowIndex}:${col}`;
                   
                   return (
                     <td key={col} className="px-2 py-1.5 align-middle text-slate-700 max-w-[120px]">

@@ -11,6 +11,7 @@ export interface PaperPublished {
   facultyName: string;
   designation: string;
   department: string;
+  phoneNumber: string;
   titleOfPaper: string;
   publisherIsbn: string;
   proofLink: string;

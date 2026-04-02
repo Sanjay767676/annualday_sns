@@ -57,6 +57,7 @@ export interface PaperPublished {
   facultyName: string;
   designation: string;
   department: string;
+  phoneNumber: string;
   titleOfPaper: string;
   journalName?: string;
   publisherIsbn: string;
@@ -69,6 +70,7 @@ export interface BookChapter {
   name: string;
   designation: string;
   department: string;
+  phoneNumber: string;
   titleOfBook: string;
   publisherIsbn: string;
   proofLink: string;
@@ -79,6 +81,7 @@ export interface PatentGranted {
   name: string;
   designation: string;
   department: string;
+  phoneNumber: string;
   titleOfPatent: string;
   designProduct: string;
   proofLink: string;
@@ -190,6 +193,7 @@ export interface PhDAwardee {
   name: string;
   designation: string;
   branch: string;
+  phoneNumber: string;
   university: string;
   year: string;
   title: string;
