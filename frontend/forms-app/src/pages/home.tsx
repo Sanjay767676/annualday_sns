@@ -48,30 +48,22 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className="border-t border-stone-200/80 bg-white/50 backdrop-blur-sm mt-8">
-        <div className="page-frame py-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <footer className="bg-black mt-8">
+        <div className="page-frame py-4 px-4">
+          <h3 className="text-white text-sm font-semibold mb-2" style={{ fontFamily: "Lora, serif" }}>Contact support</h3>
+          <div className="flex flex-col gap-1 text-xs text-white">
             <div>
-              <h3 className="text-sm font-semibold text-slate-900 mb-3">Contact Support</h3>
-              <div className="space-y-2">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-medium text-slate-600">Mrs Shobana M</span>
-                  <a href="tel:8248544370" className="text-xs text-blue-600 hover:text-blue-700 font-medium">8248544370</a>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-medium text-slate-600">Mr Anand</span>
-                  <a href="tel:9698411408" className="text-xs text-blue-600 hover:text-blue-700 font-medium">9698411408</a>
-                </div>
-              </div>
+              <span>Mrs Shobana M</span>
+              <span className="ml-3">
+                <a href="tel:8248544370" className="hover:text-gray-300">8248544370</a>
+              </span>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-slate-900 mb-3">Information</h3>
-              <p className="text-xs text-slate-600">SNS College of Technology</p>
-              <p className="text-xs text-slate-600 mt-2">Annual Day Prize Distribution Committee</p>
+              <span>Mr Anand</span>
+              <span className="ml-8">
+                <a href="tel:9698411408" className="hover:text-gray-300">9698411408</a>
+              </span>
             </div>
-          </div>
-          <div className="mt-6 pt-4 border-t border-stone-100">
-            <p className="text-xs text-slate-500 text-center">© 2024-2026 SNS College of Technology. All rights reserved.</p>
           </div>
         </div>
       </footer>
