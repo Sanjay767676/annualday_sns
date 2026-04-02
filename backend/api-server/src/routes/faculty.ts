@@ -1,4 +1,4 @@
-import { Router, type Request, type Response } from "express";
+﻿import { Router, type Request, type Response } from "express";
 import { randomUUID } from "node:crypto";
 import { db, sql } from "../../../db/src/index.js";
 import { facultySubmissionsTable } from "../../../db/src/schema/faculty_submissions.js";
@@ -90,13 +90,13 @@ router.get("/admin/faculty", async (req: Request, res: Response): Promise<void> 
   const rowsQuery = search
     ? sql`SELECT elem, fs.id AS submission_id, fs.created_at AS submitted_at
           FROM faculty_submissions fs,
-               jsonb_array_elements(fs.data->${sectionSql}) AS elem
+               jsonb_array_elements(COALESCE(fs.data->${sectionSql}, '[]'::jsonb)) AS elem
       WHERE fs.deleted_at IS NULL AND cast(elem AS text) ILIKE ${"%" + search + "%"}
           ORDER BY fs.created_at DESC
           LIMIT ${limit} OFFSET ${offset}`
     : sql`SELECT elem, fs.id AS submission_id, fs.created_at AS submitted_at
           FROM faculty_submissions fs,
-               jsonb_array_elements(fs.data->${sectionSql}) AS elem
+               jsonb_array_elements(COALESCE(fs.data->${sectionSql}, '[]'::jsonb)) AS elem
       WHERE fs.deleted_at IS NULL
           ORDER BY fs.created_at DESC
           LIMIT ${limit} OFFSET ${offset}`;
@@ -104,34 +104,34 @@ router.get("/admin/faculty", async (req: Request, res: Response): Promise<void> 
   const countQuery = search
     ? sql`SELECT count(*) AS count
           FROM faculty_submissions fs,
-               jsonb_array_elements(fs.data->${sectionSql}) AS elem
+               jsonb_array_elements(COALESCE(fs.data->${sectionSql}, '[]'::jsonb)) AS elem
       WHERE fs.deleted_at IS NULL AND cast(elem AS text) ILIKE ${"%" + search + "%"}`
     : sql`SELECT count(*) AS count
           FROM faculty_submissions fs,
-        jsonb_array_elements(fs.data->${sectionSql}) AS elem
+        jsonb_array_elements(COALESCE(fs.data->${sectionSql}, '[]'::jsonb)) AS elem
       WHERE fs.deleted_at IS NULL`;
 
         const legacyRowsQuery = search
           ? sql`SELECT elem, fs.id AS submission_id, fs.created_at AS submitted_at
           FROM faculty_submissions fs,
-            jsonb_array_elements(fs.data->${sectionSql}) AS elem
+            jsonb_array_elements(COALESCE(fs.data->${sectionSql}, '[]'::jsonb)) AS elem
           WHERE cast(elem AS text) ILIKE ${"%" + search + "%"}
           ORDER BY fs.created_at DESC
           LIMIT ${limit} OFFSET ${offset}`
           : sql`SELECT elem, fs.id AS submission_id, fs.created_at AS submitted_at
           FROM faculty_submissions fs,
-            jsonb_array_elements(fs.data->${sectionSql}) AS elem
+            jsonb_array_elements(COALESCE(fs.data->${sectionSql}, '[]'::jsonb)) AS elem
           ORDER BY fs.created_at DESC
           LIMIT ${limit} OFFSET ${offset}`;
 
         const legacyCountQuery = search
           ? sql`SELECT count(*) AS count
           FROM faculty_submissions fs,
-            jsonb_array_elements(fs.data->${sectionSql}) AS elem
+            jsonb_array_elements(COALESCE(fs.data->${sectionSql}, '[]'::jsonb)) AS elem
           WHERE cast(elem AS text) ILIKE ${"%" + search + "%"}`
           : sql`SELECT count(*) AS count
           FROM faculty_submissions fs,
-            jsonb_array_elements(fs.data->${sectionSql}) AS elem`;
+            jsonb_array_elements(COALESCE(fs.data->${sectionSql}, '[]'::jsonb)) AS elem`;
 
   try {
     const [rowsResult, countQueryResult] = await Promise.all([
@@ -257,13 +257,13 @@ router.get("/admin/faculty/deleted", async (req: Request, res: Response): Promis
   const rowsQuery = search
     ? sql`SELECT elem, fs.id AS submission_id, fs.created_at AS submitted_at, fs.deleted_at AS deleted_at
           FROM faculty_submissions fs,
-               jsonb_array_elements(fs.data->${sectionSql}) AS elem
+               jsonb_array_elements(COALESCE(fs.data->${sectionSql}, '[]'::jsonb)) AS elem
           WHERE fs.deleted_at IS NOT NULL AND cast(elem AS text) ILIKE ${"%" + search + "%"}
           ORDER BY fs.deleted_at DESC
           LIMIT ${limit} OFFSET ${offset}`
     : sql`SELECT elem, fs.id AS submission_id, fs.created_at AS submitted_at, fs.deleted_at AS deleted_at
           FROM faculty_submissions fs,
-               jsonb_array_elements(fs.data->${sectionSql}) AS elem
+               jsonb_array_elements(COALESCE(fs.data->${sectionSql}, '[]'::jsonb)) AS elem
           WHERE fs.deleted_at IS NOT NULL
           ORDER BY fs.deleted_at DESC
           LIMIT ${limit} OFFSET ${offset}`;
@@ -271,11 +271,11 @@ router.get("/admin/faculty/deleted", async (req: Request, res: Response): Promis
   const countQuery = search
     ? sql`SELECT count(*) AS count
           FROM faculty_submissions fs,
-               jsonb_array_elements(fs.data->${sectionSql}) AS elem
+               jsonb_array_elements(COALESCE(fs.data->${sectionSql}, '[]'::jsonb)) AS elem
           WHERE fs.deleted_at IS NOT NULL AND cast(elem AS text) ILIKE ${"%" + search + "%"}`
     : sql`SELECT count(*) AS count
           FROM faculty_submissions fs,
-               jsonb_array_elements(fs.data->${sectionSql}) AS elem
+               jsonb_array_elements(COALESCE(fs.data->${sectionSql}, '[]'::jsonb)) AS elem
           WHERE fs.deleted_at IS NOT NULL`;
 
   try {
@@ -346,3 +346,4 @@ router.post("/admin/faculty/:submissionId/restore", async (req: Request, res: Re
 });
 
 export default router;
+
