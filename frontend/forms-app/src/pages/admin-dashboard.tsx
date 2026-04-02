@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 100;
 const EXPORT_PAGE_LIMIT = 100;
 const POLL_INTERVAL = 30_000;
 
@@ -59,7 +59,7 @@ const STUDENT_FILTERS = [
   { key: "reputedInstitution", label: "Remarkable Achievements" },
 ] as const;
 
-const HIDDEN_COLS = new Set(["_submissionId", "_submittedAt", "_rowIndex"]);
+const HIDDEN_COLS = new Set(["_submissionId", "_submittedAt", "_rowIndex", "row_index"]);
 
 const FACULTY_FILTER_ORDER: FacultyType[] = ["paper", "book", "patent", "phd"];
 const STUDENT_FILTER_ORDER: StudentType[] = ["firstRank", "semesterWise", "reputedInstitution"];
@@ -156,7 +156,10 @@ const SECTION_COLUMN_ORDER: Record<TabType, Record<SectionType, string[]>> = {
   },
 };
 
-function labelForColumn(key: string): string {
+function labelForColumn(key: string, sectionType?: SectionType): string {
+  if (key === "publisherIsbn" && sectionType === "paper") {
+    return "Publisher & ISSN";
+  }
   return COLUMN_LABELS[key] ?? humanize(key);
 }
 
@@ -624,7 +627,7 @@ function DynamicTable({
                 key={col}
                 className="whitespace-nowrap px-2 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500"
               >
-                {labelForColumn(col)}
+                {labelForColumn(col, type)}
               </th>
             ))}
             <th className="whitespace-nowrap px-2 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">

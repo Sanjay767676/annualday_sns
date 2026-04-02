@@ -655,7 +655,7 @@ export default function FacultyFormPage() {
               { name: "titleOfPaper", label: "Title of Paper" },
               { name: "journalName", label: "Name of the Journal" },
               { name: "journalType", label: "Journal Type", type: "select", options: JOURNAL_OPTIONS },
-              { name: "publisherIsbn", label: "Publisher & ISBN" },
+              { name: "publisherIsbn", label: "Publisher & ISSN" },
               { name: "monthYear", label: "Month & Year", type: "month" },
               { name: "proofLink", label: "Proof" },
             ])}

@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "ignoreDeprecations": "5.0",
     "isolatedModules": true,
     "lib": ["es2022"],
     "module": "esnext",
@@ -22,11 +21,10 @@
     "target": "es2022",
     "types": [],
     "customConditions": ["workspace"],
-    "baseUrl": ".",
     "paths": {
-      "@workspace/api-zod": ["backend/api-zod/src/index.ts"],
-      "@workspace/db": ["backend/db/src/index.ts"],
-      "@workspace/db/schema": ["backend/db/src/schema/index.ts"]
+      "@workspace/api-zod": ["./backend/api-zod/src/index.ts"],
+      "@workspace/db": ["./backend/db/src/index.ts"],
+      "@workspace/db/schema": ["./backend/db/src/schema/index.ts"]
     }
   }
 }

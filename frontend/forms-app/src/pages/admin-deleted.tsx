@@ -20,7 +20,7 @@ type PaginatedResponse = {
   limit: number;
 };
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 100;
 const FACULTY_FILTERS = [
   { key: "paper", label: "Papers Published" },
   { key: "book", label: "Book / Chapter" },
@@ -34,7 +34,7 @@ const STUDENT_FILTERS = [
   { key: "reputedInstitution", label: "Remarkable Achievements" },
 ] as const;
 
-const HIDDEN = new Set(["_submissionId", "_submittedAt", "_deletedAt"]);
+const HIDDEN = new Set(["_submissionId", "_submittedAt", "_deletedAt", "_rowIndex", "row_index"]);
 
 function humanize(key: string): string {
   return key.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase()).trim();
