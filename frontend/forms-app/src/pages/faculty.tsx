@@ -28,6 +28,7 @@ type FacultyFormValues = {
     designation: string;
     department: string;
     departmentOther: string;
+    phoneNumber: string;
     titleOfPaper: string;
     journalName: string;
     publisherIsbn: string;
@@ -41,6 +42,7 @@ type FacultyFormValues = {
     designation: string;
     department: string;
     departmentOther: string;
+    phoneNumber: string;
     titleOfBook: string;
     publisherIsbn: string;
     proofLink: string;
@@ -52,6 +54,7 @@ type FacultyFormValues = {
     designation: string;
     department: string;
     departmentOther: string;
+    phoneNumber: string;
     titleOfPatent: string;
     designProduct: string;
     proofLink: string;
@@ -63,6 +66,7 @@ type FacultyFormValues = {
     designation: string;
     branch: string;
     branchOther: string;
+    phoneNumber: string;
     university: string;
     year: string;
     title: string;
@@ -111,6 +115,7 @@ function createEmptyPaper() {
     designation: "",
     department: "",
     departmentOther: "",
+    phoneNumber: "",
     titleOfPaper: "",
     journalName: "",
     publisherIsbn: "",
@@ -127,6 +132,7 @@ function createEmptyBookChapter() {
     designation: "",
     department: "",
     departmentOther: "",
+    phoneNumber: "",
     titleOfBook: "",
     publisherIsbn: "",
     proofLink: "",
@@ -141,6 +147,7 @@ function createEmptyPatent() {
     designation: "",
     department: "",
     departmentOther: "",
+    phoneNumber: "",
     titleOfPatent: "",
     designProduct: "",
     proofLink: "",
@@ -155,6 +162,7 @@ function createEmptyPhdAwardee() {
     designation: "",
     branch: "",
     branchOther: "",
+    phoneNumber: "",
     university: "",
     year: "",
     title: "",
@@ -289,6 +297,7 @@ export default function FacultyFormPage() {
       facultyName: "Faculty Name",
       designation: "Designation",
       department: "Department",
+      phoneNumber: "Phone Number",
       titleOfPaper: "Title of Paper",
       publisherIsbn: "Publisher & ISBN",
       proofLink: "Proof Drive Link",
@@ -301,6 +310,7 @@ export default function FacultyFormPage() {
       name: "Name",
       designation: "Designation",
       department: "Department",
+      phoneNumber: "Phone Number",
       titleOfBook: "Title of Book / Chapter",
       publisherIsbn: "Publisher & ISBN",
       proofLink: "Proof Drive Link",
@@ -312,6 +322,7 @@ export default function FacultyFormPage() {
       name: "Name",
       designation: "Designation",
       department: "Department",
+      phoneNumber: "Phone Number",
       titleOfPatent: "Title of Patent",
       designProduct: "Design / Product",
       proofLink: "Proof Drive Link",
@@ -323,6 +334,7 @@ export default function FacultyFormPage() {
       name: "Name",
       designation: "Designation",
       branch: "Department",
+      phoneNumber: "Phone Number",
       university: "University",
       year: "Date of Graduation / Viva Voce Completion",
       title: "Title of Thesis",
@@ -368,6 +380,7 @@ export default function FacultyFormPage() {
         facultyName: fullName(entry.prefix, entry.facultyName),
         designation: entry.designation,
         department: resolveDepartmentValue(entry.department, entry.departmentOther),
+        phoneNumber: entry.phoneNumber,
         titleOfPaper: entry.titleOfPaper,
         journalName: entry.journalName,
         publisherIsbn: entry.publisherIsbn,
@@ -379,6 +392,7 @@ export default function FacultyFormPage() {
         name: fullName(entry.prefix, entry.name),
         designation: entry.designation,
         department: resolveDepartmentValue(entry.department, entry.departmentOther),
+        phoneNumber: entry.phoneNumber,
         titleOfBook: entry.titleOfBook,
         publisherIsbn: entry.publisherIsbn,
         proofLink: entry.proofLink,
@@ -388,6 +402,7 @@ export default function FacultyFormPage() {
         name: fullName(entry.prefix, entry.name),
         designation: entry.designation,
         department: resolveDepartmentValue(entry.department, entry.departmentOther),
+        phoneNumber: entry.phoneNumber,
         titleOfPatent: entry.titleOfPatent,
         designProduct: entry.designProduct,
         proofLink: entry.proofLink,
@@ -397,6 +412,7 @@ export default function FacultyFormPage() {
         name: fullName(entry.prefix, entry.name),
         designation: entry.designation,
         branch: resolveDepartmentValue(entry.branch, entry.branchOther),
+        phoneNumber: entry.phoneNumber,
         university: entry.university,
         year: entry.year,
         title: entry.title,
@@ -635,6 +651,7 @@ export default function FacultyFormPage() {
               { name: "facultyName", label: "Faculty Name" },
               { name: "designation", label: "Designation", type: "select", options: DESIGNATION_OPTIONS },
               { name: "department", label: "Department", type: "select", options: FACULTY_DEPARTMENT_OPTIONS },
+              { name: "phoneNumber", label: "Phone Number" },
               { name: "titleOfPaper", label: "Title of Paper" },
               { name: "journalName", label: "Name of the Journal" },
               { name: "journalType", label: "Journal Type", type: "select", options: JOURNAL_OPTIONS },
@@ -648,6 +665,7 @@ export default function FacultyFormPage() {
               { name: "name", label: "Name" },
               { name: "designation", label: "Designation", type: "select", options: DESIGNATION_OPTIONS },
               { name: "department", label: "Department", type: "select", options: FACULTY_DEPARTMENT_OPTIONS },
+              { name: "phoneNumber", label: "Phone Number" },
               { name: "titleOfBook", label: "Title of Book / Chapter" },
               { name: "publisherIsbn", label: "Publisher & ISBN" },
               { name: "monthYear", label: "Month & Year", type: "month" },
@@ -659,6 +677,7 @@ export default function FacultyFormPage() {
               { name: "name", label: "Name" },
               { name: "designation", label: "Designation", type: "select", options: DESIGNATION_OPTIONS },
               { name: "department", label: "Department", type: "select", options: FACULTY_DEPARTMENT_OPTIONS },
+              { name: "phoneNumber", label: "Phone Number" },
               { name: "titleOfPatent", label: "Title of Patent" },
               { name: "designProduct", label: "Design / Product" },
               { name: "monthYear", label: "Month & Year", type: "month" },
@@ -670,6 +689,7 @@ export default function FacultyFormPage() {
               { name: "name", label: "Name" },
               { name: "designation", label: "Designation", type: "select", options: DESIGNATION_OPTIONS },
               { name: "branch", label: "Department", type: "select", options: FACULTY_DEPARTMENT_OPTIONS },
+              { name: "phoneNumber", label: "Phone Number" },
               { name: "university", label: "University", type: "combobox", options: INDIAN_UNIVERSITIES },
               { name: "title", label: "Title of Thesis" },
               { name: "year", label: "Date of Graduation / Viva Voce Completion", type: "date" },

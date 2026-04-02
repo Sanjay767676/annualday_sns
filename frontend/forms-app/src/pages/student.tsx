@@ -165,6 +165,7 @@ function createEmptyFirstRankHolder() {
     departmentOther: "",
     regNumber: "",
     percentageSecured: "",
+    proofLink: "",
   };
 }
 
@@ -177,6 +178,7 @@ function createEmptySemesterWiseRanker() {
     ugPg: "",
     sgpa: "",
     semester: "",
+    proofLink: "",
   };
 }
 
