@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, type ReactNode } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import * as XLSX from "xlsx";
@@ -63,6 +63,147 @@ const HIDDEN_COLS = new Set(["_submissionId", "_submittedAt"]);
 
 const FACULTY_FILTER_ORDER: FacultyType[] = ["paper", "book", "patent", "phd"];
 const STUDENT_FILTER_ORDER: StudentType[] = ["firstRank", "semesterWise", "reputedInstitution"];
+
+const COLUMN_LABELS: Record<string, string> = {
+  facultyName: "Name",
+  name: "Name",
+  studentName: "Name",
+  titleOfPaper: "Title of Paper",
+  titleOfBook: "Title of Book / Chapter",
+  titleOfPatent: "Title of Patent",
+  title: "Title of Thesis",
+  journalName: "Name of the Journal",
+  journalType: "Journal Type",
+  publisherIsbn: "Publisher & ISBN",
+  proofLink: "Proof",
+  designation: "Designation",
+  department: "Department",
+  branch: "Department",
+  university: "University",
+  year: "Year",
+  yearOfStudy: "Year of Study",
+  ugPg: "UG / PG",
+  regNumber: "Reg. No",
+  percentageSecured: "Percentage Secured",
+  sgpa: "SGPA",
+  monthYear: "Month & Year",
+  designProduct: "Design / Product",
+  eventType: "Event Type",
+  paperType: "Paper Type",
+  dateOfPublished: "Date of Published",
+  institutionIndustry: "Institution / Industry",
+  institutionName: "Institution Name",
+  prizeWon: "Prize Won",
+  isbn: "ISBN",
+  numberOfAuthors: "Number of Authors",
+  author1: "Author 1",
+  author2: "Author 2",
+  author3: "Author 3",
+  author4: "Author 4",
+  author5: "Author 5",
+};
+
+const SECTION_COLUMN_ORDER: Record<TabType, Record<SectionType, string[]>> = {
+  faculty: {
+    paper: [
+      "facultyName",
+      "titleOfPaper",
+      "journalName",
+      "journalType",
+      "publisherIsbn",
+      "designation",
+      "department",
+      "monthYear",
+      "proofLink",
+    ],
+    book: ["name", "titleOfBook", "publisherIsbn", "designation", "department", "monthYear", "proofLink"],
+    patent: ["name", "titleOfPatent", "designProduct", "designation", "department", "monthYear", "proofLink"],
+    phd: ["name", "title", "university", "designation", "branch", "year", "proofLink"],
+    firstRank: [],
+    semesterWise: [],
+    reputedInstitution: [],
+  },
+  student: {
+    firstRank: ["studentName", "regNumber", "ugPg", "yearOfStudy", "department", "percentageSecured", "proofLink"],
+    semesterWise: ["studentName", "regNumber", "ugPg", "yearOfStudy", "department", "sgpa", "semester", "proofLink"],
+    reputedInstitution: [
+      "studentName",
+      "eventType",
+      "yearOfStudy",
+      "department",
+      "paperType",
+      "journalName",
+      "isbn",
+      "numberOfAuthors",
+      "author1",
+      "author2",
+      "author3",
+      "author4",
+      "author5",
+      "dateOfPublished",
+      "designProduct",
+      "institutionIndustry",
+      "institutionName",
+      "prizeWon",
+      "proofLink",
+    ],
+    paper: [],
+    book: [],
+    patent: [],
+    phd: [],
+  },
+};
+
+function labelForColumn(key: string): string {
+  return COLUMN_LABELS[key] ?? humanize(key);
+}
+
+function isUrlLike(value: string): boolean {
+  return /^(https?:\/\/|www\.)\S+/i.test(value.trim());
+}
+
+function renderCell(value: unknown): ReactNode {
+  if (value === null || value === undefined || value === "") return "—";
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return "—";
+    if (isUrlLike(trimmed)) {
+      const href = trimmed.startsWith("www.") ? `https://${trimmed}` : trimmed;
+      return (
+        <a
+          href={href}
+          target="_blank"
+          rel="noreferrer"
+          className="break-all font-medium text-blue-600 underline decoration-blue-300 underline-offset-2 hover:text-blue-800"
+        >
+          {trimmed}
+        </a>
+      );
+    }
+    return trimmed;
+  }
+
+  return String(value);
+}
+
+function getOrderedColumns(tab: TabType, type: SectionType, rows: Record<string, unknown>[]) {
+  const priority = SECTION_COLUMN_ORDER[tab][type] ?? [];
+  const keys = new Set<string>();
+
+  rows.forEach((row) => {
+    Object.keys(row).forEach((key) => {
+      if (!HIDDEN_COLS.has(key)) {
+        keys.add(key);
+      }
+    });
+  });
+
+  const ordered = priority.filter((key) => keys.has(key));
+  const remaining = [...keys].filter((key) => !priority.includes(key)).sort((a, b) => labelForColumn(a).localeCompare(labelForColumn(b)));
+
+  return [...ordered, ...remaining];
+}
 
 function asText(value: unknown): string {
   if (value === null || value === undefined) return "";
@@ -340,12 +481,16 @@ function useDebounce<T>(value: T, delay: number): T {
 }
 
 function DynamicTable({
+  tab,
+  type,
   rows,
   isLoading,
   rowOffset,
   deletingId,
   onDelete,
 }: {
+  tab: TabType;
+  type: SectionType;
   rows: Record<string, unknown>[];
   isLoading: boolean;
   rowOffset: number;
@@ -354,8 +499,8 @@ function DynamicTable({
 }) {
   const columns = useMemo(() => {
     if (!rows.length) return [];
-    return Object.keys(rows[0]).filter((k) => !HIDDEN_COLS.has(k));
-  }, [rows]);
+    return getOrderedColumns(tab, type, rows);
+  }, [rows, tab, type]);
 
   if (isLoading) {
     return (
@@ -385,7 +530,7 @@ function DynamicTable({
                 key={col}
                 className="whitespace-nowrap px-4 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500"
               >
-                {humanize(col)}
+                {labelForColumn(col)}
               </th>
             ))}
             <th className="whitespace-nowrap px-4 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -402,7 +547,7 @@ function DynamicTable({
               <td className="px-4 py-4 text-xs text-slate-400">{rowOffset + i + 1}</td>
               {columns.map((col) => (
                 <td key={col} className="max-w-xs px-4 py-4 align-top text-slate-700">
-                  <span className="line-clamp-3">{String(row[col] ?? "—")}</span>
+                  <span className="line-clamp-3">{renderCell(row[col])}</span>
                 </td>
               ))}
               <td className="whitespace-nowrap px-4 py-4 text-xs text-slate-500">
@@ -513,10 +658,6 @@ function DataPanel({
   });
 
   const rows = data?.data ?? [];
-  const visibleColumns = useMemo(() => {
-    if (!rows.length) return [];
-    return Object.keys(rows[0]).filter((k) => !HIDDEN_COLS.has(k));
-  }, [rows]);
 
   const handleDelete = useCallback(async (submissionId: string) => {
     const ok = window.confirm("Delete this submission from dashboard and database?");
@@ -668,6 +809,8 @@ function DataPanel({
         </div>
 
         <DynamicTable
+          tab={tab}
+          type={activeType as SectionType}
           rows={rows}
           isLoading={isLoading}
           rowOffset={(page - 1) * PAGE_SIZE}
