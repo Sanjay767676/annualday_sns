@@ -14,6 +14,7 @@ model FacultySubmission {
   id        String   @id @default(uuid())
   data      Json     @default("{}")
   createdAt DateTime @default(now()) @map("created_at")
+  deletedAt DateTime? @map("deleted_at")
 
   @@map("faculty_submissions")
 }
@@ -25,6 +26,7 @@ model StudentSubmission {
   customField String? @map("custom_field")
   data      Json     @default("{}")
   createdAt DateTime @default(now()) @map("created_at")
+  deletedAt DateTime? @map("deleted_at")
 
   @@map("student_submissions")
 }

@@ -1,5 +1,5 @@
 import { Router, type Request, type Response } from "express";
-import { db, sql, gte } from "../../../db/src/index.js";
+import { db, sql } from "../../../db/src/index.js";
 import { facultySubmissionsTable } from "../../../db/src/schema/faculty_submissions.js";
 import { studentSubmissionsTable } from "../../../db/src/schema/student_submissions.js";
 import {
@@ -16,6 +16,23 @@ const isMissingRelationError = (message: string) =>
   message.includes("student_submissions");
 
 const ADMIN_PASSWORDS = new Set(["admin123", "sns123"]);
+const SOFT_DELETE_RETENTION_HOURS = 30;
+
+function deletedCutoffDate() {
+  return new Date(Date.now() - SOFT_DELETE_RETENTION_HOURS * 60 * 60 * 1000);
+}
+
+async function purgeExpiredDeletedRows() {
+  const cutoff = deletedCutoffDate();
+  await Promise.all([
+    db
+      .delete(facultySubmissionsTable)
+      .where(sql`${facultySubmissionsTable.deletedAt} IS NOT NULL AND ${facultySubmissionsTable.deletedAt} < ${cutoff}`),
+    db
+      .delete(studentSubmissionsTable)
+      .where(sql`${studentSubmissionsTable.deletedAt} IS NOT NULL AND ${studentSubmissionsTable.deletedAt} < ${cutoff}`),
+  ]);
+}
 
 router.post("/admin/login", async (req: Request, res: Response): Promise<void> => {
   const parsed = AdminLoginBody.safeParse(req.body);
@@ -52,6 +69,8 @@ router.get("/admin/stats", async (req: Request, res: Response): Promise<void> =>
   }
 
   try {
+    await purgeExpiredDeletedRows();
+
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
@@ -64,7 +83,8 @@ router.get("/admin/stats", async (req: Request, res: Response): Promise<void> =>
           COALESCE(jsonb_array_length(data->'phdAwardees'), 0)
         ), 0)::int`,
       })
-      .from(facultySubmissionsTable);
+      .from(facultySubmissionsTable)
+      .where(sql`${facultySubmissionsTable.deletedAt} IS NULL`);
 
     const [studentTotal] = await db
       .select({
@@ -74,7 +94,8 @@ router.get("/admin/stats", async (req: Request, res: Response): Promise<void> =>
           COALESCE(jsonb_array_length(data->'reputedInstitutionAchievements'), 0)
         ), 0)::int`,
       })
-      .from(studentSubmissionsTable);
+      .from(studentSubmissionsTable)
+      .where(sql`${studentSubmissionsTable.deletedAt} IS NULL`);
 
     const [recentFaculty] = await db
       .select({
@@ -86,7 +107,7 @@ router.get("/admin/stats", async (req: Request, res: Response): Promise<void> =>
         ), 0)::int`,
       })
       .from(facultySubmissionsTable)
-      .where(gte(facultySubmissionsTable.createdAt, thirtyDaysAgo));
+      .where(sql`${facultySubmissionsTable.deletedAt} IS NULL AND ${facultySubmissionsTable.createdAt} >= ${thirtyDaysAgo}`);
 
     const [recentStudent] = await db
       .select({
@@ -97,7 +118,7 @@ router.get("/admin/stats", async (req: Request, res: Response): Promise<void> =>
         ), 0)::int`,
       })
       .from(studentSubmissionsTable)
-      .where(gte(studentSubmissionsTable.createdAt, thirtyDaysAgo));
+      .where(sql`${studentSubmissionsTable.deletedAt} IS NULL AND ${studentSubmissionsTable.createdAt} >= ${thirtyDaysAgo}`);
 
     res.json(
       GetAdminStatsResponse.parse({

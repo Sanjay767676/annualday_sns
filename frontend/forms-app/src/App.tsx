@@ -10,6 +10,8 @@ const FacultyFormPage = lazy(() => import("@/pages/faculty"));
 const StudentFormPage = lazy(() => import("@/pages/student"));
 const AdminLoginPage = lazy(() => import("@/pages/admin-login"));
 const AdminDashboard = lazy(() => import("@/pages/admin-dashboard"));
+const AdminDeletedPage = lazy(() => import("@/pages/admin-deleted"));
+const AdminExportPage = lazy(() => import("@/pages/admin-export"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -30,6 +32,8 @@ function Router() {
       <Route path="/student" component={StudentFormPage} />
       <Route path="/admin/login" component={AdminLoginPage} />
       <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin/deleted" component={AdminDeletedPage} />
+      <Route path="/admin/export" component={AdminExportPage} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -633,10 +633,14 @@ function DataPanel({
   tab,
   filters,
   token,
+  onOpenDeleted,
+  onOpenExport,
 }: {
   tab: "faculty" | "student";
   filters: readonly { key: string; label: string }[];
   token: string;
+  onOpenDeleted: () => void;
+  onOpenExport: () => void;
 }) {
   const [activeType, setActiveType] = useState(filters[0].key);
   const [searchInput, setSearchInput] = useState("");
@@ -759,35 +763,23 @@ function DataPanel({
               className="h-10 rounded-full border-stone-300 bg-white pl-9 text-sm shadow-none"
             />
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={isExporting}
-                className="h-10 rounded-full border-stone-300 bg-white px-4 text-xs font-semibold tracking-[0.14em] uppercase whitespace-nowrap"
-              >
-                <Download className="w-3.5 h-3.5" />
-                {isExporting ? "Exporting..." : "Export"}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52">
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>Export as Excel</DropdownMenuSubTrigger>
-                <DropdownMenuSubContent>
-                  <DropdownMenuItem onClick={() => runExport("excel", "filtered")}>Filtered Data</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => runExport("excel", "all")}>All Data</DropdownMenuItem>
-                </DropdownMenuSubContent>
-              </DropdownMenuSub>
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>Export as PDF</DropdownMenuSubTrigger>
-                <DropdownMenuSubContent>
-                  <DropdownMenuItem onClick={() => runExport("pdf", "filtered")}>Filtered Data</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => runExport("pdf", "all")}>All Data</DropdownMenuItem>
-                </DropdownMenuSubContent>
-              </DropdownMenuSub>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onOpenDeleted}
+            className="h-10 rounded-full border-stone-300 bg-white px-4 text-xs font-semibold tracking-[0.14em] uppercase whitespace-nowrap"
+          >
+            Deleted Submissions
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onOpenExport}
+            className="h-10 rounded-full border-stone-300 bg-white px-4 text-xs font-semibold tracking-[0.14em] uppercase whitespace-nowrap"
+          >
+            <Download className="w-3.5 h-3.5" />
+            Export Center
+          </Button>
         </div>
       </div>
 
@@ -933,11 +925,23 @@ export default function AdminDashboard() {
           </TabsList>
 
           <TabsContent value="faculty" className="mt-6">
-            <DataPanel tab="faculty" filters={FACULTY_FILTERS} token={token} />
+            <DataPanel
+              tab="faculty"
+              filters={FACULTY_FILTERS}
+              token={token}
+              onOpenDeleted={() => setLocation("/admin/deleted")}
+              onOpenExport={() => setLocation("/admin/export")}
+            />
           </TabsContent>
 
           <TabsContent value="student" className="mt-6">
-            <DataPanel tab="student" filters={STUDENT_FILTERS} token={token} />
+            <DataPanel
+              tab="student"
+              filters={STUDENT_FILTERS}
+              token={token}
+              onOpenDeleted={() => setLocation("/admin/deleted")}
+              onOpenExport={() => setLocation("/admin/export")}
+            />
           </TabsContent>
         </Tabs>
       </main>

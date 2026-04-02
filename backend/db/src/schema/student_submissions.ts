@@ -7,6 +7,7 @@ export const studentSubmissionsTable = pgTable("student_submissions", {
   customField: text("custom_field"),
   data: jsonb("data").notNull().default("{}"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
 });
 
 export type StudentSubmission = typeof studentSubmissionsTable.$inferSelect;
