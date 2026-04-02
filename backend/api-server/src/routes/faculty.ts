@@ -9,7 +9,7 @@ const isMissingRelationError = (message: string) =>
   message.includes("relation") ||
   message.includes("faculty_submissions");
 const isMissingDeletedColumnError = (message: string) =>
-  message.includes("deleted_at") && message.includes("does not exist");
+  message.includes("deleted_at") && (message.includes("does not exist") || message.includes("not found") || message.includes("column") || message.includes("unknown field"));
 
 const FACULTY_SECTION_MAP: Record<string, string> = {
   paper: "papersPublished",
@@ -85,8 +85,6 @@ router.get("/admin/faculty", async (req: Request, res: Response): Promise<void> 
 
   const sectionSql = sql.raw(`'${section}'`);
 
-  await purgeOldDeletedFacultySubmissions();
-
   const rowsQuery = search
     ? sql`SELECT elem, fs.id AS submission_id, fs.created_at AS submitted_at
           FROM faculty_submissions fs,
@@ -134,6 +132,12 @@ router.get("/admin/faculty", async (req: Request, res: Response): Promise<void> 
             jsonb_array_elements(COALESCE(fs.data->${sectionSql}, '[]'::jsonb)) AS elem`;
 
   try {
+    try {
+      await purgeOldDeletedFacultySubmissions();
+    } catch (purgeError) {
+      req.log.error({ err: purgeError }, "Purge error (non-fatal)");
+    }
+
     const [rowsResult, countQueryResult] = await Promise.all([
       db.execute(rowsQuery),
       db.execute(countQuery),
@@ -252,8 +256,6 @@ router.get("/admin/faculty/deleted", async (req: Request, res: Response): Promis
   const offset = (page - 1) * limit;
   const sectionSql = sql.raw(`'${section}'`);
 
-  await purgeOldDeletedFacultySubmissions();
-
   const rowsQuery = search
     ? sql`SELECT elem, fs.id AS submission_id, fs.created_at AS submitted_at, fs.deleted_at AS deleted_at
           FROM faculty_submissions fs,
@@ -279,6 +281,12 @@ router.get("/admin/faculty/deleted", async (req: Request, res: Response): Promis
           WHERE fs.deleted_at IS NOT NULL`;
 
   try {
+    try {
+      await purgeOldDeletedFacultySubmissions();
+    } catch (purgeError) {
+      req.log.error({ err: purgeError }, "Purge error (non-fatal)");
+    }
+
     const [rowsResult, countQueryResult] = await Promise.all([db.execute(rowsQuery), db.execute(countQuery)]);
     const rows = (rowsResult as unknown as { rows: Array<{ elem: Record<string, unknown>; submission_id: string; submitted_at: Date; deleted_at: Date }> }).rows
       ?? (rowsResult as unknown as Array<{ elem: Record<string, unknown>; submission_id: string; submitted_at: Date; deleted_at: Date }>);
