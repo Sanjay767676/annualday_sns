@@ -314,10 +314,9 @@ components:
           type: string
         titleOfPaper:
           type: string
-        author1:
+        authorPosition:
           type: string
-        author2:
-          type: string
+          enum: ["1", "2"]
         journalName:
           type: string
         publisherIsbn:
@@ -335,8 +334,7 @@ components:
         - department
         - phoneNumber
         - titleOfPaper
-        - author1
-        - author2
+        - authorPosition
         - publisherIsbn
         - proofLink
         - journalType

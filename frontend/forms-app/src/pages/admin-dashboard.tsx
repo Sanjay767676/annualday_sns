@@ -99,6 +99,7 @@ const COLUMN_LABELS: Record<string, string> = {
   numberOfAuthors: "Number of Authors",
   author1: "Author 1",
   author2: "Author 2",
+  authorPosition: "Author Position",
   author3: "Author 3",
   author4: "Author 4",
   author5: "Author 5",
@@ -109,8 +110,7 @@ const SECTION_COLUMN_ORDER: Record<TabType, Record<SectionType, string[]>> = {
     paper: [
       "facultyName",
       "titleOfPaper",
-      "author1",
-      "author2",
+      "authorPosition",
       "journalName",
       "journalType",
       "publisherIsbn",

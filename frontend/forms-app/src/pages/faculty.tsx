@@ -30,8 +30,7 @@ type FacultyFormValues = {
     departmentOther: string;
     phoneNumber: string;
     titleOfPaper: string;
-    author1: string;
-    author2: string;
+    authorPosition: string;
     journalName: string;
     publisherIsbn: string;
     proofLink: string;
@@ -108,6 +107,7 @@ const SECTION_COLORS = [
 ];
 
 const JOURNAL_OPTIONS = ["Scopus", "SCI", "WOS", "Annexure-1"] as const;
+const AUTHOR_POSITION_OPTIONS = ["1", "2"] as const;
 const NAME_PREFIX_OPTIONS = ["Mr", "Mrs", "Ms", "Dr"] as const;
 
 function createEmptyPaper() {
@@ -119,8 +119,7 @@ function createEmptyPaper() {
     departmentOther: "",
     phoneNumber: "",
     titleOfPaper: "",
-    author1: "",
-    author2: "",
+    authorPosition: "",
     journalName: "",
     publisherIsbn: "",
     proofLink: "",
@@ -303,8 +302,7 @@ export default function FacultyFormPage() {
       department: "Department",
       phoneNumber: "Phone Number",
       titleOfPaper: "Title of Paper",
-      author1: "Author 1",
-      author2: "Author 2",
+      authorPosition: "Author Position",
       publisherIsbn: "Publisher & ISBN",
       proofLink: "Proof Drive Link",
       journalType: "Journal Type",
@@ -388,8 +386,7 @@ export default function FacultyFormPage() {
         department: resolveDepartmentValue(entry.department, entry.departmentOther),
         phoneNumber: entry.phoneNumber,
         titleOfPaper: entry.titleOfPaper,
-        author1: entry.author1,
-        author2: entry.author2,
+        authorPosition: entry.authorPosition,
         journalName: entry.journalName,
         publisherIsbn: entry.publisherIsbn,
         proofLink: entry.proofLink,
@@ -661,8 +658,7 @@ export default function FacultyFormPage() {
               { name: "department", label: "Department", type: "select", options: FACULTY_DEPARTMENT_OPTIONS },
               { name: "phoneNumber", label: "Phone Number" },
               { name: "titleOfPaper", label: "Title of Paper" },
-              { name: "author1", label: "Author 1" },
-              { name: "author2", label: "Author 2" },
+              { name: "authorPosition", label: "Author Position", type: "select", options: AUTHOR_POSITION_OPTIONS },
               { name: "journalName", label: "Name of the Journal" },
               { name: "journalType", label: "Journal Type", type: "select", options: JOURNAL_OPTIONS },
               { name: "publisherIsbn", label: "Publisher & ISSN" },
