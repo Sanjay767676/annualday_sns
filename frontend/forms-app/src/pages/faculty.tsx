@@ -29,6 +29,7 @@ type FacultyFormValues = {
     department: string;
     departmentOther: string;
     titleOfPaper: string;
+    journalName: string;
     publisherIsbn: string;
     proofLink: string;
     journalType: string;
@@ -111,6 +112,7 @@ function createEmptyPaper() {
     department: "",
     departmentOther: "",
     titleOfPaper: "",
+    journalName: "",
     publisherIsbn: "",
     proofLink: "",
     journalType: "",
@@ -367,6 +369,7 @@ export default function FacultyFormPage() {
         designation: entry.designation,
         department: resolveDepartmentValue(entry.department, entry.departmentOther),
         titleOfPaper: entry.titleOfPaper,
+        journalName: entry.journalName,
         publisherIsbn: entry.publisherIsbn,
         proofLink: entry.proofLink,
         journalType: entry.journalType as PaperPublishedJournalType,
@@ -633,6 +636,7 @@ export default function FacultyFormPage() {
               { name: "designation", label: "Designation", type: "select", options: DESIGNATION_OPTIONS },
               { name: "department", label: "Department", type: "select", options: FACULTY_DEPARTMENT_OPTIONS },
               { name: "titleOfPaper", label: "Title of Paper" },
+              { name: "journalName", label: "Name of the Journal" },
               { name: "journalType", label: "Journal Type", type: "select", options: JOURNAL_OPTIONS },
               { name: "publisherIsbn", label: "Publisher & ISBN" },
               { name: "monthYear", label: "Month & Year", type: "month" },

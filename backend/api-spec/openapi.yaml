@@ -312,6 +312,8 @@ components:
           type: string
         titleOfPaper:
           type: string
+        journalName:
+          type: string
         publisherIsbn:
           type: string
         proofLink:

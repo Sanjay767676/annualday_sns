@@ -25,6 +25,7 @@ export const SubmitFacultyFormBody = zod.object({
       designation: zod.string(),
       department: zod.string(),
       titleOfPaper: zod.string(),
+      journalName: zod.string().optional(),
       publisherIsbn: zod.string(),
       proofLink: zod.string(),
       journalType: zod.enum(["Scopus", "SCI", "WOS", "Annexure-1"]),
