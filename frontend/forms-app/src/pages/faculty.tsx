@@ -19,7 +19,7 @@ import { DateCalendarPicker } from "@/components/ui/date-calendar-picker";
 import { SearchableCombobox } from "@/components/ui/searchable-combobox";
 import SiteHeader from "@/components/site-header";
 import { FACULTY_DEPARTMENT_OPTIONS, DESIGNATION_OPTIONS } from "@/lib/form-options";
-import { INDIAN_UNIVERSITIES } from "@/lib/universities";
+import { INDIAN_UNIVERSITIES } from "../lib/universities";
 
 type FacultyFormValues = {
   papersPublished: Array<{
@@ -29,6 +29,8 @@ type FacultyFormValues = {
     department: string;
     departmentOther: string;
     titleOfPaper: string;
+    publisherIsbn: string;
+    proofLink: string;
     journalType: string;
     monthYear: string;
   }>;
@@ -40,6 +42,7 @@ type FacultyFormValues = {
     departmentOther: string;
     titleOfBook: string;
     publisherIsbn: string;
+    proofLink: string;
     monthYear: string;
   }>;
   patentsGranted: Array<{
@@ -50,6 +53,7 @@ type FacultyFormValues = {
     departmentOther: string;
     titleOfPatent: string;
     designProduct: string;
+    proofLink: string;
     monthYear: string;
   }>;
   phdAwardees: Array<{
@@ -61,6 +65,7 @@ type FacultyFormValues = {
     university: string;
     year: string;
     title: string;
+    proofLink: string;
   }>;
 };
 
@@ -106,6 +111,8 @@ function createEmptyPaper() {
     department: "",
     departmentOther: "",
     titleOfPaper: "",
+    publisherIsbn: "",
+    proofLink: "",
     journalType: "",
     monthYear: "",
   };
@@ -120,6 +127,7 @@ function createEmptyBookChapter() {
     departmentOther: "",
     titleOfBook: "",
     publisherIsbn: "",
+    proofLink: "",
     monthYear: "",
   };
 }
@@ -133,6 +141,7 @@ function createEmptyPatent() {
     departmentOther: "",
     titleOfPatent: "",
     designProduct: "",
+    proofLink: "",
     monthYear: "",
   };
 }
@@ -147,6 +156,7 @@ function createEmptyPhdAwardee() {
     university: "",
     year: "",
     title: "",
+    proofLink: "",
   };
 }
 
@@ -278,6 +288,8 @@ export default function FacultyFormPage() {
       designation: "Designation",
       department: "Department",
       titleOfPaper: "Title of Paper",
+      publisherIsbn: "Publisher & ISBN",
+      proofLink: "Proof Drive Link",
       journalType: "Journal Type",
       monthYear: "Month & Year",
     });
@@ -289,6 +301,7 @@ export default function FacultyFormPage() {
       department: "Department",
       titleOfBook: "Title of Book / Chapter",
       publisherIsbn: "Publisher & ISBN",
+      proofLink: "Proof Drive Link",
       monthYear: "Month & Year",
     });
 
@@ -299,6 +312,7 @@ export default function FacultyFormPage() {
       department: "Department",
       titleOfPatent: "Title of Patent",
       designProduct: "Design / Product",
+      proofLink: "Proof Drive Link",
       monthYear: "Month & Year",
     });
 
@@ -310,6 +324,7 @@ export default function FacultyFormPage() {
       university: "University",
       year: "Date of Graduation / Viva Voce Completion",
       title: "Title of Thesis",
+      proofLink: "Proof Drive Link",
     });
 
     const hasPartialEntry = [
@@ -352,6 +367,8 @@ export default function FacultyFormPage() {
         designation: entry.designation,
         department: resolveDepartmentValue(entry.department, entry.departmentOther),
         titleOfPaper: entry.titleOfPaper,
+        publisherIsbn: entry.publisherIsbn,
+        proofLink: entry.proofLink,
         journalType: entry.journalType as PaperPublishedJournalType,
         monthYear: entry.monthYear,
       })),
@@ -361,6 +378,7 @@ export default function FacultyFormPage() {
         department: resolveDepartmentValue(entry.department, entry.departmentOther),
         titleOfBook: entry.titleOfBook,
         publisherIsbn: entry.publisherIsbn,
+        proofLink: entry.proofLink,
         monthYear: entry.monthYear,
       })),
       patentsGranted: patentsGranted.completedEntries.map((entry) => ({
@@ -369,6 +387,7 @@ export default function FacultyFormPage() {
         department: resolveDepartmentValue(entry.department, entry.departmentOther),
         titleOfPatent: entry.titleOfPatent,
         designProduct: entry.designProduct,
+        proofLink: entry.proofLink,
         monthYear: entry.monthYear,
       })),
       phdAwardees: phdAwardees.completedEntries.map((entry) => ({
@@ -378,6 +397,7 @@ export default function FacultyFormPage() {
         university: entry.university,
         year: entry.year,
         title: entry.title,
+        proofLink: entry.proofLink,
       })),
     };
 
@@ -517,7 +537,11 @@ export default function FacultyFormPage() {
                             </FormControl>
                           ) : (
                             <FormControl>
-                              <Input className="h-10 bg-white border-slate-300 focus:border-blue-400" {...formField} />
+                              <Input
+                                className="h-10 bg-white border-slate-300 focus:border-blue-400"
+                                placeholder={config.name === "proofLink" ? "Insert your drive link here" : undefined}
+                                {...formField}
+                              />
                             </FormControl>
                           )}
                           <FormMessage className="text-xs" />
@@ -610,7 +634,9 @@ export default function FacultyFormPage() {
               { name: "department", label: "Department", type: "select", options: FACULTY_DEPARTMENT_OPTIONS },
               { name: "titleOfPaper", label: "Title of Paper" },
               { name: "journalType", label: "Journal Type", type: "select", options: JOURNAL_OPTIONS },
+              { name: "publisherIsbn", label: "Publisher & ISBN" },
               { name: "monthYear", label: "Month & Year", type: "month" },
+              { name: "proofLink", label: "Proof" },
             ])}
 
             {renderSection(2, "Book / Book Chapter", "booksChapters", [
@@ -621,6 +647,7 @@ export default function FacultyFormPage() {
               { name: "titleOfBook", label: "Title of Book / Chapter" },
               { name: "publisherIsbn", label: "Publisher & ISBN" },
               { name: "monthYear", label: "Month & Year", type: "month" },
+              { name: "proofLink", label: "Proof" },
             ])}
 
             {renderSection(3, "Patent Granted", "patentsGranted", [
@@ -631,6 +658,7 @@ export default function FacultyFormPage() {
               { name: "titleOfPatent", label: "Title of Patent" },
               { name: "designProduct", label: "Design / Product" },
               { name: "monthYear", label: "Month & Year", type: "month" },
+              { name: "proofLink", label: "Proof" },
             ])}
 
             {renderSection(4, "PhD Awardees", "phdAwardees", [
@@ -639,8 +667,9 @@ export default function FacultyFormPage() {
               { name: "designation", label: "Designation", type: "select", options: DESIGNATION_OPTIONS },
               { name: "branch", label: "Department", type: "select", options: FACULTY_DEPARTMENT_OPTIONS },
               { name: "university", label: "University", type: "combobox", options: INDIAN_UNIVERSITIES },
-              { name: "year", label: "Date of Graduation / Viva Voce Completion", type: "date" },
               { name: "title", label: "Title of Thesis" },
+              { name: "year", label: "Date of Graduation / Viva Voce Completion", type: "date" },
+              { name: "proofLink", label: "Proof" },
             ])}
 
             <div className="surface-panel px-6 py-6 sm:px-8">

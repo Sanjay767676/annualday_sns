@@ -58,6 +58,8 @@ export interface PaperPublished {
   designation: string;
   department: string;
   titleOfPaper: string;
+  publisherIsbn: string;
+  proofLink: string;
   journalType: PaperPublishedJournalType;
   monthYear: string;
 }
@@ -68,6 +70,7 @@ export interface BookChapter {
   department: string;
   titleOfBook: string;
   publisherIsbn: string;
+  proofLink: string;
   monthYear: string;
 }
 
@@ -77,6 +80,7 @@ export interface PatentGranted {
   department: string;
   titleOfPatent: string;
   designProduct: string;
+  proofLink: string;
   monthYear: string;
 }
 
@@ -95,6 +99,7 @@ export interface FirstRankHolder {
   department: string;
   regNumber: string;
   percentageSecured: string;
+  proofLink: string;
 }
 
 export type SemesterWiseRankerUgPg =
@@ -111,6 +116,7 @@ export interface SemesterWiseRanker {
   yearOfStudy: string;
   ugPg: SemesterWiseRankerUgPg;
   sgpa: string;
+  proofLink: string;
 }
 
 export interface StudentAchievement {
@@ -186,6 +192,7 @@ export interface PhDAwardee {
   university: string;
   year: string;
   title: string;
+  proofLink: string;
 }
 
 export interface FacultyFormData {

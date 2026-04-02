@@ -39,6 +39,7 @@ type StudentFormValues = {
     departmentOther: string;
     regNumber: string;
     percentageSecured: string;
+    proofLink: string;
   }>;
   semesterWiseRankers: Array<{
     studentName: string;
@@ -48,6 +49,7 @@ type StudentFormValues = {
     ugPg: string;
     sgpa: string;
     semester: string;
+    proofLink: string;
   }>;
   reputedInstitutionAchievements: Array<{
     studentName: string;
@@ -163,6 +165,7 @@ function createEmptyFirstRankHolder() {
     departmentOther: "",
     regNumber: "",
     percentageSecured: "",
+    proofLink: "",
   };
 }
 
@@ -175,6 +178,7 @@ function createEmptySemesterWiseRanker() {
     ugPg: "",
     sgpa: "",
     semester: "",
+    proofLink: "",
   };
 }
 
@@ -322,6 +326,7 @@ export default function StudentFormPage() {
       ugPg: "UG / PG",
       regNumber: "Reg Number",
       percentageSecured: "Percentage Secured",
+      proofLink: "Proof Drive Link",
     });
 
     const semesterWiseRankers = validateSection("semesterWiseRankers", values.semesterWiseRankers, {
@@ -331,6 +336,7 @@ export default function StudentFormPage() {
       ugPg: "UG / PG",
       sgpa: "SGPA",
       semester: "Semester",
+      proofLink: "Proof Drive Link",
     });
 
     const reputedInstitutionAchievements = validateSection("reputedInstitutionAchievements", values.reputedInstitutionAchievements, {
@@ -439,6 +445,7 @@ export default function StudentFormPage() {
         department: resolveDepartmentValue(entry.department, entry.departmentOther),
         regNumber: entry.regNumber,
         percentageSecured: entry.percentageSecured,
+        proofLink: entry.proofLink,
       })),
       semesterWiseRankers: semesterWiseRankers.completedEntries.map((entry) => ({
         studentName: entry.studentName,
@@ -447,6 +454,7 @@ export default function StudentFormPage() {
         ugPg: entry.ugPg as SemesterWiseRankerUgPg,
         sgpa: entry.sgpa,
         semester: entry.semester,
+        proofLink: entry.proofLink,
       })),
       reputedInstitutionAchievements: reputedInstitutionAchievements.completedEntries.map((entry) => ({
         studentName: entry.studentName,
@@ -601,6 +609,14 @@ export default function StudentFormPage() {
                             <FormMessage className="text-xs" />
                           </FormItem>
                         )} />
+                      <FormField control={form.control} name={`firstRankHolders.${index}.proofLink`}
+                        render={({ field: f }) => (
+                          <FormItem className="md:col-span-2">
+                            <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Proof Drive Link</FormLabel>
+                            <FormControl><Input className="h-10 bg-white border-slate-300" placeholder="https://drive.google.com/..." {...f} /></FormControl>
+                            <FormMessage className="text-xs" />
+                          </FormItem>
+                        )} />
                     </div>
                   </EntryWrapper>
                 ))}
@@ -708,6 +724,14 @@ export default function StudentFormPage() {
                                 ))}
                               </SelectContent>
                             </Select>
+                            <FormMessage className="text-xs" />
+                          </FormItem>
+                        )} />
+                      <FormField control={form.control} name={`semesterWiseRankers.${index}.proofLink`}
+                        render={({ field: f }) => (
+                          <FormItem className="md:col-span-2">
+                            <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Proof Drive Link</FormLabel>
+                            <FormControl><Input className="h-10 bg-white border-slate-300" placeholder="https://drive.google.com/..." {...f} /></FormControl>
                             <FormMessage className="text-xs" />
                           </FormItem>
                         )} />

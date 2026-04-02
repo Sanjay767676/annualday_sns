@@ -12,6 +12,8 @@ export interface PaperPublished {
   designation: string;
   department: string;
   titleOfPaper: string;
+  publisherIsbn: string;
+  proofLink: string;
   journalType: PaperPublishedJournalType;
   monthYear: string;
 }

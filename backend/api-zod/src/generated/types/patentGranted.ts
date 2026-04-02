@@ -12,5 +12,6 @@ export interface PatentGranted {
   department: string;
   titleOfPatent: string;
   designProduct: string;
+  proofLink: string;
   monthYear: string;
 }

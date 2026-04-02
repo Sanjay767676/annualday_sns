@@ -12,5 +12,6 @@ export interface BookChapter {
   department: string;
   titleOfBook: string;
   publisherIsbn: string;
+  proofLink: string;
   monthYear: string;
 }

@@ -25,6 +25,8 @@ export const SubmitFacultyFormBody = zod.object({
       designation: zod.string(),
       department: zod.string(),
       titleOfPaper: zod.string(),
+      publisherIsbn: zod.string(),
+      proofLink: zod.string(),
       journalType: zod.enum(["Scopus", "SCI", "WOS", "Annexure-1"]),
       monthYear: zod.string(),
     }),
@@ -36,6 +38,7 @@ export const SubmitFacultyFormBody = zod.object({
       department: zod.string(),
       titleOfBook: zod.string(),
       publisherIsbn: zod.string(),
+      proofLink: zod.string(),
       monthYear: zod.string(),
     }),
   ),
@@ -46,6 +49,7 @@ export const SubmitFacultyFormBody = zod.object({
       department: zod.string(),
       titleOfPatent: zod.string(),
       designProduct: zod.string(),
+      proofLink: zod.string(),
       monthYear: zod.string(),
     }),
   ),
@@ -57,6 +61,7 @@ export const SubmitFacultyFormBody = zod.object({
       university: zod.string(),
       year: zod.string(),
       title: zod.string(),
+      proofLink: zod.string(),
     }),
   ),
 });
@@ -73,6 +78,7 @@ export const SubmitStudentFormBody = zod.object({
       department: zod.string(),
       regNumber: zod.string(),
       percentageSecured: zod.string(),
+      proofLink: zod.string(),
     }),
   ),
   semesterWiseRankers: zod.array(
@@ -83,6 +89,7 @@ export const SubmitStudentFormBody = zod.object({
       ugPg: zod.enum(["UG", "PG"]),
       sgpa: zod.string(),
       semester: zod.string(),
+      proofLink: zod.string(),
     }),
   ),
   reputedInstitutionAchievements: zod.array(

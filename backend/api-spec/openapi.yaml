@@ -312,6 +312,10 @@ components:
           type: string
         titleOfPaper:
           type: string
+        publisherIsbn:
+          type: string
+        proofLink:
+          type: string
         journalType:
           type: string
           enum: [Scopus, SCI, WOS, Annexure-1]
@@ -322,6 +326,8 @@ components:
         - designation
         - department
         - titleOfPaper
+        - publisherIsbn
+        - proofLink
         - journalType
         - monthYear
 
@@ -338,6 +344,8 @@ components:
           type: string
         publisherIsbn:
           type: string
+        proofLink:
+          type: string
         monthYear:
           type: string
       required:
@@ -346,6 +354,7 @@ components:
         - department
         - titleOfBook
         - publisherIsbn
+        - proofLink
         - monthYear
 
     PatentGranted:
@@ -361,6 +370,8 @@ components:
           type: string
         designProduct:
           type: string
+        proofLink:
+          type: string
         monthYear:
           type: string
       required:
@@ -369,6 +380,7 @@ components:
         - department
         - titleOfPatent
         - designProduct
+        - proofLink
         - monthYear
 
     FirstRankHolder:
@@ -387,6 +399,8 @@ components:
           type: string
         percentageSecured:
           type: string
+        proofLink:
+          type: string
       required:
         - studentName
         - yearOfStudy
@@ -394,6 +408,7 @@ components:
         - department
         - regNumber
         - percentageSecured
+        - proofLink
 
     SemesterWiseRanker:
       type: object
@@ -409,12 +424,15 @@ components:
           enum: [UG, PG]
         sgpa:
           type: string
+        proofLink:
+          type: string
       required:
         - studentName
         - department
         - yearOfStudy
         - ugPg
         - sgpa
+        - proofLink
 
     StudentAchievement:
       type: object
@@ -500,6 +518,8 @@ components:
           type: string
         title:
           type: string
+        proofLink:
+          type: string
       required:
         - name
         - designation
@@ -507,6 +527,7 @@ components:
         - university
         - year
         - title
+        - proofLink
 
     FacultyFormData:
       type: object

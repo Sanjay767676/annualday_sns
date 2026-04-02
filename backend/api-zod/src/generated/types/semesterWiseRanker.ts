@@ -13,4 +13,5 @@ export interface SemesterWiseRanker {
   yearOfStudy: string;
   ugPg: SemesterWiseRankerUgPg;
   percentageSecured: string;
+  proofLink: string;
 }

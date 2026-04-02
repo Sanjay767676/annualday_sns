@@ -13,4 +13,5 @@ export interface PhDAwardee {
   university: string;
   year: string;
   title: string;
+  proofLink: string;
 }

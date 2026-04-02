@@ -14,4 +14,5 @@ export interface FirstRankHolder {
   department: string;
   regNumber: string;
   percentageSecured: string;
+  proofLink: string;
 }
