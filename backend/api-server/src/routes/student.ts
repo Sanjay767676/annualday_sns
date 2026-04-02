@@ -7,8 +7,9 @@ import { SubmitStudentFormBody } from "../../../api-zod/src/generated/api.js";
 const router = Router();
 const isMissingRelationError = (message: string) =>
   message.includes("relation") ||
-  message.includes("does not exist") ||
   message.includes("student_submissions");
+const isMissingDeletedColumnError = (message: string) =>
+  message.includes("deleted_at") && message.includes("does not exist");
 
 const STUDENT_SECTION_MAP: Record<string, string> = {
   firstRank: "firstRankHolders",
@@ -24,9 +25,16 @@ function deletedCutoffDate() {
 }
 
 async function purgeOldDeletedStudentSubmissions() {
-  await db
-    .delete(studentSubmissionsTable)
-    .where(sql`${studentSubmissionsTable.deletedAt} IS NOT NULL AND ${studentSubmissionsTable.deletedAt} < ${deletedCutoffDate()}`);
+  try {
+    await db
+      .delete(studentSubmissionsTable)
+      .where(sql`${studentSubmissionsTable.deletedAt} IS NOT NULL AND ${studentSubmissionsTable.deletedAt} < ${deletedCutoffDate()}`);
+  } catch (error) {
+    const message = error instanceof Error ? error.message.toLowerCase() : "";
+    if (!isMissingDeletedColumnError(message)) {
+      throw error;
+    }
+  }
 }
 
 router.post("/student", async (req: Request, res: Response): Promise<void> => {
@@ -107,6 +115,28 @@ router.get("/admin/student", async (req: Request, res: Response): Promise<void> 
         jsonb_array_elements(ss.data->${sectionSql}) AS elem
       WHERE ss.deleted_at IS NULL`;
 
+        const legacyRowsQuery = search
+          ? sql`SELECT elem, ss.id AS submission_id, ss.created_at AS submitted_at
+          FROM student_submissions ss,
+            jsonb_array_elements(ss.data->${sectionSql}) AS elem
+          WHERE cast(elem AS text) ILIKE ${"%" + search + "%"}
+          ORDER BY ss.created_at DESC
+          LIMIT ${limit} OFFSET ${offset}`
+          : sql`SELECT elem, ss.id AS submission_id, ss.created_at AS submitted_at
+          FROM student_submissions ss,
+            jsonb_array_elements(ss.data->${sectionSql}) AS elem
+          ORDER BY ss.created_at DESC
+          LIMIT ${limit} OFFSET ${offset}`;
+
+        const legacyCountQuery = search
+          ? sql`SELECT count(*) AS count
+          FROM student_submissions ss,
+            jsonb_array_elements(ss.data->${sectionSql}) AS elem
+          WHERE cast(elem AS text) ILIKE ${"%" + search + "%"}`
+          : sql`SELECT count(*) AS count
+          FROM student_submissions ss,
+            jsonb_array_elements(ss.data->${sectionSql}) AS elem`;
+
   try {
     const [rowsResult, countQueryResult] = await Promise.all([
       db.execute(rowsQuery),
@@ -125,12 +155,33 @@ router.get("/admin/student", async (req: Request, res: Response): Promise<void> 
 
     res.json({ data, total, page, limit });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Database query failed";
-    if (isMissingRelationError(message.toLowerCase())) {
+    const message = error instanceof Error ? error.message.toLowerCase() : "database query failed";
+
+    if (isMissingDeletedColumnError(message)) {
+      const [rowsResult, countQueryResult] = await Promise.all([
+        db.execute(legacyRowsQuery),
+        db.execute(legacyCountQuery),
+      ]);
+
+      const rows = (rowsResult as unknown as { rows: RowResult[] }).rows ?? (rowsResult as unknown as RowResult[]);
+      const countRows = (countQueryResult as unknown as { rows: CountResult[] }).rows ?? (countQueryResult as unknown as CountResult[]);
+
+      const total = parseInt(countRows[0]?.count ?? "0", 10);
+      const data = rows.map((r) => ({
+        ...(r.elem as Record<string, unknown>),
+        _submissionId: r.submission_id,
+        _submittedAt: r.submitted_at,
+      }));
+
+      res.json({ data, total, page, limit });
+      return;
+    }
+
+    if (isMissingRelationError(message)) {
       res.json({ data: [], total: 0, page, limit });
       return;
     }
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: error instanceof Error ? error.message : "Database query failed" });
   }
 });
 
@@ -167,8 +218,22 @@ router.delete("/admin/student/:submissionId", async (req: Request, res: Response
     res.json({ message: "Student submission moved to deleted", id: deleted[0].id });
   } catch (error) {
     req.log.error({ err: error }, "Failed to delete student submission");
-    const message = error instanceof Error ? error.message : "Internal server error";
-    res.status(500).json({ error: message });
+    const message = error instanceof Error ? error.message.toLowerCase() : "";
+    if (isMissingDeletedColumnError(message)) {
+      const deleted = await db
+        .delete(studentSubmissionsTable)
+        .where(sql`${studentSubmissionsTable.id} = ${submissionId}`)
+        .returning({ id: studentSubmissionsTable.id });
+
+      if (!deleted.length) {
+        res.status(404).json({ error: "Submission not found" });
+        return;
+      }
+
+      res.json({ message: "Student submission deleted", id: deleted[0].id });
+      return;
+    }
+    res.status(500).json({ error: error instanceof Error ? error.message : "Internal server error" });
   }
 });
 
@@ -233,12 +298,12 @@ router.get("/admin/student/deleted", async (req: Request, res: Response): Promis
 
     res.json({ data, total, page, limit });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Database query failed";
-    if (isMissingRelationError(message.toLowerCase())) {
+    const message = error instanceof Error ? error.message.toLowerCase() : "database query failed";
+    if (isMissingDeletedColumnError(message) || isMissingRelationError(message)) {
       res.json({ data: [], total: 0, page, limit });
       return;
     }
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: error instanceof Error ? error.message : "Database query failed" });
   }
 });
 
@@ -274,8 +339,12 @@ router.post("/admin/student/:submissionId/restore", async (req: Request, res: Re
     res.json({ message: "Student submission restored", id: restored[0].id });
   } catch (error) {
     req.log.error({ err: error }, "Failed to restore student submission");
-    const message = error instanceof Error ? error.message : "Internal server error";
-    res.status(500).json({ error: message });
+    const message = error instanceof Error ? error.message.toLowerCase() : "";
+    if (isMissingDeletedColumnError(message)) {
+      res.status(400).json({ error: "Restore is unavailable until deleted_at column is added" });
+      return;
+    }
+    res.status(500).json({ error: error instanceof Error ? error.message : "Internal server error" });
   }
 });
 

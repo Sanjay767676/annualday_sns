@@ -11,9 +11,10 @@ import {
 const router = Router();
 const isMissingRelationError = (message: string) =>
   message.includes("relation") ||
-  message.includes("does not exist") ||
   message.includes("faculty_submissions") ||
   message.includes("student_submissions");
+const isMissingDeletedColumnError = (message: string) =>
+  message.includes("deleted_at") && message.includes("does not exist");
 
 const ADMIN_PASSWORDS = new Set(["admin123", "sns123"]);
 const SOFT_DELETE_RETENTION_HOURS = 30;
@@ -24,14 +25,21 @@ function deletedCutoffDate() {
 
 async function purgeExpiredDeletedRows() {
   const cutoff = deletedCutoffDate();
-  await Promise.all([
-    db
-      .delete(facultySubmissionsTable)
-      .where(sql`${facultySubmissionsTable.deletedAt} IS NOT NULL AND ${facultySubmissionsTable.deletedAt} < ${cutoff}`),
-    db
-      .delete(studentSubmissionsTable)
-      .where(sql`${studentSubmissionsTable.deletedAt} IS NOT NULL AND ${studentSubmissionsTable.deletedAt} < ${cutoff}`),
-  ]);
+  try {
+    await Promise.all([
+      db
+        .delete(facultySubmissionsTable)
+        .where(sql`${facultySubmissionsTable.deletedAt} IS NOT NULL AND ${facultySubmissionsTable.deletedAt} < ${cutoff}`),
+      db
+        .delete(studentSubmissionsTable)
+        .where(sql`${studentSubmissionsTable.deletedAt} IS NOT NULL AND ${studentSubmissionsTable.deletedAt} < ${cutoff}`),
+    ]);
+  } catch (error) {
+    const message = error instanceof Error ? error.message.toLowerCase() : "";
+    if (!isMissingDeletedColumnError(message)) {
+      throw error;
+    }
+  }
 }
 
 router.post("/admin/login", async (req: Request, res: Response): Promise<void> => {
@@ -129,8 +137,68 @@ router.get("/admin/stats", async (req: Request, res: Response): Promise<void> =>
       })
     );
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Database query failed";
-    if (isMissingRelationError(message.toLowerCase())) {
+    const message = error instanceof Error ? error.message.toLowerCase() : "database query failed";
+
+    if (isMissingDeletedColumnError(message)) {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const [facultyTotal] = await db
+        .select({
+          count: sql<number>`COALESCE(sum(
+            COALESCE(jsonb_array_length(data->'papersPublished'), 0) +
+            COALESCE(jsonb_array_length(data->'booksChapters'), 0) +
+            COALESCE(jsonb_array_length(data->'patentsGranted'), 0) +
+            COALESCE(jsonb_array_length(data->'phdAwardees'), 0)
+          ), 0)::int`,
+        })
+        .from(facultySubmissionsTable);
+
+      const [studentTotal] = await db
+        .select({
+          count: sql<number>`COALESCE(sum(
+            COALESCE(jsonb_array_length(data->'firstRankHolders'), 0) +
+            COALESCE(jsonb_array_length(data->'semesterWiseRankers'), 0) +
+            COALESCE(jsonb_array_length(data->'reputedInstitutionAchievements'), 0)
+          ), 0)::int`,
+        })
+        .from(studentSubmissionsTable);
+
+      const [recentFaculty] = await db
+        .select({
+          count: sql<number>`COALESCE(sum(
+            COALESCE(jsonb_array_length(data->'papersPublished'), 0) +
+            COALESCE(jsonb_array_length(data->'booksChapters'), 0) +
+            COALESCE(jsonb_array_length(data->'patentsGranted'), 0) +
+            COALESCE(jsonb_array_length(data->'phdAwardees'), 0)
+          ), 0)::int`,
+        })
+        .from(facultySubmissionsTable)
+        .where(sql`${facultySubmissionsTable.createdAt} >= ${thirtyDaysAgo}`);
+
+      const [recentStudent] = await db
+        .select({
+          count: sql<number>`COALESCE(sum(
+            COALESCE(jsonb_array_length(data->'firstRankHolders'), 0) +
+            COALESCE(jsonb_array_length(data->'semesterWiseRankers'), 0) +
+            COALESCE(jsonb_array_length(data->'reputedInstitutionAchievements'), 0)
+          ), 0)::int`,
+        })
+        .from(studentSubmissionsTable)
+        .where(sql`${studentSubmissionsTable.createdAt} >= ${thirtyDaysAgo}`);
+
+      res.json(
+        GetAdminStatsResponse.parse({
+          totalFacultySubmissions: facultyTotal?.count ?? 0,
+          totalStudentSubmissions: studentTotal?.count ?? 0,
+          recentFacultySubmissions: recentFaculty?.count ?? 0,
+          recentStudentSubmissions: recentStudent?.count ?? 0,
+        }),
+      );
+      return;
+    }
+
+    if (isMissingRelationError(message)) {
       res.json(
         GetAdminStatsResponse.parse({
           totalFacultySubmissions: 0,
@@ -142,7 +210,7 @@ router.get("/admin/stats", async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: error instanceof Error ? error.message : "Database query failed" });
   }
 });
 
