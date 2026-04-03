@@ -916,12 +916,23 @@ function DataPanel({
           <div className="relative flex-1 sm:w-64">
             <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
             <Input
-              placeholder="Search..."
+              placeholder="Search name, department, title..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               className="h-10 rounded-full border-stone-300 bg-white pl-9 text-sm shadow-none"
             />
           </div>
+          {searchInput ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setSearchInput("")}
+              className="h-10 rounded-full border-stone-300 bg-white px-4 text-xs font-semibold tracking-[0.14em] uppercase whitespace-nowrap"
+            >
+              Clear
+            </Button>
+          ) : null}
           <Button
             variant="outline"
             size="sm"

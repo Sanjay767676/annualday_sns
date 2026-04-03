@@ -94,8 +94,28 @@ const PRIORITY: Record<TabType, Record<SectionType, string[]>> = {
   },
 };
 
+const HIDDEN_COLS = new Set(["_submissionId", "_submittedAt", "_deletedAt", "_rowIndex", "row_index"]);
+
 function labelForColumn(col: string) {
   return COLUMN_LABELS[col] ?? col.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase()).trim();
+}
+
+function getOrderedColumns(tab: TabType, type: SectionType, rows: Record<string, unknown>[]) {
+  const priority = PRIORITY[tab][type] ?? [];
+  const keys = new Set<string>();
+
+  rows.forEach((row) => {
+    Object.keys(row).forEach((key) => {
+      if (!HIDDEN_COLS.has(key)) {
+        keys.add(key);
+      }
+    });
+  });
+
+  const ordered = priority.filter((key) => keys.has(key));
+  const remaining = [...keys].filter((key) => !priority.includes(key)).sort((a, b) => labelForColumn(a).localeCompare(labelForColumn(b)));
+
+  return [...ordered, ...remaining];
 }
 
 function isUrlLike(value: string): boolean {
@@ -270,6 +290,7 @@ export default function AdminExportPage() {
 
     doc.save(`${tab}_${section}_export.pdf`);
   };
+
 
   return (
     <div className="app-shell flex flex-col">
