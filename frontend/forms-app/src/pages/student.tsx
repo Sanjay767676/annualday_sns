@@ -75,6 +75,10 @@ type StudentFormValues = {
   }>;
 };
 
+type FirstRankHolderEntry = StudentFormValues["firstRankHolders"][number];
+type SemesterWiseRankerEntry = StudentFormValues["semesterWiseRankers"][number];
+type ReputedInstitutionAchievementEntry = StudentFormValues["reputedInstitutionAchievements"][number];
+
 const SECTION_COLORS = [
   {
     badge: "bg-indigo-50 text-indigo-700 ring-indigo-100",
@@ -226,6 +230,88 @@ function isEntryComplete(entry: Record<string, string>) {
   });
 }
 
+function isDepartmentComplete(entry: { department: string; departmentOther: string }) {
+  return entry.department === "others"
+    ? isFilled(entry.departmentOther)
+    : isFilled(entry.department);
+}
+
+function isFirstRankHolderComplete(entry: FirstRankHolderEntry) {
+  return (
+    isFilled(entry.studentName) &&
+    isDepartmentComplete(entry) &&
+    isFilled(entry.yearOfStudy) &&
+    isFilled(entry.ugPg) &&
+    isFilled(entry.regNumber) &&
+    isFilled(entry.percentageSecured)
+  );
+}
+
+function isSemesterWiseRankerComplete(entry: SemesterWiseRankerEntry) {
+  return (
+    isFilled(entry.studentName) &&
+    isDepartmentComplete(entry) &&
+    isFilled(entry.yearOfStudy) &&
+    isFilled(entry.ugPg) &&
+    isFilled(entry.sgpa) &&
+    isFilled(entry.semester)
+  );
+}
+
+function isReputedInstitutionAchievementComplete(entry: ReputedInstitutionAchievementEntry) {
+  const hasBaseFields =
+    isFilled(entry.studentName) &&
+    isDepartmentComplete(entry) &&
+    isFilled(entry.yearOfStudy) &&
+    isFilled(entry.eventType);
+
+  if (!hasBaseFields) {
+    return false;
+  }
+
+  if (entry.eventType === "Paper Published") {
+    if (
+      !isFilled(entry.paperType) ||
+      !isFilled(entry.journalName) ||
+      !isFilled(entry.isbn) ||
+      !isFilled(entry.numberOfAuthors) ||
+      !isFilled(entry.dateOfPublished) ||
+      !isFilled(entry.proofLink)
+    ) {
+      return false;
+    }
+
+    const authorCount = Number.parseInt(entry.numberOfAuthors, 10);
+    if (Number.isNaN(authorCount) || authorCount < 1 || authorCount > 5) {
+      return false;
+    }
+
+    for (let i = 1; i <= authorCount; i += 1) {
+      const fieldName = `author${i}` as keyof ReputedInstitutionAchievementEntry;
+      if (!isFilled(entry[fieldName] as string)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  if (entry.eventType === "Patent Published") {
+    return isFilled(entry.designProduct) && isFilled(entry.dateOfPublished) && isFilled(entry.proofLink);
+  }
+
+  if (["Hackathon", "Go J Kart", "E-Kart"].includes(entry.eventType)) {
+    return (
+      isFilled(entry.institutionIndustry) &&
+      isFilled(entry.institutionName) &&
+      isFilled(entry.prizeWon) &&
+      isFilled(entry.proofLink)
+    );
+  }
+
+  return false;
+}
+
 function resolveDepartmentValue(department: string, departmentOther: string) {
   return department === "others" ? departmentOther.trim() : department;
 }
@@ -255,175 +341,52 @@ export default function StudentFormPage() {
   const watchedReputedInstitutionAchievements = useWatch({ control: form.control, name: "reputedInstitutionAchievements" }) ?? [];
 
   const sectionStatus = useMemo(() => {
-    const getStatus = (entries: Record<string, string>[]) => {
+    const getStatus = <T extends Record<string, string>>(
+      entries: T[],
+      isComplete: (entry: T) => boolean,
+    ) => {
       const filledEntries = entries.filter((entry) => !isEntryEmpty(entry));
       return {
-        hasCompleteEntry: filledEntries.some((entry) => isEntryComplete(entry)),
-        hasPartialEntry: filledEntries.some((entry) => !isEntryComplete(entry)),
+        hasCompleteEntry: filledEntries.some((entry) => isComplete(entry)),
       };
     };
 
-    const firstRankHolders = getStatus(watchedFirstRankHolders);
-    const semesterWiseRankers = getStatus(watchedSemesterWiseRankers);
-    const reputedInstitutionAchievements = getStatus(watchedReputedInstitutionAchievements);
+    const firstRankHolders = getStatus(watchedFirstRankHolders, isFirstRankHolderComplete);
+    const semesterWiseRankers = getStatus(watchedSemesterWiseRankers, isSemesterWiseRankerComplete);
+    const reputedInstitutionAchievements = getStatus(
+      watchedReputedInstitutionAchievements,
+      isReputedInstitutionAchievementComplete,
+    );
 
     return {
-      canSubmit:
-        [firstRankHolders, semesterWiseRankers, reputedInstitutionAchievements].some(
-          (section) => section.hasCompleteEntry,
-        ) &&
-        ![firstRankHolders, semesterWiseRankers, reputedInstitutionAchievements].some(
-          (section) => section.hasPartialEntry,
-        ),
+      canSubmit: [firstRankHolders, semesterWiseRankers, reputedInstitutionAchievements].some(
+        (section) => section.hasCompleteEntry,
+      ),
     };
   }, [watchedFirstRankHolders, watchedSemesterWiseRankers, watchedReputedInstitutionAchievements]);
 
-  function validateSection<T extends Record<string, string>>(
-    sectionName: keyof StudentFormValues,
+  function getCompletedEntries<T extends Record<string, string>>(
     entries: T[],
-    labels: Record<string, string>,
+    isComplete: (entry: T) => boolean,
   ) {
-    const completedEntries: T[] = [];
-    let hasPartialEntry = false;
-
-    entries.forEach((entry, index) => {
-      if (isEntryEmpty(entry)) {
-        return;
-      }
-
-      const missingFields = Object.entries(labels).filter(
-        ([key]) => !isFilled(entry[key] ?? ""),
-      );
-
-      if (entry.department === "others" && !isFilled(entry.departmentOther ?? "")) {
-        missingFields.push(["departmentOther", "Specify Department"]);
-      }
-
-      if (missingFields.length > 0) {
-        hasPartialEntry = true;
-        missingFields.forEach(([key, label]) => {
-          form.setError(`${sectionName}.${index}.${key}` as never, {
-            type: "manual",
-            message: `${label} is required`,
-          });
-        });
-        return;
-      }
-
-      completedEntries.push(entry);
-    });
-
-    return { completedEntries, hasPartialEntry };
+    return entries.filter((entry) => !isEntryEmpty(entry) && isComplete(entry));
   }
 
   function onSubmit(values: StudentFormValues) {
     form.clearErrors();
 
-    const firstRankHolders = validateSection("firstRankHolders", values.firstRankHolders, {
-      studentName: "Student Name",
-      department: "Department",
-      yearOfStudy: "Year of Study",
-      ugPg: "UG / PG",
-      regNumber: "Reg Number",
-      percentageSecured: "Percentage Secured",
-    });
-
-    const semesterWiseRankers = validateSection("semesterWiseRankers", values.semesterWiseRankers, {
-      studentName: "Student Name",
-      department: "Department",
-      yearOfStudy: "Year of Study",
-      ugPg: "UG / PG",
-      sgpa: "SGPA",
-      semester: "Semester",
-    });
-
-    const reputedInstitutionAchievements = validateSection("reputedInstitutionAchievements", values.reputedInstitutionAchievements, {
-      studentName: "Student Name",
-      department: "Department",
-      yearOfStudy: "Year of Study",
-      eventType: "Event Type",
-    });
-
-    // Custom validation for Section 4 based on eventType
-    values.reputedInstitutionAchievements.forEach((entry, index) => {
-      if (isEntryEmpty(entry)) return;
-
-      if (entry.eventType === "Paper Published") {
-        if (!isFilled(entry.paperType)) {
-          form.setError(`reputedInstitutionAchievements.${index}.paperType` as never, { type: "manual", message: "Paper Type is required" });
-        }
-        if (!isFilled(entry.journalName)) {
-          form.setError(`reputedInstitutionAchievements.${index}.journalName` as never, { type: "manual", message: "Journal Name is required" });
-        }
-        if (!isFilled(entry.isbn)) {
-          form.setError(`reputedInstitutionAchievements.${index}.isbn` as never, { type: "manual", message: "ISBN is required" });
-        }
-        if (!isFilled(entry.numberOfAuthors)) {
-          form.setError(`reputedInstitutionAchievements.${index}.numberOfAuthors` as never, { type: "manual", message: "Number of authors is required" });
-        } else {
-          const num = parseInt(entry.numberOfAuthors);
-          for (let i = 1; i <= num; i++) {
-            const fieldName = `author${i}` as keyof typeof entry;
-            if (!isFilled(entry[fieldName] as string)) {
-              form.setError(`reputedInstitutionAchievements.${index}.${fieldName}` as never, { type: "manual", message: `Author ${i} name is required` });
-            }
-          }
-        }
-        if (isFilled(entry.paperType)) {
-          if (!isFilled(entry.dateOfPublished)) {
-            form.setError(`reputedInstitutionAchievements.${index}.dateOfPublished` as never, { type: "manual", message: "Date of Published is required" });
-          }
-          if (!isFilled(entry.proofLink)) {
-            form.setError(`reputedInstitutionAchievements.${index}.proofLink` as never, { type: "manual", message: "Proof Link is required" });
-          }
-        }
-      } else if (entry.eventType === "Patent Published") {
-        if (!isFilled(entry.designProduct)) {
-          form.setError(`reputedInstitutionAchievements.${index}.designProduct` as never, { type: "manual", message: "Design/Product is required" });
-        }
-        if (!isFilled(entry.dateOfPublished)) {
-          form.setError(`reputedInstitutionAchievements.${index}.dateOfPublished` as never, { type: "manual", message: "Date of Published is required" });
-        }
-        if (!isFilled(entry.proofLink)) {
-          form.setError(`reputedInstitutionAchievements.${index}.proofLink` as never, { type: "manual", message: "Proof Link is required" });
-        }
-      } else if (["Hackathon", "Go J Kart", "E-Kart"].includes(entry.eventType)) {
-        if (!isFilled(entry.institutionIndustry)) {
-          form.setError(`reputedInstitutionAchievements.${index}.institutionIndustry` as never, { type: "manual", message: "Category is required" });
-        }
-        if (!isFilled(entry.institutionName)) {
-          form.setError(`reputedInstitutionAchievements.${index}.institutionName` as never, { type: "manual", message: "Institution Name is required" });
-        }
-        if (!isFilled(entry.prizeWon)) {
-          form.setError(`reputedInstitutionAchievements.${index}.prizeWon` as never, { type: "manual", message: "Prize Won is required" });
-        }
-        if (!isFilled(entry.proofLink)) {
-          form.setError(`reputedInstitutionAchievements.${index}.proofLink` as never, { type: "manual", message: "Proof Link is required" });
-        }
-      }
-    });
-
-    const hasPartialEntry = [
-      firstRankHolders,
-      semesterWiseRankers,
-      reputedInstitutionAchievements,
-    ].some((section) => section.hasPartialEntry);
+    const firstRankHolders = getCompletedEntries(values.firstRankHolders, isFirstRankHolderComplete);
+    const semesterWiseRankers = getCompletedEntries(values.semesterWiseRankers, isSemesterWiseRankerComplete);
+    const reputedInstitutionAchievements = getCompletedEntries(
+      values.reputedInstitutionAchievements,
+      isReputedInstitutionAchievementComplete,
+    );
 
     const hasCompletedSection = [
       firstRankHolders,
       semesterWiseRankers,
       reputedInstitutionAchievements,
-    ].some((section) => section.completedEntries.length > 0);
-
-    if (hasPartialEntry) {
-      toast({
-        title: "Complete or clear unfinished entries",
-        description:
-          "You can submit only when at least one section is fully completed and no partially filled entries remain.",
-        variant: "destructive",
-      });
-      return;
-    }
+    ].some((section) => section.length > 0);
 
     if (!hasCompletedSection) {
       toast({
@@ -436,7 +399,7 @@ export default function StudentFormPage() {
     }
 
     const payload: StudentFormData = {
-      firstRankHolders: firstRankHolders.completedEntries.map((entry) => ({
+      firstRankHolders: firstRankHolders.map((entry) => ({
         studentName: entry.studentName,
         yearOfStudy: entry.yearOfStudy,
         ugPg: entry.ugPg as FirstRankHolderUgPg,
@@ -445,7 +408,7 @@ export default function StudentFormPage() {
         percentageSecured: entry.percentageSecured,
         proofLink: "",
       })),
-      semesterWiseRankers: semesterWiseRankers.completedEntries.map((entry) => ({
+      semesterWiseRankers: semesterWiseRankers.map((entry) => ({
         studentName: entry.studentName,
         department: resolveDepartmentValue(entry.department, entry.departmentOther),
         yearOfStudy: entry.yearOfStudy,
@@ -454,7 +417,7 @@ export default function StudentFormPage() {
         semester: entry.semester,
         proofLink: "",
       })),
-      reputedInstitutionAchievements: reputedInstitutionAchievements.completedEntries.map((entry) => ({
+      reputedInstitutionAchievements: reputedInstitutionAchievements.map((entry) => ({
         studentName: entry.studentName,
         department: resolveDepartmentValue(entry.department, entry.departmentOther),
         yearOfStudy: entry.yearOfStudy,
