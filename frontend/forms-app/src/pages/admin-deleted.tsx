@@ -92,6 +92,7 @@ function DeletedPanel({ tab, token }: { tab: TabType; token: string }) {
     queryKey: ["deleted", tab, activeType, search, page],
     queryFn: () => fetchDeleted(tab, activeType, search, page, token),
     staleTime: 10_000,
+    refetchInterval: 5_000, // Poll every 5 seconds for real-time updates
   });
 
   const rows = data?.data ?? [];
@@ -110,9 +111,12 @@ function DeletedPanel({ tab, token }: { tab: TabType; token: string }) {
     try {
       setRestoringId(submissionId);
       await restoreSubmission(tab, submissionId, token);
+      // Invalidate queries to mark as stale
       await queryClient.invalidateQueries({ queryKey: ["deleted"] });
       await queryClient.invalidateQueries({ queryKey: [tab] });
       await queryClient.invalidateQueries({ queryKey: ["getAdminStats"] });
+      // Force immediate refetch
+      await queryClient.refetchQueries({ queryKey: ["deleted", tab, activeType, search, page] });
       toast({ title: "Restored", description: "Submission moved back to dashboard." });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Restore failed";

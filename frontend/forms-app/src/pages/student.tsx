@@ -417,27 +417,52 @@ export default function StudentFormPage() {
         semester: entry.semester,
         proofLink: "",
       })),
-      reputedInstitutionAchievements: reputedInstitutionAchievements.map((entry) => ({
-        studentName: entry.studentName,
-        department: resolveDepartmentValue(entry.department, entry.departmentOther),
-        yearOfStudy: entry.yearOfStudy,
-        eventType: entry.eventType as any,
-        paperType: entry.paperType as any,
-        designProduct: entry.designProduct as any,
-        dateOfPublished: entry.dateOfPublished,
-        institutionIndustry: entry.institutionIndustry,
-        institutionName: entry.institutionName,
-        prizeWon: entry.prizeWon as any,
-        proofLink: entry.proofLink,
-        journalName: entry.journalName,
-        isbn: entry.isbn,
-        numberOfAuthors: entry.numberOfAuthors,
-        author1: entry.author1,
-        author2: entry.author2,
-        author3: entry.author3,
-        author4: entry.author4,
-        author5: entry.author5,
-      })),
+      reputedInstitutionAchievements: reputedInstitutionAchievements.map((entry) => {
+        const baseFields = {
+          studentName: entry.studentName,
+          department: resolveDepartmentValue(entry.department, entry.departmentOther),
+          yearOfStudy: entry.yearOfStudy,
+          eventType: entry.eventType as any,
+        };
+
+        if (entry.eventType === "Paper Published") {
+          return {
+            ...baseFields,
+            paperType: entry.paperType as any,
+            journalName: entry.journalName,
+            isbn: entry.isbn,
+            numberOfAuthors: entry.numberOfAuthors,
+            author1: entry.author1,
+            author2: entry.author2,
+            author3: entry.author3,
+            author4: entry.author4,
+            author5: entry.author5,
+            dateOfPublished: entry.dateOfPublished,
+            proofLink: entry.proofLink,
+          };
+        }
+
+        if (entry.eventType === "Patent Published") {
+          return {
+            ...baseFields,
+            designProduct: entry.designProduct as any,
+            dateOfPublished: entry.dateOfPublished,
+            proofLink: entry.proofLink,
+          };
+        }
+
+        if (["Hackathon", "Go J Kart", "E-Kart"].includes(entry.eventType)) {
+          return {
+            ...baseFields,
+            institutionIndustry: entry.institutionIndustry,
+            institutionName: entry.institutionName,
+            prizeWon: entry.prizeWon as any,
+            proofLink: entry.proofLink,
+          };
+        }
+
+        return baseFields;
+      }),
     };
 
     submitMutation.mutate(

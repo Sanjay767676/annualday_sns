@@ -28,7 +28,7 @@ import { useToast } from "@/hooks/use-toast";
 
 const PAGE_SIZE = 100;
 const EXPORT_PAGE_LIMIT = 100;
-const POLL_INTERVAL = 30_000;
+const POLL_INTERVAL = 5_000; // 5 seconds for real-time updates
 
 type PaginatedResponse = {
   data: Record<string, unknown>[];
@@ -398,8 +398,15 @@ async function deleteSubmission(
   tab: "faculty" | "student",
   submissionId: string,
   token: string,
+  rowIndex?: number,
+  type?: string,
 ): Promise<void> {
-  const res = await fetch(`/api/admin/${tab}/${submissionId}`, {
+  let url = `/api/admin/${tab}/${submissionId}`;
+  if (rowIndex !== undefined && type !== undefined) {
+    url += `?rowIndex=${rowIndex}&type=${type}`;
+  }
+
+  const res = await fetch(url, {
     method: "DELETE",
     headers: { "x-admin-token": token },
   });
@@ -507,7 +514,7 @@ function DynamicTable({
   isLoading: boolean;
   rowOffset: number;
   deletingId: string | null;
-  onDelete: (submissionId: string) => void;
+  onDelete: (submissionId: string, rowIndex?: number) => void;
   token: string;
   onUpdated?: () => void;
 }) {
@@ -716,7 +723,7 @@ function DynamicTable({
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => onDelete(String(row._submissionId))}
+                      onClick={() => onDelete(String(row._submissionId), Number.isInteger(row._rowIndex) ? Number(row._rowIndex) : undefined)}
                       disabled={deletingId === String(row._submissionId) || isEditingThisRow}
                       className="h-6 rounded-full border-red-200 bg-white px-2 text-[9px] font-semibold uppercase tracking-[0.10em] text-red-600 hover:bg-red-50"
                     >
@@ -813,23 +820,25 @@ function DataPanel({
 
   const rows = data?.data ?? [];
 
-  const handleDelete = useCallback(async (submissionId: string) => {
-    const ok = window.confirm("Delete this submission from dashboard and database?");
+  const handleDelete = useCallback(async (submissionId: string, rowIndex?: number) => {
+    const ok = window.confirm("Delete this entry?");
     if (!ok) return;
 
     try {
       setDeletingId(submissionId);
-      await deleteSubmission(tab, submissionId, token);
-      await queryClient.invalidateQueries({ queryKey: [tab] });
+      await deleteSubmission(tab, submissionId, token, rowIndex, activeType);
+      // Invalidate and force immediate refetch
+      await queryClient.invalidateQueries({ queryKey: [tab, activeType, debouncedSearch, page] });
       await queryClient.invalidateQueries({ queryKey: getGetAdminStatsQueryKey() });
-      toast({ title: "Deleted", description: "Submission removed successfully." });
+      await queryClient.refetchQueries({ queryKey: [tab, activeType, debouncedSearch, page] });
+      toast({ title: "Deleted", description: "Entry removed successfully." });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Delete failed";
       toast({ title: "Delete failed", description: message, variant: "destructive" });
     } finally {
       setDeletingId(null);
     }
-  }, [queryClient, tab, token, toast]);
+  }, [queryClient, tab, token, toast, activeType, debouncedSearch, page]);
 
   const runExport = useCallback(async (
     format: ExportFormat,

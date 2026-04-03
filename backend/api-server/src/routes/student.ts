@@ -227,9 +227,49 @@ router.delete("/admin/student/:submissionId", async (req: Request, res: Response
     return;
   }
 
+  const typeRaw = (req.query.type as string) || "firstRank";
+  const section = STUDENT_SECTION_MAP[typeRaw] ?? "firstRankHolders";
+  const rowIndex = req.query.rowIndex !== undefined ? parseInt(req.query.rowIndex as string) : undefined;
+
   try {
     await purgeOldDeletedStudentSubmissions();
 
+    // If rowIndex is provided, delete specific entry from array instead of entire submission
+    if (rowIndex !== undefined && !Number.isNaN(rowIndex)) {
+      const [submission] = await db
+        .select({ data: studentSubmissionsTable.data })
+        .from(studentSubmissionsTable)
+        .where(sql`${studentSubmissionsTable.id} = ${submissionId}`)
+        .limit(1);
+
+      if (!submission) {
+        res.status(404).json({ error: "Submission not found" });
+        return;
+      }
+
+      const data = submission.data as Record<string, unknown[]>;
+      const array = data[section] || [];
+
+      if (rowIndex < 0 || rowIndex >= array.length) {
+        res.status(400).json({ error: "Invalid row index" });
+        return;
+      }
+
+      // Remove the entry at rowIndex
+      const updatedArray = array.filter((_, idx) => idx !== rowIndex);
+      const updatedData = { ...data, [section]: updatedArray };
+
+      const updated = await db
+        .update(studentSubmissionsTable)
+        .set({ data: updatedData })
+        .where(sql`${studentSubmissionsTable.id} = ${submissionId}`)
+        .returning({ id: studentSubmissionsTable.id });
+
+      res.json({ message: "Entry deleted successfully", id: updated[0].id });
+      return;
+    }
+
+    // Otherwise, delete entire submission (backward compatibility)
     const deleted = await db
       .update(studentSubmissionsTable)
       .set({ deletedAt: new Date() })
