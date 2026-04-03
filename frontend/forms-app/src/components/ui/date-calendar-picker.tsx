@@ -16,6 +16,7 @@ type DateCalendarPickerProps = {
   onChange: (value: string) => void;
   disabled?: boolean;
   className?: string;
+  maxDate?: string;
 };
 
 function parseDateValue(value?: string) {
@@ -24,9 +25,10 @@ function parseDateValue(value?: string) {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-export function DateCalendarPicker({ value, onChange, disabled, className }: DateCalendarPickerProps) {
+export function DateCalendarPicker({ value, onChange, disabled, className, maxDate }: DateCalendarPickerProps) {
   const [open, setOpen] = React.useState(false);
   const selectedDate = parseDateValue(value);
+  const maxAllowedDate = parseDateValue(maxDate);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -50,6 +52,7 @@ export function DateCalendarPicker({ value, onChange, disabled, className }: Dat
       <PopoverContent align="start" className="w-auto p-3">
         <Calendar
           value={selectedDate}
+          maxDate={maxAllowedDate ?? undefined}
           selectRange={false}
           onChange={(nextValue: CalendarValue) => {
             if (nextValue instanceof Date) {

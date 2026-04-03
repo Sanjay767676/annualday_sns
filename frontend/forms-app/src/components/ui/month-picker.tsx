@@ -9,6 +9,7 @@ interface MonthPickerProps {
   onChange: (value: string) => void;
   disabled?: boolean;
   className?: string;
+  maxValue?: string; // yyyy-MM
 }
 
 const MONTHS = [
@@ -16,15 +17,22 @@ const MONTHS = [
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 ];
 
-export function MonthPicker({ value, onChange, disabled, className }: MonthPickerProps) {
+export function MonthPicker({ value, onChange, disabled, className, maxValue }: MonthPickerProps) {
   const [open, setOpen] = React.useState(false);
   
   const currentYear = value ? parseInt(value.split("-")[0]) : new Date().getFullYear();
   const currentMonth = value ? parseInt(value.split("-")[1]) - 1 : new Date().getMonth();
 
   const [viewYear, setViewYear] = React.useState(currentYear);
+  const maxYear = maxValue ? parseInt(maxValue.split("-")[0]) : undefined;
+  const maxMonth = maxValue ? parseInt(maxValue.split("-")[1]) - 1 : undefined;
 
   const displayValue = value ? `${MONTHS[currentMonth]} ${currentYear}` : "Select month & year";
+
+  const isMonthDisabled = (year: number, monthIndex: number) => {
+    if (maxYear === undefined || maxMonth === undefined) return false;
+    return year > maxYear || (year === maxYear && monthIndex > maxMonth);
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -61,6 +69,7 @@ export function MonthPicker({ value, onChange, disabled, className }: MonthPicke
             variant="ghost"
             size="icon"
             className="h-7 w-7 text-slate-500"
+            disabled={maxYear !== undefined ? viewYear >= maxYear : false}
             onClick={() => setViewYear(v => v + 1)}
           >
             <ChevronRight className="h-4 w-4" />
@@ -69,17 +78,22 @@ export function MonthPicker({ value, onChange, disabled, className }: MonthPicke
         <div className="grid grid-cols-3 gap-2">
           {MONTHS.map((month, index) => {
             const isSelected = currentYear === viewYear && currentMonth === index;
+            const disabledMonth = isMonthDisabled(viewYear, index);
             return (
               <Button
                 key={month}
                 variant="ghost"
+                disabled={disabledMonth}
                 className={cn(
                   "h-9 w-full text-xs font-medium transition-all duration-200",
-                  isSelected 
-                    ? "bg-slate-950 text-white hover:bg-slate-900 hover:text-white" 
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                  isSelected
+                    ? "bg-slate-950 text-white hover:bg-slate-900 hover:text-white"
+                    : disabledMonth
+                      ? "cursor-not-allowed text-slate-300"
+                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                 )}
                 onClick={() => {
+                  if (disabledMonth) return;
                   const monthStr = (index + 1).toString().padStart(2, "0");
                   onChange(`${viewYear}-${monthStr}`);
                   setOpen(false);

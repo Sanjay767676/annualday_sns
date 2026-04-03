@@ -109,6 +109,8 @@ const SECTION_COLORS = [
 const JOURNAL_OPTIONS = ["Scopus", "SCI", "WOS", "Annexure-1"] as const;
 const AUTHOR_POSITION_OPTIONS = ["1", "2"] as const;
 const NAME_PREFIX_OPTIONS = ["Mr", "Mrs", "Ms", "Dr"] as const;
+const MAX_FACULTY_MONTH = "2026-04";
+const MAX_FACULTY_DATE = "2026-04-30";
 
 function createEmptyPaper() {
   return {
@@ -539,6 +541,7 @@ export default function FacultyFormPage() {
                               <MonthPicker
                                 value={formField.value}
                                 onChange={formField.onChange}
+                                maxValue={MAX_FACULTY_MONTH}
                                 disabled={submitMutation.isPending}
                               />
                             </FormControl>
@@ -556,6 +559,7 @@ export default function FacultyFormPage() {
                               <DateCalendarPicker
                                 value={formField.value}
                                 onChange={formField.onChange}
+                                maxDate={MAX_FACULTY_DATE}
                                 disabled={submitMutation.isPending}
                               />
                             </FormControl>
