@@ -125,6 +125,7 @@ export default function AdminExportPage() {
   const [rows, setRows] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
+  const [draggingColumn, setDraggingColumn] = useState<string | null>(null);
 
   if (!token) {
     setLocation("/admin/login");
@@ -153,20 +154,86 @@ export default function AdminExportPage() {
       setLoading(true);
       const next = await fetchRows(tab, section, search, token);
       setRows(next);
-      const keys = new Set<string>();
-      next.forEach((row) => {
-        Object.keys(row).forEach((k) => {
-          if (!k.startsWith("_")) keys.add(k);
-        });
-      });
-      setSelectedColumns([...keys]);
+      setSelectedColumns(availableColumnsFromRows(next));
     } finally {
       setLoading(false);
     }
   };
 
+  const availableColumnsFromRows = (inputRows: Record<string, unknown>[]) => {
+    const keys = new Set<string>();
+    inputRows.forEach((row) => {
+      Object.keys(row).forEach((k) => {
+        if (!k.startsWith("_")) keys.add(k);
+      });
+    });
+    const priority = PRIORITY[tab][section] ?? [];
+    const ordered = priority.filter((k) => keys.has(k));
+    const rest = [...keys].filter((k) => !priority.includes(k));
+    return [...ordered, ...rest];
+  };
+
   const toggleColumn = (column: string) => {
     setSelectedColumns((prev) => (prev.includes(column) ? prev.filter((c) => c !== column) : [...prev, column]));
+  };
+
+  const moveSelectedColumn = (fromColumn: string, toColumn: string) => {
+    setSelectedColumns((prev) => {
+      const fromIndex = prev.indexOf(fromColumn);
+      const toIndex = prev.indexOf(toColumn);
+      if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) {
+        return prev;
+      }
+
+      const next = [...prev];
+      const [moved] = next.splice(fromIndex, 1);
+      const adjustedTargetIndex = fromIndex < toIndex ? toIndex - 1 : toIndex;
+      next.splice(adjustedTargetIndex, 0, moved);
+      return next;
+    });
+  };
+
+  const moveSelectedColumnToEnd = (column: string) => {
+    setSelectedColumns((prev) => {
+      const index = prev.indexOf(column);
+      if (index === -1 || index === prev.length - 1) {
+        return prev;
+      }
+
+      const next = [...prev];
+      const [moved] = next.splice(index, 1);
+      next.push(moved);
+      return next;
+    });
+  };
+
+  const handleHeaderDragStart = (event: React.DragEvent<HTMLTableHeaderCellElement>, column: string) => {
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.dropEffect = "move";
+    event.dataTransfer.setData("text/plain", column);
+    setDraggingColumn(column);
+  };
+
+  const handleHeaderDrop = (event: React.DragEvent<HTMLTableHeaderCellElement>, targetColumn: string) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (!draggingColumn || draggingColumn === targetColumn) {
+      setDraggingColumn(null);
+      return;
+    }
+
+    moveSelectedColumn(draggingColumn, targetColumn);
+    setDraggingColumn(null);
+  };
+
+  const handleHeaderDragOver = (event: React.DragEvent<HTMLTableHeaderCellElement>) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+  };
+
+  const handleHeaderDragEnd = () => {
+    setDraggingColumn(null);
   };
 
   const exportExcel = () => {
@@ -282,7 +349,17 @@ export default function AdminExportPage() {
                   <thead>
                     <tr className="bg-stone-50">
                       {visibleColumns.map((col) => (
-                        <th key={col} className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">
+                        <th
+                          key={col}
+                          draggable
+                          onDragStart={(event) => handleHeaderDragStart(event, col)}
+                          onDragOver={handleHeaderDragOver}
+                          onDrop={(event) => handleHeaderDrop(event, col)}
+                          onDragEnd={handleHeaderDragEnd}
+                          onDoubleClick={() => moveSelectedColumnToEnd(col)}
+                          title="Drag to reorder columns, double-click to send to the end"
+                          className={`cursor-move whitespace-nowrap px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.14em] text-slate-600 transition ${draggingColumn === col ? "bg-stone-100" : ""}`}
+                        >
                           {labelForColumn(col)}
                         </th>
                       ))}
