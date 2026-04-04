@@ -50,33 +50,33 @@ export default function Home() {
 
       <footer className="mt-8 bg-black">
         <div
-          className="page-frame flex flex-col justify-between gap-4 px-4 py-5 text-white md:flex-row md:items-start"
+          className="page-frame grid grid-cols-2 items-start gap-3 px-3 py-4 text-white sm:gap-4 sm:px-4 sm:py-5"
           style={{ fontFamily: "Lora, serif" }}
         >
           <div className="text-left">
-            <h3 className="mb-2 text-base font-semibold" style={{ fontFamily: "Lora, serif" }}>Contact support</h3>
-            <div className="flex flex-col gap-1 text-sm">
-              <div>
-                <span>Mrs Shobana M</span>
-                <span className="ml-3">
+            <h3 className="mb-2 text-lg font-semibold leading-tight sm:text-base md:text-lg" style={{ fontFamily: "Lora, serif" }}>Contact support</h3>
+            <div className="flex flex-col gap-1 text-sm leading-tight sm:text-xs md:text-sm">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <span className="whitespace-nowrap">Mrs Shobana M</span>
+                <span className="whitespace-nowrap">
                   <a href="tel:8248544370" className="hover:text-gray-300">8248544370</a>
                 </span>
               </div>
-              <div>
-                <span>Mr Anand</span>
-                <span className="ml-8">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <span className="whitespace-nowrap">Mr Anand</span>
+                <span className="whitespace-nowrap">
                   <a href="tel:9698411408" className="hover:text-gray-300">9698411408</a>
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="text-left text-base md:ml-auto">
-            <p className="leading-6">Developed &amp; Maintained By</p>
-            <p className="leading-6">Aptimark Solutions</p>
+          <div className="text-left text-sm leading-tight sm:text-xs md:text-base">
+            <p className="leading-tight sm:leading-snug md:leading-6">Developed &amp; Maintained By</p>
+            <p className="leading-tight sm:leading-snug md:leading-6">Aptimark Solutions</p>
             <a
               href="mailto:aptimarksolution@gmail.com"
-              className="leading-6 hover:text-gray-300"
+              className="break-all leading-tight hover:text-gray-300 sm:leading-snug md:leading-6"
             >
               aptimarksolution@gmail.com
             </a>
