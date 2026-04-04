@@ -26,6 +26,13 @@ import {
 const ugPgOptions = ["UG", "PG"] as const;
 const REPUTED_EVENT_TYPE_OPTIONS = ["Hackathon", "Patent Published", "Paper Published", "E-Kart", "Go J Kart", "Others"] as const;
 const OTHER_EVENT_PRIZE_OPTIONS = ["1st Prize", "Second Prize", "Third Prize"] as const;
+const REPUTED_INSTITUTION_INDUSTRY_OPTIONS = [
+  { label: "Tire 1 College", value: "Tire 1 College" },
+  { label: "Tire 2 College", value: "Tire 2 College" },
+  { label: "MNCs", value: "MNCs" },
+  { label: "Mango Big 7", value: "Mango Big 7" },
+  { label: "Startup", value: "Startup" },
+] as const;
 const semesterTopperLabels = ["Even Semester Wise Topper", "Odd Semester Wise Topper"] as const;
 const semesterTopperDescriptions = [
   "Batch 2024 - II Sem, Batch 2023 - IV Sem, Batch 2022 - VI Sem",
@@ -975,8 +982,10 @@ export default function StudentFormPage() {
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    {["Tire 1 Institution", "Tire 2 Institution", "MNCs", "MAANGO Big 7", "Startup"].map(o => (
-                                      <SelectItem key={o} value={o}>{o}</SelectItem>
+                                    {REPUTED_INSTITUTION_INDUSTRY_OPTIONS.map((option) => (
+                                      <SelectItem key={option.value} value={option.value}>
+                                        {option.label}
+                                      </SelectItem>
                                     ))}
                                   </SelectContent>
                                 </Select>

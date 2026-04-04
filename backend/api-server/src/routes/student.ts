@@ -31,6 +31,40 @@ const STUDENT_SECTION_MAP: Record<string, string> = {
 const ADMIN_PASSWORDS = new Set(["admin123", "sns123"]);
 const SOFT_DELETE_RETENTION_HOURS = 30;
 
+function normalizeReputedInstitutionAchievements(body: unknown) {
+  if (!body || typeof body !== "object") {
+    return body;
+  }
+
+  const typedBody = body as {
+    reputedInstitutionAchievements?: Array<Record<string, unknown>>;
+  };
+
+  const aliasMap: Record<string, string> = {
+    "Tire 1 Institution": "Tire 1 College",
+    "Tire 2 Institution": "Tire 2 College",
+    "MAANGO Big 7": "Mango Big 7",
+  };
+
+  if (!Array.isArray(typedBody.reputedInstitutionAchievements)) {
+    return body;
+  }
+
+  return {
+    ...typedBody,
+    reputedInstitutionAchievements: typedBody.reputedInstitutionAchievements.map((entry) => {
+      const institutionIndustry = entry.institutionIndustry;
+      return {
+        ...entry,
+        institutionIndustry:
+          typeof institutionIndustry === "string" && aliasMap[institutionIndustry]
+            ? aliasMap[institutionIndustry]
+            : institutionIndustry,
+      };
+    }),
+  };
+}
+
 function deletedCutoffDate() {
   return new Date(Date.now() - SOFT_DELETE_RETENTION_HOURS * 60 * 60 * 1000);
 }
@@ -48,7 +82,8 @@ async function purgeOldDeletedStudentSubmissions() {
 }
 
 router.post("/student", async (req: Request, res: Response): Promise<void> => {
-  const parsed = SubmitStudentFormBody.safeParse(req.body);
+  const normalizedBody = normalizeReputedInstitutionAchievements(req.body);
+  const parsed = SubmitStudentFormBody.safeParse(normalizedBody);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
     return;
