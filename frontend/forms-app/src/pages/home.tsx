@@ -48,22 +48,34 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className="bg-black mt-8">
-        <div className="page-frame py-4 px-4">
-          <h3 className="text-white text-sm font-semibold mb-2" style={{ fontFamily: "Lora, serif" }}>Contact support</h3>
-          <div className="flex flex-col gap-1 text-xs text-white">
-            <div>
-              <span>Mrs Shobana M</span>
-              <span className="ml-3">
-                <a href="tel:8248544370" className="hover:text-gray-300">8248544370</a>
-              </span>
+      <footer className="mt-8 bg-black">
+        <div className="page-frame flex flex-col justify-between gap-4 px-4 py-5 text-white md:flex-row md:items-start">
+          <div className="text-left">
+            <h3 className="mb-2 text-base font-semibold" style={{ fontFamily: "Lora, serif" }}>Contact support</h3>
+            <div className="flex flex-col gap-1 text-sm">
+              <div>
+                <span>Mrs Shobana M</span>
+                <span className="ml-3">
+                  <a href="tel:8248544370" className="hover:text-gray-300">8248544370</a>
+                </span>
+              </div>
+              <div>
+                <span>Mr Anand</span>
+                <span className="ml-8">
+                  <a href="tel:9698411408" className="hover:text-gray-300">9698411408</a>
+                </span>
+              </div>
             </div>
-            <div>
-              <span>Mr Anand</span>
-              <span className="ml-8">
-                <a href="tel:9698411408" className="hover:text-gray-300">9698411408</a>
-              </span>
-            </div>
+          </div>
+
+          <div className="text-left text-sm md:text-right">
+            <p>Developed &amp; Maintained By</p>
+            <a
+              href="mailto:aptimarksolution@gmail.com"
+              className="hover:text-gray-300"
+            >
+              Aptimark Solutions | aptimarksolution@gmail.com
+            </a>
           </div>
         </div>
       </footer>
