@@ -222,14 +222,14 @@ router.delete("/admin/student/:submissionId", async (req: Request, res: Response
     return;
   }
 
-  const submissionId = req.params.submissionId;
+  const submissionId = req.params.submissionId as string;
   if (!submissionId) {
     res.status(400).json({ error: "Submission id is required" });
     return;
   }
 
   const typeRaw = (req.query.type as string) || "firstRank";
-  const section = STUDENT_SECTION_MAP[typeRaw] ?? "firstRankHolders";
+  const section: string = STUDENT_SECTION_MAP[typeRaw] ?? "firstRankHolders";
   const rowIndex = req.query.rowIndex !== undefined ? parseInt(req.query.rowIndex as string) : undefined;
 
   try {
@@ -259,14 +259,14 @@ router.delete("/admin/student/:submissionId", async (req: Request, res: Response
       // Log the deletion to deletion_history
       const deletedEntry = array[rowIndex];
       try {
-        await db.insert(deletionHistoryTable).values({
-          id: randomUUID(),
+        const deleteRecord: typeof deletionHistoryTable.$inferInsert = {
           type: "student",
           section: section,
           submissionId: submissionId,
           rowIndex: rowIndex,
           deletedEntry: deletedEntry as any,
-        });
+        };
+        await db.insert(deletionHistoryTable).values(deleteRecord);
       } catch (logError) {
         req.log.warn({ err: logError }, "Failed to log deletion (non-fatal)");
       }
