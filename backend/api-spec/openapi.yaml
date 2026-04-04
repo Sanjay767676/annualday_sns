@@ -477,7 +477,9 @@ components:
           type: string
         eventType:
           type: string
-          enum: [Hackathon, Patent Published, Paper Published, E-Kart, Go J Kart]
+          enum: [Hackathon, Patent Published, Paper Published, E-Kart, Go J Kart, Others]
+        specifyTypeOfEvent:
+          type: string
         paperType:
           type: string
           enum: [SCI, WOS, Scopus, Annexure-1]
@@ -493,7 +495,7 @@ components:
           type: string
         prizeWon:
           type: string
-          enum: [Winner, Runner]
+          enum: [Winner, Runner, 1st Prize, Second Prize, Third Prize]
         proofLink:
           type: string
         journalName:

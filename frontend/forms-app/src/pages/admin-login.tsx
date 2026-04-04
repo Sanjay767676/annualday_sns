@@ -43,9 +43,15 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="app-shell">
+    <div className="app-shell relative overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(125,211,252,0.35),_transparent_34%),radial-gradient(circle_at_top_right,_rgba(167,243,208,0.28),_transparent_28%),linear-gradient(180deg,_#f8fbff_0%,_#edf6ff_52%,_#f7fbff_100%)]" />
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute left-10 top-16 h-72 w-72 rounded-full bg-cyan-300/25 blur-3xl" />
+        <div className="absolute right-0 top-40 h-80 w-80 rounded-full bg-sky-300/20 blur-3xl" />
+        <div className="absolute bottom-0 left-1/4 h-80 w-80 rounded-full bg-emerald-300/20 blur-3xl" />
+      </div>
       <div className="page-frame flex min-h-screen items-center justify-center py-10">
-        <section className="surface-panel w-full max-w-md px-6 py-8 sm:px-8">
+        <section className="w-full max-w-md rounded-[2rem] border border-white/40 bg-white/55 px-6 py-8 shadow-[0_24px_80px_rgba(15,23,42,0.12)] backdrop-blur-2xl sm:px-8">
           <Button
             variant="ghost"
             size="sm"
@@ -57,13 +63,13 @@ export default function AdminLoginPage() {
           </Button>
 
           <div className="mb-6 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-950 text-white">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-950/90 text-white shadow-[0_10px_30px_rgba(15,23,42,0.2)] ring-1 ring-white/20 backdrop-blur-xl">
               <ShieldCheck className="h-5 w-5" />
             </div>
             <h1 className="text-xl font-semibold text-slate-950">Admin Login</h1>
           </div>
 
-          <Card className="border-stone-200/80 bg-white shadow-none">
+          <Card className="border-white/40 bg-white/55 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-2xl">
             <CardContent className="p-6">
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
@@ -81,7 +87,7 @@ export default function AdminLoginPage() {
                             <Input
                               type={showPassword ? "text" : "password"}
                               placeholder="Enter admin password"
-                              className="h-12 rounded-2xl border-stone-300 bg-stone-50 pl-11 pr-11 shadow-none focus:border-slate-400 focus:bg-white transition-all"
+                              className="h-12 rounded-2xl border-white/60 bg-white/70 pl-11 pr-11 shadow-[0_12px_30px_rgba(15,23,42,0.06)] focus:border-slate-400 focus:bg-white/85 transition-all backdrop-blur-xl"
                               autoComplete="current-password"
                               {...field}
                             />
@@ -105,7 +111,7 @@ export default function AdminLoginPage() {
                   <Button
                     type="submit"
                     disabled={loginMutation.isPending}
-                    className="h-12 w-full rounded-full bg-slate-950 text-sm font-semibold uppercase tracking-[0.12em] text-white hover:bg-slate-800"
+                    className="h-12 w-full rounded-full bg-slate-950/95 text-sm font-semibold uppercase tracking-[0.12em] text-white shadow-[0_14px_36px_rgba(15,23,42,0.22)] hover:bg-slate-800"
                   >
                     {loginMutation.isPending ? "Verifying..." : "Access Dashboard"}
                   </Button>

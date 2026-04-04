@@ -90,6 +90,7 @@ const COLUMN_LABELS: Record<string, string> = {
   monthYear: "Month & Year",
   designProduct: "Design / Product",
   eventType: "Event Type",
+  specifyTypeOfEvent: "Specify type of event",
   paperType: "Paper Type",
   dateOfPublished: "Date of Published",
   institutionIndustry: "Institution / Industry",
@@ -133,6 +134,7 @@ const SECTION_COLUMN_ORDER: Record<TabType, Record<SectionType, string[]>> = {
     reputedInstitution: [
       "studentName",
       "eventType",
+      "specifyTypeOfEvent",
       "yearOfStudy",
       "department",
       "paperType",
@@ -333,6 +335,9 @@ const EXPORT_SECTION_CONFIG: Record<TabType, Record<SectionType, ExportSection>>
           }
           if (r.eventType === "Patent Published") {
             return `Type: ${asText(r.designProduct)}, Date: ${asText(r.dateOfPublished)}`;
+          }
+          if (r.eventType === "Others") {
+            return `Event: ${asText(r.specifyTypeOfEvent)}, Prize: ${asText(r.prizeWon)}`;
           }
           return `Inst: ${asText(r.institutionName)}, Prize: ${asText(r.prizeWon)}`;
         }},
@@ -894,17 +899,17 @@ function DataPanel({
   }, [tab, activeType, debouncedSearch, token, filters, toast]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 rounded-[2rem] border border-white/30 bg-white/35 p-4 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-2xl">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap gap-2">
           {filters.map((f) => (
             <button
               key={f.key}
               onClick={() => setActiveType(f.key)}
-              className={`rounded-full border px-3.5 py-2 text-xs font-semibold tracking-[0.14em] uppercase transition ${
+              className={`rounded-full border px-3.5 py-2 text-xs font-semibold tracking-[0.14em] uppercase transition backdrop-blur-xl ${
                 activeType === f.key
-                  ? "border-slate-900 bg-slate-900 text-white"
-                  : "border-stone-200 bg-white text-slate-600 hover:border-stone-300 hover:bg-stone-50"
+                  ? "border-slate-950/70 bg-slate-950/90 text-white shadow-[0_10px_30px_rgba(15,23,42,0.22)]"
+                  : "border-white/60 bg-white/55 text-slate-600 hover:border-white/80 hover:bg-white/75"
               }`}
             >
               {f.label}
@@ -919,7 +924,7 @@ function DataPanel({
               placeholder="Search name, department, title..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="h-10 rounded-full border-stone-300 bg-white pl-9 text-sm shadow-none"
+              className="h-10 rounded-full border-white/60 bg-white/75 pl-9 text-sm shadow-[0_12px_30px_rgba(15,23,42,0.05)] backdrop-blur-xl"
             />
           </div>
           {searchInput ? (
@@ -928,7 +933,7 @@ function DataPanel({
               variant="outline"
               size="sm"
               onClick={() => setSearchInput("")}
-              className="h-10 rounded-full border-stone-300 bg-white px-4 text-xs font-semibold tracking-[0.14em] uppercase whitespace-nowrap"
+              className="h-10 rounded-full border-white/60 bg-white/70 px-4 text-xs font-semibold tracking-[0.14em] uppercase whitespace-nowrap backdrop-blur-xl"
             >
               Clear
             </Button>
@@ -937,7 +942,7 @@ function DataPanel({
             variant="outline"
             size="sm"
             onClick={onOpenDeleted}
-            className="h-10 rounded-full border-stone-300 bg-white px-4 text-xs font-semibold tracking-[0.14em] uppercase whitespace-nowrap"
+            className="h-10 rounded-full border-white/60 bg-white/70 px-4 text-xs font-semibold tracking-[0.14em] uppercase whitespace-nowrap backdrop-blur-xl"
           >
             Deleted Submissions
           </Button>
@@ -945,7 +950,7 @@ function DataPanel({
             variant="outline"
             size="sm"
             onClick={onOpenExport}
-            className="h-10 rounded-full border-stone-300 bg-white px-4 text-xs font-semibold tracking-[0.14em] uppercase whitespace-nowrap"
+            className="h-10 rounded-full border-white/60 bg-white/70 px-4 text-xs font-semibold tracking-[0.14em] uppercase whitespace-nowrap backdrop-blur-xl"
           >
             <Download className="w-3.5 h-3.5" />
             Export Center
@@ -953,14 +958,14 @@ function DataPanel({
         </div>
       </div>
 
-      <Card className="overflow-hidden border-stone-200/80 bg-white/92 shadow-[0_18px_50px_rgba(15,23,42,0.05)]">
-        <div className="flex items-center justify-between border-b border-stone-200/80 bg-white px-4 py-4">
+      <Card className="overflow-hidden border-white/40 bg-white/55 shadow-[0_20px_70px_rgba(15,23,42,0.08)] backdrop-blur-2xl">
+        <div className="flex items-center justify-between border-b border-white/40 bg-white/40 px-4 py-4 backdrop-blur-xl">
           <div className="flex items-center gap-2">
             <span className="text-sm font-semibold tracking-[-0.02em] text-slate-900">
               {filters.find((f) => f.key === activeType)?.label}
             </span>
             {data && (
-              <Badge variant="secondary" className="bg-stone-100 text-xs text-slate-600">
+              <Badge variant="secondary" className="bg-white/70 text-xs text-slate-600 backdrop-blur-xl">
                 {data.total} records
               </Badge>
             )}
@@ -1029,7 +1034,7 @@ export default function AdminDashboard() {
       <header className="sticky top-0 z-20 border-b border-stone-200/80 bg-background/90 backdrop-blur-xl">
         <div className="page-frame flex min-h-18 items-center justify-between py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-white ring-1 ring-stone-200">
+            <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-white/70 ring-1 ring-white/60 backdrop-blur-xl">
               <img
                 src="/images/logo2.png"
                 alt="SNS College of Technology"
@@ -1045,7 +1050,7 @@ export default function AdminDashboard() {
             variant="outline"
             size="sm"
             onClick={handleLogout}
-            className="h-10 rounded-full border-stone-300 bg-white px-4 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700"
+            className="h-10 rounded-full border-white/60 bg-white/70 px-4 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700 backdrop-blur-xl"
           >
             <LogOut className="mr-1 h-3.5 w-3.5" />
             Sign Out
@@ -1053,15 +1058,21 @@ export default function AdminDashboard() {
         </div>
       </header>
 
-      <main className="page-frame flex-1 space-y-8 py-8 lg:py-10">
-        <section>
+      <main className="page-frame relative flex-1 space-y-8 py-8 lg:py-10">
+        <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+          <div className="absolute -left-20 top-10 h-72 w-72 rounded-full bg-cyan-300/30 blur-3xl" />
+          <div className="absolute right-0 top-24 h-80 w-80 rounded-full bg-blue-300/25 blur-3xl" />
+          <div className="absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-emerald-300/20 blur-3xl" />
+        </div>
+
+        <section className="rounded-[2rem] border border-white/40 bg-white/45 px-6 py-5 shadow-[0_18px_60px_rgba(15,23,42,0.06)] backdrop-blur-2xl">
           <h1 className="text-2xl font-semibold tracking-[-0.03em] text-slate-950">Admin Dashboard</h1>
         </section>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="border-stone-200/80 bg-white/92 shadow-[0_18px_50px_rgba(15,23,42,0.05)]">
-            <CardContent className="p-6 flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-700 ring-1 ring-blue-100">
+          <Card className="border-white/40 bg-white/55 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-2xl">
+            <CardContent className="flex items-center gap-4 p-6">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-100/80 to-white/70 text-blue-700 ring-1 ring-white/60 backdrop-blur-xl">
                 <FileText className="w-6 h-6" />
               </div>
               <div>
@@ -1073,9 +1084,9 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="border-stone-200/80 bg-white/92 shadow-[0_18px_50px_rgba(15,23,42,0.05)]">
-            <CardContent className="p-6 flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100">
+          <Card className="border-white/40 bg-white/55 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-2xl">
+            <CardContent className="flex items-center gap-4 p-6">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-100/80 to-white/70 text-emerald-700 ring-1 ring-white/60 backdrop-blur-xl">
                 <Users className="w-6 h-6" />
               </div>
               <div>
@@ -1089,7 +1100,7 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs defaultValue="faculty" className="w-full">
-          <TabsList className="grid w-full max-w-sm grid-cols-2 rounded-full border border-stone-200 bg-white p-1 shadow-sm">
+          <TabsList className="grid w-full max-w-sm grid-cols-2 rounded-full border border-white/40 bg-white/50 p-1 shadow-[0_12px_40px_rgba(15,23,42,0.06)] backdrop-blur-2xl">
             <TabsTrigger value="faculty" className="rounded-full text-xs font-semibold uppercase tracking-[0.14em] data-[state=active]:bg-slate-950 data-[state=active]:text-white data-[state=active]:shadow-none">
               Faculty
             </TabsTrigger>

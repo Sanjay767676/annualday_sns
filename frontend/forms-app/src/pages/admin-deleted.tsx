@@ -127,8 +127,8 @@ function DeletedPanel({ tab, token }: { tab: TabType; token: string }) {
   };
 
   return (
-    <Card className="overflow-hidden border-stone-200/80 bg-white/92 shadow-[0_18px_50px_rgba(15,23,42,0.05)]">
-      <div className="flex flex-col gap-3 border-b border-stone-200/80 bg-white px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+    <Card className="overflow-hidden border-white/40 bg-white/55 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-2xl">
+      <div className="flex flex-col gap-3 border-b border-white/40 bg-white/40 px-4 py-4 sm:flex-row sm:items-center sm:justify-between backdrop-blur-2xl">
         <div className="flex flex-wrap gap-2">
           {filters.map((f) => (
             <button
@@ -137,10 +137,10 @@ function DeletedPanel({ tab, token }: { tab: TabType; token: string }) {
                 setActiveType(f.key);
                 setPage(1);
               }}
-              className={`rounded-full border px-3.5 py-2 text-xs font-semibold tracking-[0.14em] uppercase transition ${
+              className={`rounded-full border px-3.5 py-2 text-xs font-semibold tracking-[0.14em] uppercase transition backdrop-blur-xl ${
                 activeType === f.key
-                  ? "border-slate-900 bg-slate-900 text-white"
-                  : "border-stone-200 bg-white text-slate-600 hover:border-stone-300 hover:bg-stone-50"
+                  ? "border-slate-950/70 bg-slate-950/90 text-white shadow-[0_10px_30px_rgba(15,23,42,0.22)]"
+                  : "border-white/60 bg-white/60 text-slate-600 hover:border-white/80 hover:bg-white/80"
               }`}
             >
               {f.label}
@@ -156,7 +156,7 @@ function DeletedPanel({ tab, token }: { tab: TabType; token: string }) {
               setPage(1);
             }}
             placeholder="Search deleted..."
-            className="h-10 rounded-full border-stone-300 bg-white px-4 text-sm"
+            className="h-10 rounded-full border-white/60 bg-white/75 px-4 text-sm shadow-[0_12px_30px_rgba(15,23,42,0.05)] backdrop-blur-xl"
           />
           {isFetching && !isLoading && <RefreshCw className="h-4 w-4 animate-spin text-slate-400" />}
         </div>
@@ -230,7 +230,7 @@ function DeletedPanel({ tab, token }: { tab: TabType; token: string }) {
         </div>
       )}
 
-      <div className="flex items-center justify-between border-t border-stone-200 px-4 py-3 bg-stone-50/60">
+      <div className="flex items-center justify-between border-t border-white/40 bg-white/35 px-4 py-3 backdrop-blur-2xl">
         <span className="text-xs text-slate-500">
           {data?.total ? `${Math.min((page - 1) * PAGE_SIZE + 1, data.total)}–${Math.min(page * PAGE_SIZE, data.total)} of ${data.total}` : "No records"}
         </span>
@@ -263,25 +263,31 @@ export default function AdminDeletedPage() {
   }
 
   return (
-    <div className="app-shell flex flex-col">
+    <div className="app-shell relative flex flex-col overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(125,211,252,0.30),_transparent_34%),radial-gradient(circle_at_top_right,_rgba(167,243,208,0.24),_transparent_28%),linear-gradient(180deg,_#f8fbff_0%,_#eff6ff_52%,_#f8fbff_100%)]" />
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute left-10 top-14 h-72 w-72 rounded-full bg-cyan-300/20 blur-3xl" />
+        <div className="absolute right-0 top-36 h-80 w-80 rounded-full bg-blue-300/18 blur-3xl" />
+        <div className="absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-emerald-300/18 blur-3xl" />
+      </div>
       <main className="page-frame flex-1 space-y-6 py-8 lg:py-10">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-semibold tracking-[-0.03em] text-slate-950">Deleted Submissions</h1>
             <p className="mt-1 text-sm text-slate-500">Restore entries from here. Permanently removed after 30 hours.</p>
           </div>
-          <Button type="button" variant="outline" onClick={() => setLocation("/admin")} className="h-10 rounded-full border-stone-300 bg-white px-4 text-xs font-semibold uppercase tracking-[0.14em]">
+          <Button type="button" variant="outline" onClick={() => setLocation("/admin")} className="h-10 rounded-full border-white/60 bg-white/75 px-4 text-xs font-semibold uppercase tracking-[0.14em] backdrop-blur-xl">
             <ArrowLeft className="mr-1 h-3.5 w-3.5" />
             Back to Dashboard
           </Button>
         </div>
 
         <Tabs defaultValue="faculty" className="w-full">
-          <TabsList className="grid w-full max-w-sm grid-cols-2 rounded-full border border-stone-200 bg-white p-1 shadow-sm">
-            <TabsTrigger value="faculty" className="rounded-full text-xs font-semibold uppercase tracking-[0.14em] data-[state=active]:bg-slate-950 data-[state=active]:text-white">
+          <TabsList className="grid w-full max-w-sm grid-cols-2 rounded-full border border-white/40 bg-white/55 p-1 shadow-[0_12px_40px_rgba(15,23,42,0.06)] backdrop-blur-2xl">
+            <TabsTrigger value="faculty" className="rounded-full text-xs font-semibold uppercase tracking-[0.14em] data-[state=active]:bg-slate-950 data-[state=active]:text-white data-[state=active]:shadow-none">
               Faculty
             </TabsTrigger>
-            <TabsTrigger value="student" className="rounded-full text-xs font-semibold uppercase tracking-[0.14em] data-[state=active]:bg-slate-950 data-[state=active]:text-white">
+            <TabsTrigger value="student" className="rounded-full text-xs font-semibold uppercase tracking-[0.14em] data-[state=active]:bg-slate-950 data-[state=active]:text-white data-[state=active]:shadow-none">
               Student
             </TabsTrigger>
           </TabsList>

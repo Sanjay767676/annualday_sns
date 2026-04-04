@@ -137,6 +137,9 @@ export type ReputedInstitutionAchievementPrizeWon =
 export const ReputedInstitutionAchievementPrizeWon = {
   Winner: "Winner",
   Runner: "Runner",
+  "1st Prize": "1st Prize",
+  "Second Prize": "Second Prize",
+  "Third Prize": "Third Prize",
 } as const;
 
 export const ReputedInstitutionAchievementEventType = {
@@ -145,6 +148,7 @@ export const ReputedInstitutionAchievementEventType = {
   "Paper Published": "Paper Published",
   "E-Kart": "E-Kart",
   "Go J Kart": "Go J Kart",
+  Others: "Others",
 } as const;
 
 export type ReputedInstitutionAchievementEventType =
@@ -173,6 +177,7 @@ export interface ReputedInstitutionAchievement {
   department: string;
   yearOfStudy: string;
   eventType: ReputedInstitutionAchievementEventType;
+  specifyTypeOfEvent?: string;
   paperType?: ReputedInstitutionAchievementPaperType;
   designProduct?: ReputedInstitutionAchievementDesignProduct;
   dateOfPublished?: string;

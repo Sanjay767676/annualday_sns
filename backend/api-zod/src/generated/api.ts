@@ -109,7 +109,9 @@ export const SubmitStudentFormBody = zod.object({
         "Paper Published",
         "E-Kart",
         "Go J Kart",
+        "Others",
       ]),
+      specifyTypeOfEvent: zod.string().optional(),
       paperType: zod
         .enum(["SCI", "WOS", "Scopus", "Annexure-1"])
         .optional(),
@@ -119,7 +121,7 @@ export const SubmitStudentFormBody = zod.object({
         .enum(["Tire 1 College", "Tire 2 College", "MNCs", "Mango Big 7", "Startup"])
         .optional(),
       institutionName: zod.string().optional(),
-      prizeWon: zod.enum(["Winner", "Runner"]).optional(),
+      prizeWon: zod.enum(["Winner", "Runner", "1st Prize", "Second Prize", "Third Prize"]).optional(),
       proofLink: zod.string().optional(),
       journalName: zod.string().optional(),
       isbn: zod.string().optional(),

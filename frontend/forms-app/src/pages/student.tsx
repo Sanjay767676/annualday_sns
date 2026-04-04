@@ -24,6 +24,8 @@ import {
 } from "@/lib/form-options";
 
 const ugPgOptions = ["UG", "PG"] as const;
+const REPUTED_EVENT_TYPE_OPTIONS = ["Hackathon", "Patent Published", "Paper Published", "E-Kart", "Go J Kart", "Others"] as const;
+const OTHER_EVENT_PRIZE_OPTIONS = ["1st Prize", "Second Prize", "Third Prize"] as const;
 const semesterTopperLabels = ["Even Semester Wise Topper", "Odd Semester Wise Topper"] as const;
 const semesterTopperDescriptions = [
   "Batch 2024 - II Sem, Batch 2023 - IV Sem, Batch 2022 - VI Sem",
@@ -57,6 +59,7 @@ type StudentFormValues = {
     departmentOther: string;
     yearOfStudy: string;
     eventType: string;
+    specifyTypeOfEvent: string;
     paperType: string;
     designProduct: string;
     dateOfPublished: string;
@@ -193,6 +196,7 @@ function createEmptyReputedInstitutionAchievement() {
     departmentOther: "",
     yearOfStudy: "",
     eventType: "",
+    specifyTypeOfEvent: "",
     paperType: "",
     designProduct: "",
     dateOfPublished: "",
@@ -307,6 +311,10 @@ function isReputedInstitutionAchievementComplete(entry: ReputedInstitutionAchiev
       isFilled(entry.prizeWon) &&
       isFilled(entry.proofLink)
     );
+  }
+
+  if (entry.eventType === "Others") {
+    return isFilled(entry.specifyTypeOfEvent) && isFilled(entry.prizeWon) && isFilled(entry.proofLink);
   }
 
   return false;
@@ -456,6 +464,15 @@ export default function StudentFormPage() {
             ...baseFields,
             institutionIndustry: entry.institutionIndustry,
             institutionName: entry.institutionName,
+            prizeWon: entry.prizeWon as any,
+            proofLink: entry.proofLink,
+          };
+        }
+
+        if (entry.eventType === "Others") {
+          return {
+            ...baseFields,
+            specifyTypeOfEvent: entry.specifyTypeOfEvent,
             prizeWon: entry.prizeWon as any,
             proofLink: entry.proofLink,
           };
@@ -778,6 +795,7 @@ export default function StudentFormPage() {
                             <Select onValueChange={(val) => {
                               f.onChange(val);
                               // Reset conditional fields when event type changes
+                              form.setValue(`reputedInstitutionAchievements.${index}.specifyTypeOfEvent`, "");
                               form.setValue(`reputedInstitutionAchievements.${index}.paperType`, "");
                               form.setValue(`reputedInstitutionAchievements.${index}.designProduct`, "");
                               form.setValue(`reputedInstitutionAchievements.${index}.dateOfPublished`, "");
@@ -799,8 +817,8 @@ export default function StudentFormPage() {
                                   <SelectValue placeholder="Select event type" />
                                 </SelectTrigger>
                               </FormControl>
-                              <SelectContent>
-                                {["Hackathon", "Patent Published", "Paper Published", "E-Kart", "Go J Kart"].map(o => (
+                              <SelectContent className="max-h-60 overflow-y-auto">
+                                {REPUTED_EVENT_TYPE_OPTIONS.map(o => (
                                   <SelectItem key={o} value={o}>{o}</SelectItem>
                                 ))}
                               </SelectContent>
@@ -983,8 +1001,46 @@ export default function StudentFormPage() {
                                       <SelectValue placeholder="Select prize" />
                                     </SelectTrigger>
                                   </FormControl>
-                                  <SelectContent>
+                                  <SelectContent className="max-h-60 overflow-y-auto">
                                     {["Winner", "Runner"].map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage className="text-xs" />
+                              </FormItem>
+                            )} />
+                          <FormField control={form.control} name={`reputedInstitutionAchievements.${index}.proofLink`}
+                            render={({ field: f }) => (
+                              <FormItem className="md:col-span-2">
+                                <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Proof (Insert the proof drive link)</FormLabel>
+                                <FormControl><Input className="h-10 bg-white border-slate-300" placeholder="https://drive.google.com/..." {...f} /></FormControl>
+                                <FormMessage className="text-xs" />
+                              </FormItem>
+                            )} />
+                        </>
+                      )}
+
+                      {watchedReputedInstitutionAchievements[index]?.eventType === "Others" && (
+                        <>
+                          <FormField control={form.control} name={`reputedInstitutionAchievements.${index}.specifyTypeOfEvent`}
+                            render={({ field: f }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Specify type of event</FormLabel>
+                                <FormControl><Input className="h-10 bg-white border-slate-300" placeholder="Enter event type" {...f} /></FormControl>
+                                <FormMessage className="text-xs" />
+                              </FormItem>
+                            )} />
+                          <FormField control={form.control} name={`reputedInstitutionAchievements.${index}.prizeWon`}
+                            render={({ field: f }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Prize Won</FormLabel>
+                                <Select onValueChange={f.onChange} value={f.value || undefined}>
+                                  <FormControl>
+                                    <SelectTrigger className="h-10 bg-white border-slate-300">
+                                      <SelectValue placeholder="Select prize" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent className="max-h-60 overflow-y-auto">
+                                    {OTHER_EVENT_PRIZE_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
                                   </SelectContent>
                                 </Select>
                                 <FormMessage className="text-xs" />

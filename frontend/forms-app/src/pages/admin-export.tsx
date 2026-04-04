@@ -293,7 +293,12 @@ export default function AdminExportPage() {
 
 
   return (
-    <div className="app-shell flex flex-col">
+    <div className="app-shell relative flex flex-col overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(125,211,252,0.28),_transparent_32%),radial-gradient(circle_at_top_right,_rgba(167,243,208,0.24),_transparent_28%),linear-gradient(180deg,_#f8fbff_0%,_#eff6ff_52%,_#f8fbff_100%)]" />
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute left-8 top-16 h-72 w-72 rounded-full bg-cyan-300/20 blur-3xl" />
+        <div className="absolute right-0 top-32 h-80 w-80 rounded-full bg-blue-300/18 blur-3xl" />
+      </div>
       <main className="page-frame flex-1 space-y-6 py-8 lg:py-10">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -306,7 +311,7 @@ export default function AdminExportPage() {
           </Button>
         </div>
 
-        <Card className="space-y-5 border-stone-200/80 p-5">
+        <Card className="space-y-5 border-white/40 bg-white/55 p-5 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-2xl">
           <div className="flex flex-wrap gap-2">
             <Button type="button" variant={tab === "faculty" ? "default" : "outline"} onClick={() => {
               setTab("faculty");
@@ -349,7 +354,7 @@ export default function AdminExportPage() {
               <p className="text-sm font-medium text-slate-700">Choose Columns</p>
               <div className="flex flex-wrap gap-3">
                 {availableColumns.map((col) => (
-                  <label key={col} className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700">
+                  <label key={col} className="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/70 px-3 py-1.5 text-xs font-medium text-slate-700 backdrop-blur-xl">
                     <input type="checkbox" checked={selectedColumns.includes(col)} onChange={() => toggleColumn(col)} />
                     {labelForColumn(col)}
                   </label>
@@ -361,14 +366,14 @@ export default function AdminExportPage() {
           <div className="border-t border-stone-200 pt-4">
             <p className="mb-2 text-sm font-medium text-slate-700">Live Preview</p>
             {!rows.length || !visibleColumns.length ? (
-              <div className="rounded-lg border border-dashed border-stone-300 bg-stone-50 p-6 text-sm text-slate-500">
+              <div className="rounded-lg border border-dashed border-white/50 bg-white/45 p-6 text-sm text-slate-500 backdrop-blur-xl">
                 Load data and select columns to preview.
               </div>
             ) : (
-              <div className="overflow-x-auto rounded-lg border border-stone-200">
+              <div className="overflow-x-auto rounded-lg border border-white/40 bg-white/55 shadow-[0_18px_60px_rgba(15,23,42,0.06)] backdrop-blur-2xl">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-stone-50">
+                    <tr className="bg-white/45 backdrop-blur-xl">
                       {visibleColumns.map((col) => (
                         <th
                           key={col}
@@ -379,7 +384,7 @@ export default function AdminExportPage() {
                           onDragEnd={handleHeaderDragEnd}
                           onDoubleClick={() => moveSelectedColumnToEnd(col)}
                           title="Drag to reorder columns, double-click to send to the end"
-                          className={`cursor-move whitespace-nowrap px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.14em] text-slate-600 transition ${draggingColumn === col ? "bg-stone-100" : ""}`}
+                          className={`cursor-move whitespace-nowrap px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.14em] text-slate-600 transition ${draggingColumn === col ? "bg-white/70" : ""}`}
                         >
                           {labelForColumn(col)}
                         </th>
