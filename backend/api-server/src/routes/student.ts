@@ -2,6 +2,7 @@
 import { randomUUID } from "node:crypto";
 import { db, sql } from "../../../db/src/index.js";
 import { studentSubmissionsTable } from "../../../db/src/schema/student_submissions.js";
+import { deletionHistoryTable } from "../../../db/src/schema/deletion_history.js";
 import { SubmitStudentFormBody } from "../../../api-zod/src/generated/api.js";
 
 const router = Router();
@@ -255,6 +256,21 @@ router.delete("/admin/student/:submissionId", async (req: Request, res: Response
         return;
       }
 
+      // Log the deletion to deletion_history
+      const deletedEntry = array[rowIndex];
+      try {
+        await db.insert(deletionHistoryTable).values({
+          id: randomUUID(),
+          type: "student",
+          section: section,
+          submissionId: submissionId,
+          rowIndex: rowIndex,
+          deletedEntry: deletedEntry as any,
+        });
+      } catch (logError) {
+        req.log.warn({ err: logError }, "Failed to log deletion (non-fatal)");
+      }
+
       // Remove the entry at rowIndex
       const updatedArray = array.filter((_, idx) => idx !== rowIndex);
       const updatedData = { ...data, [section]: updatedArray };
@@ -487,6 +503,132 @@ router.patch("/admin/student/:submissionId", async (req: Request, res: Response)
   } catch (error) {
     req.log.error({ err: error }, "Failed to update student submission");
     res.status(500).json({ error: error instanceof Error ? error.message : "Internal server error" });
+  }
+});
+
+router.get("/admin/student/deleted-entries", async (req: Request, res: Response): Promise<void> => {
+  const token = req.headers["x-admin-token"] as string;
+  const envPass = process.env.ADMIN_PASSWORD;
+  const isAuthorized = ADMIN_PASSWORDS.has(token) || (envPass && token === envPass);
+
+  if (!isAuthorized) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  const typeRaw = (req.query.type as string) || "firstRank";
+  const section = STUDENT_SECTION_MAP[typeRaw] ?? "firstRankHolders";
+  const search = ((req.query.search as string) || "").trim();
+  const page = Math.max(1, parseInt(req.query.page as string) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 10));
+  const offset = (page - 1) * limit;
+
+  try {
+    const whereClause = search
+      ? sql`dh.section = ${section} AND cast(dh.deleted_entry AS text) ILIKE ${"%" + search + "%"}`
+      : sql`dh.section = ${section}`;
+
+    const countResult = await db.execute(
+      sql`SELECT count(*) AS count FROM deletion_history dh WHERE ${whereClause}`
+    );
+    const rowsResult = await db.execute(
+      sql`SELECT dh.* FROM deletion_history dh 
+          WHERE ${whereClause}
+          ORDER BY dh.deleted_at DESC
+          LIMIT ${limit} OFFSET ${offset}`
+    );
+
+    const countRows = (countResult as unknown as { rows: { count: string }[] }).rows ?? (countResult as unknown as { count: string }[]);
+    const rows = (rowsResult as unknown as { rows: Record<string, unknown>[] }).rows ?? (rowsResult as unknown as Record<string, unknown>[]);
+
+    const total = parseInt(countRows[0]?.count ?? "0", 10);
+    res.json({ 
+      data: rows,
+      total, 
+      page, 
+      limit 
+    });
+  } catch (error) {
+    req.log.error({ err: error }, "Failed to fetch deleted entries");
+    res.status(500).json({ error: error instanceof Error ? error.message : "Failed to fetch deleted entries" });
+  }
+});
+
+router.post("/admin/student/:submissionId/restore-entry", async (req: Request, res: Response): Promise<void> => {
+  const token = req.headers["x-admin-token"] as string;
+  const envPass = process.env.ADMIN_PASSWORD;
+  const isAuthorized = ADMIN_PASSWORDS.has(token) || (envPass && token === envPass);
+
+  if (!isAuthorized) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  const submissionId = req.params.submissionId;
+  const { section, deletionId } = req.body;
+
+  if (!submissionId || !section || !deletionId) {
+    res.status(400).json({ error: "Missing required fields: submissionId, section, deletionId" });
+    return;
+  }
+
+  const sectionKey = STUDENT_SECTION_MAP[section] ?? section;
+
+  try {
+    // Get the deletion history entry
+    const deletionResult = await db.execute(
+      sql`SELECT * FROM deletion_history WHERE id = ${deletionId} AND section = ${sectionKey}`
+    );
+    const deletionRows = (deletionResult as unknown as { rows: Record<string, unknown>[] }).rows ?? (deletionResult as unknown as Record<string, unknown>[]);
+    
+    if (!deletionRows.length) {
+      res.status(404).json({ error: "Deletion record not found" });
+      return;
+    }
+
+    const deletionRecord = deletionRows[0] as any;
+    const deletedEntry = deletionRecord.deleted_entry;
+
+    // Get the current submission
+    const [submission] = await db
+      .select({ data: studentSubmissionsTable.data })
+      .from(studentSubmissionsTable)
+      .where(sql`${studentSubmissionsTable.id} = ${submissionId}`);
+
+    if (!submission) {
+      res.status(404).json({ error: "Submission not found" });
+      return;
+    }
+
+    // Restore the entry
+    const data = submission.data as Record<string, unknown[]>;
+    const array = Array.isArray(data[sectionKey]) ? data[sectionKey] : [];
+    array.push(deletedEntry);
+
+    const updatedData = {
+      ...data,
+      [sectionKey]: array,
+    };
+
+    // Update the submission
+    await db
+      .update(studentSubmissionsTable)
+      .set({ data: updatedData })
+      .where(sql`${studentSubmissionsTable.id} = ${submissionId}`);
+
+    // Mark the deletion record as restored (optional: delete from history or add a restored_at field)
+    try {
+      await db.execute(
+        sql`DELETE FROM deletion_history WHERE id = ${deletionId}`
+      );
+    } catch (cleanupError) {
+      req.log.warn({ err: cleanupError }, "Failed to clean up deletion record (non-fatal)");
+    }
+
+    res.json({ message: "Entry restored successfully", id: submissionId });
+  } catch (error) {
+    req.log.error({ err: error }, "Failed to restore entry");
+    res.status(500).json({ error: error instanceof Error ? error.message : "Failed to restore entry" });
   }
 });
 
