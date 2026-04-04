@@ -414,7 +414,7 @@ export default function StudentFormPage() {
         department: resolveDepartmentValue(entry.department, entry.departmentOther),
         regNumber: entry.regNumber,
         percentageSecured: entry.percentageSecured,
-        proofLink: "",
+        proofLink: entry.proofLink,
       })),
       semesterWiseRankers: semesterWiseRankers.map((entry) => ({
         studentName: entry.studentName,
@@ -423,7 +423,7 @@ export default function StudentFormPage() {
         ugPg: entry.ugPg as SemesterWiseRankerUgPg,
         sgpa: entry.sgpa,
         semester: entry.semester,
-        proofLink: "",
+        proofLink: entry.proofLink,
       })),
       reputedInstitutionAchievements: reputedInstitutionAchievements.map((entry) => {
         const baseFields = {
