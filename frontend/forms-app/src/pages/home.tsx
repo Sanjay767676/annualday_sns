@@ -50,33 +50,33 @@ export default function Home() {
 
       <footer className="mt-8 bg-black">
         <div
-          className="page-frame grid grid-cols-2 items-start gap-3 px-3 py-4 text-white sm:gap-4 sm:px-4 sm:py-5"
+          className="page-frame flex flex-col gap-6 px-4 py-6 text-white sm:px-6 sm:py-8 md:flex-row md:items-start md:justify-between md:gap-8"
           style={{ fontFamily: "Lora, serif" }}
         >
-          <div className="text-left">
-            <h3 className="mb-2 text-lg font-semibold leading-tight sm:text-base md:text-lg" style={{ fontFamily: "Lora, serif" }}>Contact support</h3>
-            <div className="flex flex-col gap-1 text-sm leading-tight sm:text-xs md:text-sm">
-              <div className="flex items-center gap-2 sm:gap-3">
-                <span className="whitespace-nowrap">Mrs Shobana M</span>
-                <span className="whitespace-nowrap">
-                  <a href="tel:8248544370" className="hover:text-gray-300">8248544370</a>
+          <div className="flex-1 text-left">
+            <h3 className="mb-3 text-lg font-semibold leading-tight sm:mb-4 md:text-xl" style={{ fontFamily: "Lora, serif" }}>Contact support</h3>
+            <div className="flex flex-col gap-2 text-sm leading-relaxed sm:text-base md:text-sm">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                <span>Mrs Shobana M</span>
+                <span>
+                  <a href="tel:8248544370" className="hover:text-gray-300 font-medium">8248544370</a>
                 </span>
               </div>
-              <div className="flex items-center gap-2 sm:gap-3">
-                <span className="whitespace-nowrap">Mr Anand</span>
-                <span className="whitespace-nowrap">
-                  <a href="tel:9698411408" className="hover:text-gray-300">9698411408</a>
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                <span>Mr Anand</span>
+                <span>
+                  <a href="tel:9698411408" className="hover:text-gray-300 font-medium">9698411408</a>
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="text-left text-sm leading-tight sm:text-xs md:text-base">
-            <p className="leading-tight sm:leading-snug md:leading-6">Developed &amp; Maintained By</p>
-            <p className="leading-tight sm:leading-snug md:leading-6">Aptimark Solutions</p>
+          <div className="flex-1 text-left text-sm leading-relaxed sm:text-base md:text-sm">
+            <p className="mb-1 font-semibold">Developed &amp; Maintained By</p>
+            <p>Aptimark Solutions</p>
             <a
               href="mailto:aptimarksolution@gmail.com"
-              className="break-all leading-tight hover:text-gray-300 sm:leading-snug md:leading-6"
+              className="inline-block mt-1 hover:text-gray-300 break-all"
             >
               aptimarksolution@gmail.com
             </a>
