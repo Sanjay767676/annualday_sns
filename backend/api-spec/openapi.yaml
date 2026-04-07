@@ -430,6 +430,8 @@ components:
       properties:
         studentName:
           type: string
+        regNumber:
+          type: string
         department:
           type: string
         yearOfStudy:
@@ -439,14 +441,18 @@ components:
           enum: [UG, PG]
         sgpa:
           type: string
+        semester:
+          type: string
         proofLink:
           type: string
       required:
         - studentName
+        - regNumber
         - department
         - yearOfStudy
         - ugPg
         - sgpa
+        - semester
         - proofLink
 
     StudentAchievement:

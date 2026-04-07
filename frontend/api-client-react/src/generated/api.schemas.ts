@@ -117,10 +117,12 @@ export const SemesterWiseRankerUgPg = {
 
 export interface SemesterWiseRanker {
   studentName: string;
+  regNumber: string;
   department: string;
   yearOfStudy: string;
   ugPg: SemesterWiseRankerUgPg;
   sgpa: string;
+  semester: string;
   proofLink: string;
 }
 

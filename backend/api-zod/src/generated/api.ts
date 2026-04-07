@@ -90,6 +90,7 @@ export const SubmitStudentFormBody = zod.object({
   semesterWiseRankers: zod.array(
     zod.object({
       studentName: zod.string(),
+      regNumber: zod.string(),
       department: zod.string(),
       yearOfStudy: zod.string(),
       ugPg: zod.enum(["UG", "PG"]),

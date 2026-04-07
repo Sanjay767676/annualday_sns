@@ -56,6 +56,7 @@ type StudentFormValues = {
     departmentOther: string;
     yearOfStudy: string;
     ugPg: string;
+    regNumber: string;
     sgpa: string;
     semester: string;
     proofLink: string;
@@ -190,6 +191,7 @@ function createEmptySemesterWiseRanker() {
     departmentOther: "",
     yearOfStudy: "",
     ugPg: "",
+    regNumber: "",
     sgpa: "",
     semester: "",
     proofLink: "",
@@ -264,6 +266,7 @@ function isSemesterWiseRankerComplete(entry: SemesterWiseRankerEntry) {
     isDepartmentComplete(entry) &&
     isFilled(entry.yearOfStudy) &&
     isFilled(entry.ugPg) &&
+    isFilled(entry.regNumber) &&
     isFilled(entry.sgpa) &&
     isFilled(entry.semester)
   );
@@ -428,6 +431,7 @@ export default function StudentFormPage() {
         department: resolveDepartmentValue(entry.department, entry.departmentOther),
         yearOfStudy: entry.yearOfStudy,
         ugPg: entry.ugPg as SemesterWiseRankerUgPg,
+        regNumber: entry.regNumber,
         sgpa: entry.sgpa,
         semester: entry.semester,
         proofLink: entry.proofLink,
@@ -552,6 +556,14 @@ export default function StudentFormPage() {
                             <FormMessage className="text-xs" />
                           </FormItem>
                         )} />
+                      <FormField control={form.control} name={`firstRankHolders.${index}.regNumber`}
+                        render={({ field: f }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Reg Number</FormLabel>
+                            <FormControl><Input className="h-10 bg-white border-slate-300" {...f} /></FormControl>
+                            <FormMessage className="text-xs" />
+                          </FormItem>
+                        )} />
                       <FormField control={form.control} name={`firstRankHolders.${index}.department`}
                         render={({ field: f }) => (
                           <FormItem>
@@ -603,14 +615,6 @@ export default function StudentFormPage() {
                             <FormMessage className="text-xs" />
                           </FormItem>
                         )} />
-                      <FormField control={form.control} name={`firstRankHolders.${index}.regNumber`}
-                        render={({ field: f }) => (
-                          <FormItem>
-                            <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Reg Number</FormLabel>
-                            <FormControl><Input className="h-10 bg-white border-slate-300" {...f} /></FormControl>
-                            <FormMessage className="text-xs" />
-                          </FormItem>
-                        )} />
                       <FormField control={form.control} name={`firstRankHolders.${index}.percentageSecured`}
                         render={({ field: f }) => (
                           <FormItem>
@@ -647,6 +651,14 @@ export default function StudentFormPage() {
                         render={({ field: f }) => (
                           <FormItem>
                             <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Student Name</FormLabel>
+                            <FormControl><Input className="h-10 bg-white border-slate-300" {...f} /></FormControl>
+                            <FormMessage className="text-xs" />
+                          </FormItem>
+                        )} />
+                      <FormField control={form.control} name={`semesterWiseRankers.${index}.regNumber`}
+                        render={({ field: f }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-600 text-xs font-semibold uppercase tracking-wide">Register Number</FormLabel>
                             <FormControl><Input className="h-10 bg-white border-slate-300" {...f} /></FormControl>
                             <FormMessage className="text-xs" />
                           </FormItem>
