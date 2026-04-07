@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { Plus, Trash2, BookOpen, CheckCircle2, CalendarDays } from "lucide-react";
 
 import {
@@ -9,6 +10,7 @@ import {
   type PaperPublishedJournalType,
 } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
+import { fetchSiteStatus } from "@/lib/site-status";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +20,7 @@ import { MonthPicker } from "@/components/ui/month-picker";
 import { DateCalendarPicker } from "@/components/ui/date-calendar-picker";
 import { SearchableCombobox } from "@/components/ui/searchable-combobox";
 import SiteHeader from "@/components/site-header";
+import SiteClosedNotice from "@/components/site-closed-notice";
 import { FACULTY_DEPARTMENT_OPTIONS, DESIGNATION_OPTIONS } from "@/lib/form-options";
 import { INDIAN_UNIVERSITIES } from "../lib/universities";
 
@@ -207,6 +210,11 @@ function fullName(prefix: string, name: string) {
 export default function FacultyFormPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { data: siteStatus, isLoading } = useQuery({
+    queryKey: ["site-status"],
+    queryFn: fetchSiteStatus,
+    staleTime: 0,
+  });
 
   const form = useForm<FacultyFormValues>({
     defaultValues: {
@@ -251,6 +259,25 @@ export default function FacultyFormPage() {
         ),
     };
   }, [watchedPapersPublished, watchedBooksChapters, watchedPatentsGranted, watchedPhdAwardees]);
+
+  if (isLoading) {
+    return (
+      <div className="app-shell flex min-h-screen items-center justify-center">
+        <div className="page-frame text-sm text-slate-500">Checking site status...</div>
+      </div>
+    );
+  }
+
+  if (!(siteStatus?.acceptingResponses ?? false)) {
+    return (
+      <div className="app-shell flex flex-col">
+        <SiteHeader onBack={() => setLocation("/")} sticky />
+        <main className="page-frame flex flex-1 items-center py-10 lg:py-16">
+          <SiteClosedNotice onAdmin={() => setLocation("/admin/login")} />
+        </main>
+      </div>
+    );
+  }
 
   function validateSection<T extends Record<string, string>>(
     sectionName: FacultySectionName,

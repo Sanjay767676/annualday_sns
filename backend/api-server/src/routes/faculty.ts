@@ -4,6 +4,7 @@ import { db, sql } from "../../../db/src/index.js";
 import { facultySubmissionsTable } from "../../../db/src/schema/faculty_submissions.js";
 import { deletionHistoryTable } from "../../../db/src/schema/deletion_history.js";
 import { SubmitFacultyFormBody } from "../../../api-zod/src/generated/api.js";
+import { getAcceptingResponses, isAdminTokenAuthorized } from "../lib/site-config.js";
 
 const router = Router();
 const isMissingRelationError = (message: string) =>
@@ -29,7 +30,6 @@ const FACULTY_SECTION_MAP: Record<string, string> = {
   phd: "phdAwardees",
 };
 
-const ADMIN_PASSWORDS = new Set(["admin123", "sns123"]);
 const SOFT_DELETE_RETENTION_HOURS = 30;
 
 function deletedCutoffDate() {
@@ -49,6 +49,11 @@ async function purgeOldDeletedFacultySubmissions() {
 }
 
 router.post("/faculty", async (req: Request, res: Response): Promise<void> => {
+  if (!(await getAcceptingResponses())) {
+    res.status(403).json({ error: "Sorry, we are no longer accepting the responses." });
+    return;
+  }
+
   const parsed = SubmitFacultyFormBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -74,11 +79,7 @@ router.post("/faculty", async (req: Request, res: Response): Promise<void> => {
 
 router.get("/admin/faculty", async (req: Request, res: Response): Promise<void> => {
   const token = req.headers["x-admin-token"] as string;
-  const envPass = process.env.ADMIN_PASSWORD;
-
-  const isAuthorized = ADMIN_PASSWORDS.has(token) || (envPass && token === envPass);
-
-  if (!isAuthorized) {
+  if (!(await isAdminTokenAuthorized(token))) {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
@@ -210,10 +211,7 @@ router.get("/admin/faculty", async (req: Request, res: Response): Promise<void> 
 
 router.delete("/admin/faculty/:submissionId", async (req: Request, res: Response): Promise<void> => {
   const token = req.headers["x-admin-token"] as string;
-  const envPass = process.env.ADMIN_PASSWORD;
-
-  const isAuthorized = ADMIN_PASSWORDS.has(token) || (envPass && token === envPass);
-  if (!isAuthorized) {
+  if (!(await isAdminTokenAuthorized(token))) {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
@@ -318,10 +316,7 @@ router.delete("/admin/faculty/:submissionId", async (req: Request, res: Response
 
 router.get("/admin/faculty/deleted", async (req: Request, res: Response): Promise<void> => {
   const token = req.headers["x-admin-token"] as string;
-  const envPass = process.env.ADMIN_PASSWORD;
-  const isAuthorized = ADMIN_PASSWORDS.has(token) || (envPass && token === envPass);
-
-  if (!isAuthorized) {
+  if (!(await isAdminTokenAuthorized(token))) {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
@@ -392,10 +387,7 @@ router.get("/admin/faculty/deleted", async (req: Request, res: Response): Promis
 
 router.post("/admin/faculty/:submissionId/restore", async (req: Request, res: Response): Promise<void> => {
   const token = req.headers["x-admin-token"] as string;
-  const envPass = process.env.ADMIN_PASSWORD;
-  const isAuthorized = ADMIN_PASSWORDS.has(token) || (envPass && token === envPass);
-
-  if (!isAuthorized) {
+  if (!(await isAdminTokenAuthorized(token))) {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
@@ -433,10 +425,7 @@ router.post("/admin/faculty/:submissionId/restore", async (req: Request, res: Re
 
 router.patch("/admin/faculty/:submissionId", async (req: Request, res: Response): Promise<void> => {
   const token = req.headers["x-admin-token"] as string;
-  const envPass = process.env.ADMIN_PASSWORD;
-  const isAuthorized = ADMIN_PASSWORDS.has(token) || (envPass && token === envPass);
-
-  if (!isAuthorized) {
+  if (!(await isAdminTokenAuthorized(token))) {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
@@ -505,10 +494,7 @@ router.patch("/admin/faculty/:submissionId", async (req: Request, res: Response)
 
 router.get("/admin/faculty/deleted-entries", async (req: Request, res: Response): Promise<void> => {
   const token = req.headers["x-admin-token"] as string;
-  const envPass = process.env.ADMIN_PASSWORD;
-  const isAuthorized = ADMIN_PASSWORDS.has(token) || (envPass && token === envPass);
-
-  if (!isAuthorized) {
+  if (!(await isAdminTokenAuthorized(token))) {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
@@ -553,10 +539,7 @@ router.get("/admin/faculty/deleted-entries", async (req: Request, res: Response)
 
 router.post("/admin/faculty/:submissionId/restore-entry", async (req: Request, res: Response): Promise<void> => {
   const token = req.headers["x-admin-token"] as string;
-  const envPass = process.env.ADMIN_PASSWORD;
-  const isAuthorized = ADMIN_PASSWORDS.has(token) || (envPass && token === envPass);
-
-  if (!isAuthorized) {
+  if (!(await isAdminTokenAuthorized(token))) {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }

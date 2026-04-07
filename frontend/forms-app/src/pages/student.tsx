@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { GraduationCap, Plus, Trash2, CheckCircle2 } from "lucide-react";
 
 import { DateCalendarPicker } from "@/components/ui/date-calendar-picker";
@@ -11,6 +12,7 @@ import {
   type SemesterWiseRankerUgPg,
 } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
+import { fetchSiteStatus } from "@/lib/site-status";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import SiteHeader from "@/components/site-header";
+import SiteClosedNotice from "@/components/site-closed-notice";
 import {
   STUDENT_DEPARTMENT_OPTIONS,
   YEAR_OF_STUDY_OPTIONS,
@@ -337,6 +340,11 @@ function resolveDepartmentValue(department: string, departmentOther: string) {
 export default function StudentFormPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { data: siteStatus, isLoading } = useQuery({
+    queryKey: ["site-status"],
+    queryFn: fetchSiteStatus,
+    staleTime: 0,
+  });
 
   const form = useForm<StudentFormValues>({
     defaultValues: {
@@ -382,6 +390,25 @@ export default function StudentFormPage() {
       ),
     };
   }, [watchedFirstRankHolders, watchedSemesterWiseRankers, watchedReputedInstitutionAchievements]);
+
+  if (isLoading) {
+    return (
+      <div className="app-shell flex min-h-screen items-center justify-center">
+        <div className="page-frame text-sm text-slate-500">Checking site status...</div>
+      </div>
+    );
+  }
+
+  if (!(siteStatus?.acceptingResponses ?? false)) {
+    return (
+      <div className="app-shell flex flex-col">
+        <SiteHeader onBack={() => setLocation("/")} sticky />
+        <main className="page-frame flex flex-1 items-center py-10 lg:py-16">
+          <SiteClosedNotice onAdmin={() => setLocation("/admin/login")} />
+        </main>
+      </div>
+    );
+  }
 
   function getCompletedEntries<T extends Record<string, string>>(
     entries: T[],

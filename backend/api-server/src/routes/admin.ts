@@ -7,6 +7,11 @@ import {
   AdminLoginResponse,
   GetAdminStatsResponse,
 } from "../../../api-zod/src/generated/api.js";
+import {
+  getSiteConfig,
+  isAdminTokenAuthorized,
+  updateSiteConfig,
+} from "../lib/site-config.js";
 
 const router = Router();
 const isMissingRelationError = (message: string) =>
@@ -22,7 +27,6 @@ const isMissingDeletedColumnError = (error: unknown) => {
      errorStr.includes("unknown field"));
 };
 
-const ADMIN_PASSWORDS = new Set(["admin123", "sns123"]);
 const SOFT_DELETE_RETENTION_HOURS = 30;
 
 function deletedCutoffDate() {
@@ -54,8 +58,7 @@ router.post("/admin/login", async (req: Request, res: Response): Promise<void> =
     return;
   }
 
-  const envPass = process.env.ADMIN_PASSWORD;
-  const isAuthorized = ADMIN_PASSWORDS.has(parsed.data.password) || (envPass && parsed.data.password === envPass);
+  const isAuthorized = await isAdminTokenAuthorized(parsed.data.password);
 
   if (!isAuthorized) {
     res.status(401).json({ error: "Invalid credentials" });
@@ -70,13 +73,71 @@ router.post("/admin/login", async (req: Request, res: Response): Promise<void> =
   );
 });
 
+router.get("/site-config", async (_req: Request, res: Response): Promise<void> => {
+  const config = await getSiteConfig();
+  res.json({
+    acceptingResponses: config.acceptingResponses,
+    passwordInitialized: config.passwordInitialized,
+    updatedAt: config.updatedAt,
+  });
+});
+
+router.get("/admin/site-config", async (req: Request, res: Response): Promise<void> => {
+  const token = req.headers["x-admin-token"] as string;
+
+  if (!(await isAdminTokenAuthorized(token))) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  const config = await getSiteConfig();
+  res.json({
+    acceptingResponses: config.acceptingResponses,
+    passwordInitialized: config.passwordInitialized,
+    updatedAt: config.updatedAt,
+  });
+});
+
+router.patch("/admin/site-config", async (req: Request, res: Response): Promise<void> => {
+  const token = req.headers["x-admin-token"] as string;
+
+  if (!(await isAdminTokenAuthorized(token))) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  const acceptingResponses =
+    typeof req.body.acceptingResponses === "boolean" ? req.body.acceptingResponses : undefined;
+  const adminPassword =
+    typeof req.body.adminPassword === "string" ? req.body.adminPassword.trim() : undefined;
+
+  if (acceptingResponses === undefined && !adminPassword) {
+    res.status(400).json({ error: "No updates provided" });
+    return;
+  }
+
+  if (adminPassword !== undefined && adminPassword.length === 0) {
+    res.status(400).json({ error: "Admin password cannot be empty" });
+    return;
+  }
+
+  const nextConfig = await updateSiteConfig({
+    acceptingResponses,
+    adminPassword,
+    passwordInitialized: adminPassword ? true : undefined,
+  });
+
+  res.json({
+    acceptingResponses: nextConfig.acceptingResponses,
+    passwordInitialized: nextConfig.passwordInitialized,
+    updatedAt: nextConfig.updatedAt,
+  });
+});
+
 router.get("/admin/stats", async (req: Request, res: Response): Promise<void> => {
   const token = req.headers["x-admin-token"] as string;
-  const envPass = process.env.ADMIN_PASSWORD;
-  
-  const isAuthorized = ADMIN_PASSWORDS.has(token) || (envPass && token === envPass);
 
-  if (!isAuthorized) {
+  if (!(await isAdminTokenAuthorized(token))) {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }

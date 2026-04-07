@@ -25,6 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
+import { fetchAdminSiteConfig, updateAdminSiteConfig, type SiteStatus } from "@/lib/site-status";
 
 const PAGE_SIZE = 100;
 const EXPORT_PAGE_LIMIT = 100;
@@ -1003,6 +1004,11 @@ function DataPanel({
 export default function AdminDashboard() {
   const [, setLocation] = useLocation();
   const [token, setToken] = useState<string | null>(null);
+  const [siteConfig, setSiteConfig] = useState<SiteStatus | null>(null);
+  const [siteConfigLoading, setSiteConfigLoading] = useState(false);
+  const [siteConfigSaving, setSiteConfigSaving] = useState(false);
+  const [sitePasswordDraft, setSitePasswordDraft] = useState("");
+  const { toast } = useToast();
 
   useEffect(() => {
     const t = localStorage.getItem("admin_token");
@@ -1012,6 +1018,41 @@ export default function AdminDashboard() {
       setToken(t);
     }
   }, [setLocation]);
+
+  useEffect(() => {
+    if (!token) {
+      return;
+    }
+
+    let isActive = true;
+    setSiteConfigLoading(true);
+
+    fetchAdminSiteConfig(token)
+      .then((config) => {
+        if (isActive) {
+          setSiteConfig(config);
+        }
+      })
+      .catch((error) => {
+        if (isActive) {
+          setSiteConfig(null);
+          toast({
+            title: "Unable to load site status",
+            description: error instanceof Error ? error.message : "Please re-open the admin panel.",
+            variant: "destructive",
+          });
+        }
+      })
+      .finally(() => {
+        if (isActive) {
+          setSiteConfigLoading(false);
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [token, toast]);
 
   const { data: stats, isLoading: statsLoading } = useGetAdminStats({
     request: token ? { headers: { "x-admin-token": token } } : undefined,
@@ -1025,6 +1066,42 @@ export default function AdminDashboard() {
   const handleLogout = () => {
     localStorage.removeItem("admin_token");
     setLocation("/");
+  };
+
+  const handleUpdateSiteConfig = async (updates: { acceptingResponses?: boolean; adminPassword?: string }) => {
+    if (!token || siteConfigSaving) {
+      return;
+    }
+
+    setSiteConfigSaving(true);
+    try {
+      const nextConfig = await updateAdminSiteConfig(token, updates);
+      setSiteConfig(nextConfig);
+
+      if (updates.adminPassword) {
+        localStorage.setItem("admin_token", updates.adminPassword);
+        setToken(updates.adminPassword);
+        setSitePasswordDraft("");
+        await queryClient.invalidateQueries({ queryKey: getGetAdminStatsQueryKey() });
+      }
+
+      toast({
+        title: "Site settings updated",
+        description: updates.acceptingResponses === true
+          ? "The form is open again."
+          : updates.acceptingResponses === false
+            ? "The public form is now closed."
+            : "The admin password was updated.",
+      });
+    } catch (error) {
+      toast({
+        title: "Update failed",
+        description: error instanceof Error ? error.message : "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSiteConfigSaving(false);
+    }
   };
 
   if (!token) return null;
@@ -1098,6 +1175,67 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         </div>
+
+        <section className="rounded-[2rem] border border-white/40 bg-white/55 px-6 py-6 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-2xl">
+          <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Submission Controls</p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
+                {siteConfigLoading ? "Loading form status..." : siteConfig?.acceptingResponses ? "Responses are open" : "Responses are closed"}
+              </h2>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+                When the form is closed, visitors see a short notice instead of the submission pages.
+                Use the button below to release the form again when you are ready to collect responses.
+              </p>
+
+              <div className="mt-5 flex flex-wrap items-center gap-3">
+                <Button
+                  type="button"
+                  onClick={() => handleUpdateSiteConfig({ acceptingResponses: !(siteConfig?.acceptingResponses ?? false) })}
+                  disabled={siteConfigLoading || siteConfigSaving}
+                  className="h-11 rounded-full bg-slate-950 px-5 text-xs font-semibold uppercase tracking-[0.14em] text-white hover:bg-slate-800 disabled:opacity-60"
+                >
+                  {siteConfig?.acceptingResponses ? "Close form" : "Release form again"}
+                </Button>
+                <p className="text-xs text-slate-500">
+                  {siteConfig?.passwordInitialized ? "Custom admin password enabled." : "Bootstrap password is still active until you set a new one."}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-4">
+              <div className="rounded-[1.5rem] border border-stone-200/70 bg-white/80 p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Current State</p>
+                <p className="mt-3 text-base font-semibold text-slate-950">
+                  {siteConfigLoading ? "Loading..." : siteConfig?.acceptingResponses ? "Accepting responses" : "Not accepting responses"}
+                </p>
+                <p className="mt-2 text-sm text-slate-600">
+                  {siteConfigLoading
+                    ? "Fetching the latest configuration from the server."
+                    : `Last updated ${siteConfig?.updatedAt ? new Date(siteConfig.updatedAt).toLocaleString() : "just now"}`}
+                </p>
+              </div>
+
+              <div className="rounded-[1.5rem] border border-stone-200/70 bg-white/80 p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Set Admin Password</p>
+                <Input
+                  value={sitePasswordDraft}
+                  onChange={(event) => setSitePasswordDraft(event.target.value)}
+                  placeholder="Enter a new admin password"
+                  className="mt-3 h-11 rounded-2xl border-stone-300 bg-white"
+                />
+                <Button
+                  type="button"
+                  onClick={() => handleUpdateSiteConfig({ adminPassword: sitePasswordDraft.trim() })}
+                  disabled={!sitePasswordDraft.trim() || siteConfigSaving}
+                  className="mt-3 h-11 w-full rounded-full bg-slate-950 text-xs font-semibold uppercase tracking-[0.14em] text-white hover:bg-slate-800 disabled:opacity-60"
+                >
+                  {siteConfigSaving ? "Saving..." : "Save password"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
 
         <Tabs defaultValue="faculty" className="w-full">
           <TabsList className="grid w-full max-w-sm grid-cols-2 rounded-full border border-white/40 bg-white/50 p-1 shadow-[0_12px_40px_rgba(15,23,42,0.06)] backdrop-blur-2xl">

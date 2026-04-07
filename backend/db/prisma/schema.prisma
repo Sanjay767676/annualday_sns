@@ -30,3 +30,13 @@ model StudentSubmission {
 
   @@map("student_submissions")
 }
+
+model SiteSettings {
+  id                  String   @id
+  acceptingResponses   Boolean  @default(false) @map("accepting_responses")
+  adminPassword       String   @default("admin123") @map("admin_password")
+  passwordInitialized Boolean   @default(false) @map("password_initialized")
+  updatedAt           DateTime @default(now()) @map("updated_at")
+
+  @@map("site_settings")
+}
