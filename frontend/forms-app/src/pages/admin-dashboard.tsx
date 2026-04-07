@@ -1003,6 +1003,7 @@ function DataPanel({
 
 export default function AdminDashboard() {
   const [, setLocation] = useLocation();
+  const queryClient = useQueryClient();
   const [token, setToken] = useState<string | null>(null);
   const [siteConfig, setSiteConfig] = useState<SiteStatus | null>(null);
   const [siteConfigLoading, setSiteConfigLoading] = useState(false);
