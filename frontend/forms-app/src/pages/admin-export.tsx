@@ -17,6 +17,8 @@ type SectionType = FacultyType | StudentType;
 type PaginatedResponse = {
   data: Record<string, unknown>[];
   total: number;
+  page?: number;
+  limit?: number;
 };
 
 const SECTION_OPTIONS: Record<TabType, Array<{ key: SectionType; label: string }>> = {
@@ -122,17 +124,38 @@ function isUrlLike(value: string): boolean {
   return /^(https?:\/\/|www\.)\S+/i.test(value.trim());
 }
 
-async function fetchRows(tab: TabType, section: SectionType, search: string, token: string): Promise<Record<string, unknown>[]> {
+async function fetchRowsPage(
+  tab: TabType,
+  section: SectionType,
+  search: string,
+  token: string,
+  page: number,
+  limit: number,
+): Promise<PaginatedResponse> {
   const url = new URL(`/api/admin/${tab}`, window.location.origin);
   url.searchParams.set("type", section);
-  url.searchParams.set("limit", "100");
-  url.searchParams.set("page", "1");
+  url.searchParams.set("limit", String(limit));
+  url.searchParams.set("page", String(page));
   if (search) url.searchParams.set("search", search);
 
   const res = await fetch(url.toString(), { headers: { "x-admin-token": token } });
   if (!res.ok) throw new Error("Failed to fetch data");
-  const body = (await res.json()) as PaginatedResponse;
-  return body.data ?? [];
+  return (await res.json()) as PaginatedResponse;
+}
+
+async function fetchAllRows(tab: TabType, section: SectionType, search: string, token: string): Promise<Record<string, unknown>[]> {
+  const pageSize = 100;
+  const firstPage = await fetchRowsPage(tab, section, search, token, 1, pageSize);
+  const merged = [...(firstPage.data ?? [])];
+  const total = firstPage.total ?? merged.length;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+  for (let page = 2; page <= totalPages; page += 1) {
+    const nextPage = await fetchRowsPage(tab, section, search, token, page, pageSize);
+    merged.push(...(nextPage.data ?? []));
+  }
+
+  return merged;
 }
 
 export default function AdminExportPage() {
@@ -172,7 +195,14 @@ export default function AdminExportPage() {
   const load = async () => {
     try {
       setLoading(true);
-      const next = await fetchRows(tab, section, search, token);
+      const next = await fetchAllRows(tab, section, search, token);
+
+      next.sort((a, b) => {
+        const aTime = a._submittedAt ? new Date(String(a._submittedAt)).getTime() : 0;
+        const bTime = b._submittedAt ? new Date(String(b._submittedAt)).getTime() : 0;
+        return bTime - aTime;
+      });
+
       setRows(next);
       setSelectedColumns(availableColumnsFromRows(next));
     } finally {

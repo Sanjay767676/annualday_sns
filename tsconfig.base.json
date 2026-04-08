@@ -22,6 +22,7 @@
     "types": [],
     "customConditions": ["workspace"],
     "paths": {
+      "@workspace/api-client-react": ["./frontend/api-client-react/src/index.ts"],
       "@workspace/api-zod": ["./backend/api-zod/src/index.ts"],
       "@workspace/db": ["./backend/db/src/index.ts"],
       "@workspace/db/schema": ["./backend/db/src/schema/index.ts"]

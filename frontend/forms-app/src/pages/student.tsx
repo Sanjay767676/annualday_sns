@@ -337,6 +337,16 @@ function resolveDepartmentValue(department: string, departmentOther: string) {
   return department === "others" ? departmentOther.trim() : department;
 }
 
+function getIncompleteEntryNumbers<T extends Record<string, string>>(
+  entries: T[],
+  isComplete: (entry: T) => boolean,
+) {
+  return entries
+    .map((entry, index) => ({ entry, number: index + 1 }))
+    .filter(({ entry }) => !isEntryEmpty(entry) && !isComplete(entry))
+    .map(({ number }) => number);
+}
+
 export default function StudentFormPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -419,6 +429,43 @@ export default function StudentFormPage() {
 
   function onSubmit(values: StudentFormValues) {
     form.clearErrors();
+
+    const incompleteFirstRankEntries = getIncompleteEntryNumbers(
+      values.firstRankHolders,
+      isFirstRankHolderComplete,
+    );
+    const incompleteSemesterWiseEntries = getIncompleteEntryNumbers(
+      values.semesterWiseRankers,
+      isSemesterWiseRankerComplete,
+    );
+    const incompleteReputedInstitutionEntries = getIncompleteEntryNumbers(
+      values.reputedInstitutionAchievements,
+      isReputedInstitutionAchievementComplete,
+    );
+
+    if (
+      incompleteFirstRankEntries.length > 0 ||
+      incompleteSemesterWiseEntries.length > 0 ||
+      incompleteReputedInstitutionEntries.length > 0
+    ) {
+      const issues: string[] = [];
+      if (incompleteFirstRankEntries.length > 0) {
+        issues.push(`First Rank Holder: entry ${incompleteFirstRankEntries.join(", ")}`);
+      }
+      if (incompleteSemesterWiseEntries.length > 0) {
+        issues.push(`Semester Wise Rank: entry ${incompleteSemesterWiseEntries.join(", ")}`);
+      }
+      if (incompleteReputedInstitutionEntries.length > 0) {
+        issues.push(`Remarkable Achievements: entry ${incompleteReputedInstitutionEntries.join(", ")}`);
+      }
+
+      toast({
+        title: "Complete or clear partial entries",
+        description: `These rows are incomplete and were not submitted earlier: ${issues.join("; ")}.`,
+        variant: "destructive",
+      });
+      return;
+    }
 
     const firstRankHolders = getCompletedEntries(values.firstRankHolders, isFirstRankHolderComplete);
     const semesterWiseRankers = getCompletedEntries(values.semesterWiseRankers, isSemesterWiseRankerComplete);
